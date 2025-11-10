@@ -36,7 +36,20 @@
           "implements\\s+.*Interface"
         ]
       },
-      "reminder": "📚 AL Development Core - MUST follow 6-phase workflow with Phase 3 approval"
+      "reminder": "📚 AL Development Core - MUST follow 6-phase workflow with Phase 3 approval",
+      "lifecycle": {
+        "activationCondition": "bc-context-detected",
+        "minRelevanceScore": 0.2,
+        "idleTimeout": 600000,
+        "autoReactivate": true,
+        "requiresExplicitCompletion": true,
+        "deactivationSignals": [
+          "phase 6 complete",
+          "summary provided",
+          "implementation finished",
+          "all tasks completed"
+        ]
+      }
     },
 
     "al-best-practices": {
@@ -63,7 +76,12 @@
           "**/App/src/**/*.al"
         ]
       },
-      "reminder": "✅ Best Practices - MUST follow naming, properties, no WITH statements"
+      "reminder": "✅ Best Practices - MUST follow naming, properties, no WITH statements",
+      "lifecycle": {
+        "minRelevanceScore": 0.3,
+        "idleTimeout": 300000,
+        "autoReactivate": true
+      }
     },
 
     "al-testing-specialist": {
@@ -96,7 +114,12 @@
           "Subtype\\s*=\\s*Test"
         ]
       },
-      "reminder": "🧪 Testing Specialist - MUST follow AAA pattern, min 3 test scenarios"
+      "reminder": "🧪 Testing Specialist - MUST follow AAA pattern, min 3 test scenarios",
+      "lifecycle": {
+        "minRelevanceScore": 0.4,
+        "idleTimeout": 300000,
+        "autoReactivate": true
+      }
     },
 
     "al-symbols-navigator": {
@@ -133,7 +156,13 @@
         "onMissingSymbols": true,
         "onExtensionWork": true
       },
-      "reminder": "🔍 Symbols Navigator - MUST verify ObjectIndex.md exists, lookup base objects"
+      "reminder": "🔍 Symbols Navigator - MUST verify ObjectIndex.md exists, lookup base objects",
+      "lifecycle": {
+        "minRelevanceScore": 0.3,
+        "idleTimeout": 120000,
+        "autoReactivate": true,
+        "oneTimeUse": false
+      }
     },
 
     "al-build-workflow": {
@@ -154,7 +183,12 @@
           "execute.*?script"
         ]
       },
-      "reminder": "🔧 Build Workflow - MUST use 3-script system (build/publish/test)"
+      "reminder": "🔧 Build Workflow - MUST use 3-script system (build/publish/test)",
+      "lifecycle": {
+        "minRelevanceScore": 0.4,
+        "idleTimeout": 180000,
+        "autoReactivate": true
+      }
     },
 
     "bc-troubleshooter": {
@@ -183,12 +217,28 @@
         "onError": true,
         "afterFailedAttempts": 2
       },
-      "reminder": "🔍 Troubleshooter - Fix one error at a time, stop after 3 attempts"
+      "reminder": "🔍 Troubleshooter - Fix one error at a time, stop after 3 attempts",
+      "lifecycle": {
+        "minRelevanceScore": 0.5,
+        "idleTimeout": 300000,
+        "autoReactivate": false,
+        "activateOnError": true
+      }
     }
+  },
+
+  "dependencies": {
+    "al-development-core": ["al-symbols-navigator"],
+    "al-testing-specialist": ["al-development-core"],
+    "al-build-workflow": ["al-development-core"],
+    "al-best-practices": []
   },
 
   "globalSettings": {
     "enableAutoActivation": true,
+    "enableLifecycleManagement": true,
+    "enableDependencyResolution": true,
+    "skillsPath": "C:/GIT/JEMEL/AI_Develop/skills",
     "showActivationNotices": true,
     "contextThreshold": 0.2,
     "reactivateOnCompaction": true

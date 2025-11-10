@@ -1,21 +1,39 @@
 #!/usr/bin/env node
 // C:\GIT\JEMEL\AI_Develop\hooks\src\userPromptSubmit.js
-// Claude Code hook for skill auto-activation
+// Claude Code hook for skill auto-activation with lifecycle management
 const fs = require('fs');
 const path = require('path');
-
-// Absolute path to skills directory
-const SKILLS_PATH = 'C:/GIT/JEMEL/AI_Develop/skills';
+const LifecycleManager = require('./lifecycleManager');
 
 // Load skill rules configuration
 let skillRules;
+let SKILLS_PATH;
+let lifecycleManager;
+let USE_LIFECYCLE_MANAGEMENT = false;
+
 try {
   const configPath = path.join(__dirname, '..', 'config', 'skill-rules.json');
   const configData = fs.readFileSync(configPath, 'utf8');
   skillRules = JSON.parse(configData);
+
+  // Get skills path from configuration (absolute path to skills directory)
+  // This eliminates the need for symlinks - just update skill-rules.json per project
+  SKILLS_PATH = skillRules.globalSettings?.skillsPath || 'skills';
+
+  // Check if lifecycle management is enabled
+  USE_LIFECYCLE_MANAGEMENT = skillRules.globalSettings?.enableLifecycleManagement !== false;
+
+  // Initialize lifecycle manager if enabled
+  if (USE_LIFECYCLE_MANAGEMENT) {
+    const lifecycleRulesPath = path.join(__dirname, '..', 'config', 'lifecycle-rules.json');
+    const statePath = path.join(__dirname, '..', 'state', 'conversation-state.json');
+    lifecycleManager = new LifecycleManager(configPath, lifecycleRulesPath, statePath);
+  }
 } catch (error) {
   console.error('Failed to load skill-rules.json:', error.message);
   skillRules = { rules: {}, globalSettings: { enableAutoActivation: false } };
+  SKILLS_PATH = 'skills'; // Fallback to relative path
+  USE_LIFECYCLE_MANAGEMENT = false;
 }
 
 /**
@@ -27,6 +45,25 @@ async function processPrompt(prompt) {
     return prompt;
   }
 
+  // Use lifecycle manager if enabled
+  if (USE_LIFECYCLE_MANAGEMENT && lifecycleManager) {
+    try {
+      return lifecycleManager.processPrompt(prompt);
+    } catch (error) {
+      console.error('Lifecycle manager error:', error.message);
+      // Fall back to legacy behavior on error
+      return processPromptLegacy(prompt);
+    }
+  }
+
+  // Legacy behavior (for backwards compatibility)
+  return processPromptLegacy(prompt);
+};
+
+/**
+ * Legacy prompt processing (original behavior)
+ */
+function processPromptLegacy(prompt) {
   const activatedSkills = [];
   const promptLower = prompt.toLowerCase();
 
@@ -97,7 +134,7 @@ ${prompt}`;
   }
 
   return prompt;
-};
+}
 
 /**
  * Determines if a skill should be activated based on prompt content

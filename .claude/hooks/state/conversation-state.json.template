@@ -1,0 +1,8 @@
+{
+  "conversationId": "auto-generated-uuid",
+  "activeSkills": {},
+  "completedSkills": [],
+  "conversationContext": null,
+  "lastPromptAt": null,
+  "_comment": "This is a template. The actual conversation-state.json will be generated at runtime and is git-ignored."
+}

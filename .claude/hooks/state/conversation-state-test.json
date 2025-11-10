@@ -1,0 +1,24 @@
+{
+  "conversationId": "conv-1762434774114-e4b42af5",
+  "activeSkills": {
+    "al-testing-specialist": {
+      "activatedAt": "2025-11-06T13:12:54.121Z",
+      "lastUsedAt": "2025-11-06T13:12:54.121Z",
+      "phase": null,
+      "usageCount": 1,
+      "status": "active",
+      "relevanceScore": 0.9
+    },
+    "al-development-core": {
+      "activatedAt": "2025-11-06T13:12:54.125Z",
+      "lastUsedAt": "2025-11-06T13:12:54.125Z",
+      "phase": null,
+      "usageCount": 1,
+      "status": "active",
+      "relevanceScore": 0.9
+    }
+  },
+  "completedSkills": [],
+  "conversationContext": "bc-development",
+  "lastPromptAt": "2025-11-06T13:12:54.125Z"
+}

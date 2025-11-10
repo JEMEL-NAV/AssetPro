@@ -1,0 +1,88 @@
+{
+  "completionSignals": {
+    "al-development-core": [
+      "phase\\s+6\\s+(complete|done|finished)",
+      "implementation\\s+(complete|finished|done)",
+      "summary\\s+provided",
+      "all\\s+tasks\\s+completed",
+      "development\\s+(complete|finished)",
+      "feature\\s+(complete|finished|implemented)"
+    ],
+    "al-testing-specialist": [
+      "all\\s+tests\\s+(passing|passed)",
+      "test\\s+coverage\\s+complete",
+      "testing\\s+(complete|finished|done)",
+      "tests?\\s+(successful|succeeded)",
+      "test\\s+suite\\s+(complete|passed)"
+    ],
+    "al-build-workflow": [
+      "build\\s+(successful|succeeded|complete)",
+      "deployment\\s+complete",
+      "published\\s+successfully",
+      "compilation\\s+successful",
+      "app\\s+published"
+    ],
+    "al-symbols-navigator": [
+      "base\\s+object\\s+(found|located|identified)",
+      "symbols?\\s+(lookup|search)\\s+complete",
+      "object\\s+reference\\s+found",
+      "extension\\s+target\\s+confirmed"
+    ],
+    "bc-troubleshooter": [
+      "issue\\s+(resolved|fixed)",
+      "error\\s+(resolved|fixed|corrected)",
+      "problem\\s+solved",
+      "working\\s+(now|correctly)",
+      "successfully\\s+fixed"
+    ],
+    "al-best-practices": [
+      "code\\s+review\\s+complete",
+      "standards\\s+applied",
+      "best\\s+practices\\s+implemented",
+      "quality\\s+check\\s+(complete|passed)"
+    ]
+  },
+
+  "defaultLifecycleSettings": {
+    "activationCondition": "relevance-score-threshold",
+    "minRelevanceScore": 0.3,
+    "idleTimeout": 300000,
+    "autoReactivate": true
+  },
+
+  "skillSpecificSettings": {
+    "al-development-core": {
+      "minRelevanceScore": 0.2,
+      "idleTimeout": 600000,
+      "autoReactivate": true,
+      "requiresExplicitCompletion": true
+    },
+    "al-testing-specialist": {
+      "minRelevanceScore": 0.4,
+      "idleTimeout": 300000,
+      "autoReactivate": true
+    },
+    "al-build-workflow": {
+      "minRelevanceScore": 0.4,
+      "idleTimeout": 180000,
+      "autoReactivate": true
+    },
+    "al-symbols-navigator": {
+      "minRelevanceScore": 0.3,
+      "idleTimeout": 120000,
+      "autoReactivate": true,
+      "oneTimeUse": false
+    },
+    "bc-troubleshooter": {
+      "minRelevanceScore": 0.5,
+      "idleTimeout": 300000,
+      "autoReactivate": false,
+      "activateOnError": true
+    },
+    "al-best-practices": {
+      "minRelevanceScore": 0.3,
+      "idleTimeout": 300000,
+      "autoReactivate": true
+    }
+  }
+}

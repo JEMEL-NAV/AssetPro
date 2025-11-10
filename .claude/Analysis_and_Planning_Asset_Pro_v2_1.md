@@ -1,12 +1,12 @@
-# Asset Pro - Comprehensive Analysis and Planning Document v2.1
+# Asset Pro - Comprehensive Analysis and Planning Document v2.3.1
 
 **Project:** Asset Pro - Multi-Industry Asset Management for Business Central
 **Publisher:** JEMEL
 **App Prefix:** JML
-**Date:** 2025-11-09
+**Date:** 2025-11-10
 **Status:** Architecture Analysis - Awaiting Approval
 **Workflow Mode:** Analysis (Relaxed)
-**Document Version:** 2.1
+**Document Version:** 2.3.1
 
 ---
 
@@ -20,7 +20,48 @@
    - Captions do NOT include "JML AP" prefix
    - Example: Table "JML AP Asset Setup" has Caption "Asset Setup"
 
-2. **Holder History Table Redesigned**
+2. **Core Features Always Enabled**
+   - **REMOVED:** "Enable Classification" toggle
+   - **REMOVED:** "Enable Parent-Child" toggle
+   - **Rationale:** These are core architectural features that define Asset Pro
+   - Classification and Parent-Child are always available (fields simply left blank if not used)
+   - **KEPT:** "Enable Attributes" (performance consideration)
+   - **KEPT:** "Enable Holder History" (some customers track externally)
+
+2a. **Validation Limits Now Constants**
+   - **REMOVED:** "Max Circular Check Depth" from Setup (now constant: 100)
+   - **REMOVED:** "Max Classification Levels" from Setup (now constant: 50)
+   - **Rationale:** These are technical system limits, not business configuration
+   - Moved to constants in JML AP Asset Validation codeunit
+   - Simpler setup, no risk of users breaking functionality with incorrect values
+
+2b. **Unused Setup Fields Removed**
+   - **REMOVED:** "Current Industry Context" from Setup
+   - **Rationale:** Field was never actually used - CaptionClass already resolves per-asset using each asset's Industry Code
+   - Duplicate functionality - "Default Industry Code" already exists for new asset defaults
+   - Global context doesn't work with multi-industry data on same page
+   - Simpler, cleaner setup
+
+2c. **Classification Architecture: Normalized to Single Field** 🔥 **MAJOR CHANGE**
+   - **REMOVED:** "Classification Level 1" through "Classification Level 5" fields (denormalized approach)
+   - **ADDED:** Single "Classification Code" field (normalized approach)
+   - **Rationale:** Delivers on "unlimited classification levels" promise
+   - Asset stores the LEAF classification (e.g., "PANAMAX")
+   - Parent levels (e.g., CARGO → COMMERCIAL) traversed via Classification Value table
+   - Added helper procedures: `GetClassificationPath()`, `GetClassificationAtLevel()`, `IsClassifiedUnder()`
+   - **Trade-off:** More complex filtering logic, but truly unlimited depth
+   - **Filtering approaches documented** below for implementation
+
+2d. **Ownership Roles: Type + Code Pattern** 🔥 **MAJOR CHANGE**
+   - **REMOVED:** "Owner Customer No.", "Operator Customer No.", "Lessee Customer No." (Customer-only fields)
+   - **ADDED:** Owner/Operator/Lessee Type + Code + Name (flexible pattern)
+   - **Rationale:** Owner/Operator/Lessee can be Customer, Vendor, Our Company, Employee, or Responsibility Center
+   - Matches Current Holder Type pattern for consistency
+   - Enables scenarios: We own/customer leases, Vendor owns/we lease, Internal assets with employee operators
+   - Added new enum: "JML AP Owner Type"
+   - Added helper procedure: `GetOwnerTypeName()` for name lookup across entity types
+
+3. **Holder History Table Redesigned**
    - Changed from two-field (From/To) to entry-based pattern
    - Follows BC standard: Item Ledger Entry, Warehouse Entry pattern
    - Primary Key: Entry No. (AutoIncrement)
@@ -28,21 +69,21 @@
    - United by Document No. and Transaction No.
    - Enables point-in-time holder lookup by filtering Asset + Date
 
-3. **Clean Code Principles Applied**
+4. **Clean Code Principles Applied**
    - Procedure names are clear and action-oriented
    - Single responsibility principle enforced
-   - Magic numbers replaced with constants
+   - Magic numbers replaced with constants (see item 2a above)
    - Error messages are descriptive
    - Variable names are self-documenting
    - Comments explain "why" not "what"
 
-4. **Comprehensive Test Plan**
+5. **Comprehensive Test Plan**
    - Detailed test scenarios for each test codeunit
    - Expected results specified
    - Test data setup procedures documented
    - Performance benchmarks defined
 
-5. **Complete Object Structures**
+6. **Complete Object Structures**
    - Full field definitions for all tables
    - Complete page layouts with all sections
    - All codeunit procedures with parameters
@@ -67,9 +108,10 @@ Traditional asset management solutions force businesses into rigid structures:
 Asset Pro introduces a revolutionary **dual-structure architecture** that separates concerns:
 
 **STRUCTURE 1: Classification Hierarchy** (Organizational)
-- Unlimited configurable levels per industry
+- **Truly unlimited** configurable levels per industry (normalized single-field design)
 - Dynamic terminology that adapts completely
-- Example: "Fleet" → "Vessel Type" → "Vessel Model" → "Vessel Unit"
+- Example: "Fleet" → "Vessel Type" → "Vessel Model" → "Vessel Unit" → ... (any depth)
+- Asset stores LEAF classification; parent levels traversed via helper procedures
 - Used for: Organization, filtering, reporting, access control
 
 **STRUCTURE 2: Physical Composition** (Parent-Child Assets)
@@ -86,6 +128,8 @@ Asset Pro introduces a revolutionary **dual-structure architecture** that separa
 ### Key Innovation
 
 **Separation of Classification from Composition:**
+
+**Design Decision:** Classification (Structure 1) and Parent-Child (Structure 2) are **always available** - no feature toggles. These are core architectural features that define Asset Pro. Simple customers can leave fields blank; complex customers use them fully. Only Attributes and Holder History have optional toggles (performance/external tracking reasons).
 
 ```
 Traditional (Confused):
@@ -157,9 +201,10 @@ Industry: Fleet Management
 
 Asset HMS-001 Classification:
   - Industry: Fleet Management
-  - Level 1 Value: Commercial
-  - Level 2 Value: Cargo Ship
-  - Level 3 Value: Panamax Bulk Carrier
+  - Classification: Panamax Bulk Carrier (stores LEAF node)
+  - Full Path: Commercial / Cargo Ship / Panamax Bulk Carrier (calculated)
+  - Level 1 Value: Commercial (via GetClassificationAtLevel(1))
+  - Level 2 Value: Cargo Ship (via GetClassificationAtLevel(2))
 ```
 
 **Example - Water Dispensers:**
@@ -170,8 +215,9 @@ Industry: Dispenser Management
 
 Asset D-12345 Classification:
   - Industry: Dispenser Management
-  - Level 1 Value: Office
-  - Level 2 Value: WD-200 Series
+  - Classification: WD-200 Series (stores LEAF node)
+  - Full Path: Office / WD-200 Series (calculated)
+  - Level 1 Value: Office (via GetClassificationAtLevel(1))
 ```
 
 #### Structure 2: Physical Composition (What's INSIDE it?)
@@ -260,7 +306,7 @@ Dispenser D-12345 Components:
 - Component validation: Item must exist in BC
 
 **Search/Filter Scenarios:**
-- "Show all Cargo Ships" → Filter by Classification Level 2
+- "Show all Cargo Ships" → Use IsClassifiedUnder('CARGO') helper or filter via Classification Path Helper table
 - "Show all assets containing Turbochargers" → Filter by Child Assets
 - "Show all assets needing Item 20001" → Filter by Component BOM
 
@@ -270,114 +316,155 @@ Dispenser D-12345 Components:
 
 ### Entity Relationship Diagram
 
-```mermaid
-erDiagram
-    ASSET-INDUSTRY ||--o{ CLASSIFICATION-LEVEL : "defines levels"
-    CLASSIFICATION-LEVEL ||--o{ CLASSIFICATION-VALUE : "has values"
-    CLASSIFICATION-VALUE ||--o{ ASSET : "classifies at Level 1"
-    CLASSIFICATION-VALUE ||--o{ ASSET : "classifies at Level 2"
-    CLASSIFICATION-VALUE ||--o{ ASSET : "classifies at Level 3"
-    ASSET ||--o{ ASSET : "parent-child"
-    ASSET ||--o{ ASSET-COMPONENT : "has parts"
-    ASSET ||--o{ ASSET-ATTRIBUTE-VALUE : "has attribute values"
-    ASSET ||--o{ ASSET-HOLDER-ENTRY : "tracks transitions"
-    CLASSIFICATION-LEVEL ||--o{ ATTRIBUTE-DEFINITION : "defines attributes"
-    ATTRIBUTE-DEFINITION ||--o{ ASSET-ATTRIBUTE-VALUE : "defines structure"
-    CUSTOMER ||--o{ ASSET : "owns/operates"
-    VENDOR ||--o{ ASSET : "maintains"
-    LOCATION ||--o{ ASSET : "stores"
-    ITEM ||--o{ ASSET-COMPONENT : "is used in"
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                         CLASSIFICATION STRUCTURE (STRUCTURE 1)                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-    ASSET-INDUSTRY {
-        Code industry_code PK
-        Text name
-        Text description
-        Boolean blocked
-    }
+    ┌──────────────────────┐
+    │  Asset Industry      │
+    │  ════════════════    │
+    │  PK: Code            │
+    │  - Name              │
+    │  - Description       │
+    └──────────┬───────────┘
+               │ (1:Many)
+               │ defines levels
+               ▼
+    ┌──────────────────────┐
+    │ Classification Level │
+    │  ════════════════    │
+    │  PK: Industry Code   │
+    │      Level Number    │
+    │  - Level Name        │
+    │  - Level Name Plural │
+    └──────────┬───────────┘
+               │ (1:Many)
+               │ has values
+               ▼
+    ┌──────────────────────┐
+    │ Classification Value │
+    │  ════════════════    │
+    │  PK: Industry Code   │
+    │      Level Number    │
+    │      Value Code      │
+    │  FK: Parent Value    │
+    └──────────┬───────────┘
+               │ (1:Many)
+               │ classifies at Level 1, 2, 3...
+               ▼
 
-    CLASSIFICATION-LEVEL {
-        Code industry_code PK
-        Integer level_number PK
-        Text level_name
-        Text level_name_plural
-        Integer parent_level_number
-        Boolean use_in_lists
-    }
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                            CORE ASSET TABLE                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-    CLASSIFICATION-VALUE {
-        Code industry_code PK
-        Integer level_number PK
-        Code value_code PK
-        Text description
-        Code parent_value_code
-        Boolean blocked
-    }
+                        ┌────────────────────────────────┐
+                        │         ASSET                  │
+                        │  ═══════════════               │
+                        │  PK: No.                       │
+                        │  FK: Industry Code             │
+                        │      Classification Code       │
+                        │      Parent Asset No. ◄────┐   │
+                        │      Current Holder Code   │   │
+                        │  - Description             │   │
+                        │  - Status                  │   │
+                        │  - Serial No.              │   │
+                        └────┬───────┬───────┬───────┘   │
+                             │       │       │           │
+                             │       │       │           │ (Self-Reference)
+                             │       │       │           │ Parent-Child
+                             │       │       │           └─── Physical Hierarchy
+                             │       │       │
+                             │       │       └──────────────────────┐
+                             │       │                              │
+                             │       │                              │
+┌────────────────────────────┼───────┼──────────────────────────────┼────────────┐
+│  PHYSICAL COMPOSITION      │       │    ATTRIBUTES                │   HISTORY  │
+│  (STRUCTURE 2)             │       │                              │            │
+└────────────────────────────┼───────┼──────────────────────────────┼────────────┘
+                             │       │                              │
+                             │       │                              │
+                    (1:Many) │       │ (1:Many)            (1:Many) │
+                             ▼       ▼                              ▼
+                    ┌────────────┐ ┌────────────────┐    ┌──────────────────┐
+                    │ Component  │ │ Attribute Defn │    │  Holder Entry    │
+                    │ ══════════ │ │ ══════════════ │    │  ════════════    │
+                    │ PK: Asset  │ │ PK: Industry   │    │  PK: Entry No.   │
+                    │     Line   │ │     Level      │    │  FK: Asset No.   │
+                    │ FK: Item   │ │     Attr Code  │    │  - Entry Type    │
+                    │ - Quantity │ │ - Name         │    │  - Holder Type   │
+                    │ - Position │ │ - Data Type    │    │  - Holder Code   │
+                    └──────┬─────┘ │ - Mandatory    │    │  - Transaction   │
+                           │       │ - Default Val  │    │  - Document No.  │
+                           │       └────────┬───────┘    │  - Posting Date  │
+                           │                │            └──────────────────┘
+                           │                │ (1:Many)
+                           │                │ defines structure
+                           │                ▼
+                           │       ┌─────────────────┐
+                           │       │ Attribute Value │
+                           │       │ ═══════════════ │
+                           │       │ PK: Asset No.   │
+                           │       │     Attr Code   │
+                           │       │ - Value Text    │
+                           │       │ - Value Integer │
+                           │       │ - Value Decimal │
+                           │       │ - Value Date    │
+                           │       │ - Value Boolean │
+                           │       └─────────────────┘
+                           │
+                           │ (Many:1)
+                           │ uses BC Item
+                           ▼
 
-    ASSET {
-        Code no PK
-        Text description
-        Code industry_code FK
-        Code classification_l1_code FK
-        Code classification_l2_code FK
-        Code classification_l3_code FK
-        Code parent_asset_no FK
-        Enum current_holder_type
-        Code current_holder_code
-        Date current_holder_since
-        Code owner_customer_no
-        Code operator_customer_no
-        Enum status
-        Date acquisition_date
-        Decimal acquisition_cost
-    }
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    BUSINESS CENTRAL INTEGRATION                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-    ASSET-COMPONENT {
-        Code asset_no PK_FK
-        Integer line_no PK
-        Code item_no FK
-        Decimal quantity
-        Code unit_of_measure
-        Text position
-        Code serial_no
-        Boolean blocked
-    }
+    ┌──────────┐         ┌──────────┐         ┌──────────┐         ┌──────────┐
+    │ Customer │         │  Vendor  │         │ Location │         │   Item   │
+    │ ════════ │         │ ════════ │         │ ════════ │         │ ════════ │
+    │ PK: No.  │         │ PK: No.  │         │ PK: Code │         │ PK: No.  │
+    │ - Name   │         │ - Name   │         │ - Name   │         │ - Descr  │
+    └────┬─────┘         └────┬─────┘         └────┬─────┘         └────┬─────┘
+         │                    │                    │                     │
+         │ (1:Many)           │ (1:Many)           │ (1:Many)            │ (1:Many)
+         │ owns/operates      │ maintains          │ stores              │ used in
+         │                    │                    │                     │
+         └────────────────────┴────────────────────┴─────────────────────┘
+                                       │
+                                       ▼
+                            [Links to ASSET table]
 
-    ATTRIBUTE-DEFINITION {
-        Code industry_code PK_FK
-        Integer level_number PK_FK
-        Code attribute_code PK
-        Text attribute_name
-        Enum data_type
-        Text option_string
-        Boolean mandatory
-        Text default_value
-        Integer display_order
-    }
 
-    ASSET-ATTRIBUTE-VALUE {
-        Code asset_no PK_FK
-        Code attribute_code PK_FK
-        Text value_text
-        Integer value_integer
-        Decimal value_decimal
-        Date value_date
-        Boolean value_boolean
-    }
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           KEY RELATIONSHIPS                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
 
-    ASSET-HOLDER-ENTRY {
-        Integer entry_no PK
-        Code asset_no FK
-        DateTime posting_datetime
-        Enum entry_type
-        Enum holder_type
-        Code holder_code
-        Text holder_name
-        Integer transaction_no
-        Code document_type
-        Code document_no
-        Code reason_code
-        Code user_id
-    }
+1. CLASSIFICATION (Structure 1):
+   Industry → Classification Level → Classification Value → Asset
+   One industry defines multiple levels, each level has multiple values
+
+2. PHYSICAL HIERARCHY (Structure 2):
+   Asset → Asset (self-reference via Parent Asset No.)
+   Example: Vessel → Engine → Turbocharger
+
+3. COMPONENT BOM (Structure 3):
+   Asset → Component → BC Item
+   Links assets to standard BC inventory items
+
+4. ATTRIBUTES:
+   Classification Level → Attribute Definition → Attribute Value ← Asset
+   Custom fields defined per industry/level, values stored per asset
+
+5. HOLDER TRACKING (Ledger Pattern):
+   Asset → Holder Entry (multiple entries per asset)
+   Two entries per transfer: Transfer Out + Transfer In
+   Linked by Transaction No. and Document No.
+
+6. BC INTEGRATION:
+   Customer/Vendor/Location → Asset (current holder)
+   Item → Asset Component (parts list)
 ```
 
 ---
@@ -418,55 +505,26 @@ table 70182300 "JML AP Asset Setup"
             TableRelation = "JML AP Asset Industry";
         }
 
-        // Feature Toggles
-        field(30; "Enable Classification"; Boolean)
-        {
-            Caption = 'Enable Classification';
-            InitValue = true;
-        }
-
+        // Feature Toggles (Optional Features Only)
+        // Note: Classification and Parent-Child are core features, always available
         field(31; "Enable Attributes"; Boolean)
         {
             Caption = 'Enable Attributes';
             InitValue = true;
+            Description = 'Disable to improve performance if custom attributes are not needed';
         }
 
         field(32; "Enable Holder History"; Boolean)
         {
             Caption = 'Enable Holder History';
             InitValue = true;
-        }
-
-        field(33; "Enable Parent-Child"; Boolean)
-        {
-            Caption = 'Enable Parent-Child Relationships';
-            InitValue = true;
-        }
-
-        // Validation Rules
-        field(40; "Max Circular Check Depth"; Integer)
-        {
-            Caption = 'Max Circular Check Depth';
-            InitValue = 100;
-            MinValue = 10;
-            MaxValue = 200;
-        }
-
-        field(41; "Max Classification Levels"; Integer)
-        {
-            Caption = 'Max Classification Levels';
-            InitValue = 10;
-            MinValue = 1;
-            MaxValue = 50;
+            Description = 'Disable if holder tracking is managed externally';
         }
 
         // System
-        field(100; "Current Industry Context"; Code[20])
-        {
-            Caption = 'Current Industry Context';
-            TableRelation = "JML AP Asset Industry";
-            Description = 'Used for CaptionClass resolution';
-        }
+        // Note: Validation limits (Max Circular Check Depth, Max Classification Levels)
+        // are now constants in JML AP Asset Validation codeunit, not user-configurable
+        // Note: "Current Industry Context" field removed - CaptionClass resolves per-asset using asset's Industry Code
     }
 
     keys
@@ -546,6 +604,10 @@ table 70182301 "JML AP Asset"
         }
 
         // === CLASSIFICATION (STRUCTURE 1) ===
+        // ARCHITECTURAL DECISION: Single classification field for truly unlimited levels
+        // Asset stores the LEAF classification node (e.g., "PANAMAX")
+        // Parent levels (e.g., CARGO → COMMERCIAL) are traversed via Classification Value table
+
         field(100; "Industry Code"; Code[20])
         {
             Caption = 'Industry';
@@ -554,75 +616,41 @@ table 70182301 "JML AP Asset"
             trigger OnValidate()
             begin
                 if "Industry Code" <> xRec."Industry Code" then
-                    ClearClassificationFields();
+                    "Classification Code" := '';
             end;
         }
 
-        field(101; "Classification Level 1"; Code[20])
+        field(101; "Classification Code"; Code[20])
         {
-            Caption = 'Level 1';
-            TableRelation = "JML AP Classification Val".Code
-                where("Industry Code" = field("Industry Code"),
-                      "Level Number" = const(1));
-            CaptionClass = GetLevelCaption(1);
+            Caption = 'Classification';
+            TableRelation = "JML AP Classification Val".Code where("Industry Code" = field("Industry Code"));
 
             trigger OnValidate()
             begin
-                ValidateClassificationLevel(1);
+                if "Classification Code" <> '' then
+                    ValidateClassification();
             end;
         }
 
-        field(102; "Classification Level 2"; Code[20])
+        field(102; "Classification Level No."; Integer)
         {
-            Caption = 'Level 2';
-            TableRelation = "JML AP Classification Val".Code
+            Caption = 'Classification Level No.';
+            FieldClass = FlowField;
+            CalcFormula = Lookup("JML AP Classification Val"."Level Number"
                 where("Industry Code" = field("Industry Code"),
-                      "Level Number" = const(2),
-                      "Parent Value Code" = field("Classification Level 1"));
-            CaptionClass = GetLevelCaption(2);
-
-            trigger OnValidate()
-            begin
-                ValidateClassificationLevel(2);
-            end;
+                      Code = field("Classification Code")));
+            Editable = false;
         }
 
-        field(103; "Classification Level 3"; Code[20])
+        field(103; "Classification Description"; Text[100])
         {
-            Caption = 'Level 3';
-            TableRelation = "JML AP Classification Val".Code
+            Caption = 'Classification Description';
+            FieldClass = FlowField;
+            CalcFormula = Lookup("JML AP Classification Val".Description
                 where("Industry Code" = field("Industry Code"),
-                      "Level Number" = const(3),
-                      "Parent Value Code" = field("Classification Level 2"));
-            CaptionClass = GetLevelCaption(3);
-
-            trigger OnValidate()
-            begin
-                ValidateClassificationLevel(3);
-            end;
+                      Code = field("Classification Code")));
+            Editable = false;
         }
-
-        field(104; "Classification Level 4"; Code[20])
-        {
-            Caption = 'Level 4';
-            TableRelation = "JML AP Classification Val".Code
-                where("Industry Code" = field("Industry Code"),
-                      "Level Number" = const(4),
-                      "Parent Value Code" = field("Classification Level 3"));
-            CaptionClass = GetLevelCaption(4);
-        }
-
-        field(105; "Classification Level 5"; Code[20])
-        {
-            Caption = 'Level 5';
-            TableRelation = "JML AP Classification Val".Code
-                where("Industry Code" = field("Industry Code"),
-                      "Level Number" = const(5),
-                      "Parent Value Code" = field("Classification Level 4"));
-            CaptionClass = GetLevelCaption(5);
-        }
-
-        // Levels 6-10 follow same pattern...
 
         // === PHYSICAL COMPOSITION (STRUCTURE 2) ===
         field(200; "Parent Asset No."; Code[20])
@@ -704,22 +732,104 @@ table 70182301 "JML AP Asset"
         }
 
         // === OWNERSHIP ROLES ===
-        field(310; "Owner Customer No."; Code[20])
+        // ARCHITECTURAL DECISION: Type + Code pattern for flexible ownership
+        // Owner, Operator, Lessee can be Customer, Vendor, Our Company, Employee, etc.
+        // Matches Current Holder Type pattern for consistency
+
+        // Owner (Legal ownership)
+        field(310; "Owner Type"; Enum "JML AP Owner Type")
         {
-            Caption = 'Owner Customer No.';
-            TableRelation = Customer;
+            Caption = 'Owner Type';
+
+            trigger OnValidate()
+            begin
+                if "Owner Type" <> xRec."Owner Type" then
+                    "Owner Code" := '';
+            end;
         }
 
-        field(311; "Operator Customer No."; Code[20])
+        field(311; "Owner Code"; Code[20])
         {
-            Caption = 'Operator Customer No.';
-            TableRelation = Customer;
+            Caption = 'Owner Code';
+            TableRelation = if ("Owner Type" = const(Customer)) Customer."No."
+                            else if ("Owner Type" = const(Vendor)) Vendor."No."
+                            else if ("Owner Type" = const(Employee)) Employee."No."
+                            else if ("Owner Type" = const("Responsibility Center")) "Responsibility Center";
+
+            trigger OnValidate()
+            begin
+                UpdateOwnerName();
+            end;
         }
 
-        field(312; "Lessee Customer No."; Code[20])
+        field(312; "Owner Name"; Text[100])
         {
-            Caption = 'Lessee Customer No.';
-            TableRelation = Customer;
+            Caption = 'Owner Name';
+            Editable = false;
+        }
+
+        // Operator (Day-to-day user)
+        field(320; "Operator Type"; Enum "JML AP Owner Type")
+        {
+            Caption = 'Operator Type';
+
+            trigger OnValidate()
+            begin
+                if "Operator Type" <> xRec."Operator Type" then
+                    "Operator Code" := '';
+            end;
+        }
+
+        field(321; "Operator Code"; Code[20])
+        {
+            Caption = 'Operator Code';
+            TableRelation = if ("Operator Type" = const(Customer)) Customer."No."
+                            else if ("Operator Type" = const(Vendor)) Vendor."No."
+                            else if ("Operator Type" = const(Employee)) Employee."No."
+                            else if ("Operator Type" = const("Responsibility Center")) "Responsibility Center";
+
+            trigger OnValidate()
+            begin
+                UpdateOperatorName();
+            end;
+        }
+
+        field(322; "Operator Name"; Text[100])
+        {
+            Caption = 'Operator Name';
+            Editable = false;
+        }
+
+        // Lessee (If leased/rented)
+        field(330; "Lessee Type"; Enum "JML AP Owner Type")
+        {
+            Caption = 'Lessee Type';
+
+            trigger OnValidate()
+            begin
+                if "Lessee Type" <> xRec."Lessee Type" then
+                    "Lessee Code" := '';
+            end;
+        }
+
+        field(331; "Lessee Code"; Code[20])
+        {
+            Caption = 'Lessee Code';
+            TableRelation = if ("Lessee Type" = const(Customer)) Customer."No."
+                            else if ("Lessee Type" = const(Vendor)) Vendor."No."
+                            else if ("Lessee Type" = const(Employee)) Employee."No."
+                            else if ("Lessee Type" = const("Responsibility Center")) "Responsibility Center";
+
+            trigger OnValidate()
+            begin
+                UpdateLesseeName();
+            end;
+        }
+
+        field(332; "Lessee Name"; Text[100])
+        {
+            Caption = 'Lessee Name';
+            Editable = false;
         }
 
         // === STATUS AND DATES ===
@@ -826,7 +936,7 @@ table 70182301 "JML AP Asset"
         {
             Clustered = true;
         }
-        key(Industry; "Industry Code", "Classification Level 1", "Classification Level 2")
+        key(Industry; "Industry Code", "Classification Code")
         {
         }
         key(Holder; "Current Holder Type", "Current Holder Code")
@@ -866,6 +976,7 @@ table 70182301 "JML AP Asset"
     trigger OnDelete()
     begin
         ValidateAssetCanBeDeleted();
+        DeleteRelatedRecords();
     end;
 
     // === VALIDATION PROCEDURES ===
@@ -884,47 +995,31 @@ table 70182301 "JML AP Asset"
         AssetSetup: Record "JML AP Asset Setup";
         NoSeriesMgt: Codeunit NoSeriesManagement;
     begin
+        AssetSetup.GetRecordOnce();
+
+        // Initialize number series
         if "No." = '' then begin
-            AssetSetup.GetRecordOnce();
             AssetSetup.TestField("Asset Nos.");
             NoSeriesMgt.InitSeries(AssetSetup."Asset Nos.", xRec."No. Series", 0D, "No.", "No. Series");
         end;
 
+        // Apply default industry if not set
+        if ("Industry Code" = '') and (AssetSetup."Default Industry Code" <> '') then
+            Validate("Industry Code", AssetSetup."Default Industry Code");
+
+        // Initialize hierarchy
         CalculateHierarchyLevel();
         UpdateRootAssetNo();
     end;
 
-    local procedure ClearClassificationFields()
-    begin
-        "Classification Level 1" := '';
-        "Classification Level 2" := '';
-        "Classification Level 3" := '';
-        "Classification Level 4" := '';
-        "Classification Level 5" := '';
-        // Clear levels 6-10 if implemented
-    end;
-
-    local procedure ValidateClassificationLevel(LevelNo: Integer)
+    local procedure ValidateClassification()
     var
-        PreviousLevelCode: Code[20];
+        ClassValue: Record "JML AP Classification Val";
     begin
-        if LevelNo > 1 then begin
-            PreviousLevelCode := GetClassificationLevelCode(LevelNo - 1);
-            if PreviousLevelCode = '' then
-                Error(MustSetPreviousLevelErr, LevelNo - 1, LevelNo);
-        end;
-    end;
+        CalcFields("Classification Level No.");
 
-    local procedure GetClassificationLevelCode(LevelNo: Integer): Code[20]
-    begin
-        case LevelNo of
-            1: exit("Classification Level 1");
-            2: exit("Classification Level 2");
-            3: exit("Classification Level 3");
-            4: exit("Classification Level 4");
-            5: exit("Classification Level 5");
-            // Levels 6-10 if implemented
-        end;
+        if not ClassValue.Get("Industry Code", "Classification Level No.", "Classification Code") then
+            Error(ClassificationNotFoundErr, "Classification Code", "Industry Code");
     end;
 
     local procedure ValidateParentAsset()
@@ -946,9 +1041,7 @@ table 70182301 "JML AP Asset"
     var
         ParentAsset: Record "JML AP Asset";
     begin
-        if "Parent Asset No." = '' then
-            "Hierarchy Level" := 1
-        else if ParentAsset.Get("Parent Asset No.") then
+        if ParentAsset.Get("Parent Asset No.") then
             "Hierarchy Level" := ParentAsset."Hierarchy Level" + 1
         else
             "Hierarchy Level" := 1;
@@ -1005,36 +1098,353 @@ table 70182301 "JML AP Asset"
         end;
     end;
 
+    local procedure UpdateOwnerName()
+    begin
+        "Owner Name" := GetOwnerTypeName("Owner Type", "Owner Code");
+    end;
+
+    local procedure UpdateOperatorName()
+    begin
+        "Operator Name" := GetOwnerTypeName("Operator Type", "Operator Code");
+    end;
+
+    local procedure UpdateLesseeName()
+    begin
+        "Lessee Name" := GetOwnerTypeName("Lessee Type", "Lessee Code");
+    end;
+
+    local procedure GetOwnerTypeName(OwnerType: Enum "JML AP Owner Type"; OwnerCode: Code[20]): Text[100]
+    var
+        Customer: Record Customer;
+        Vendor: Record Vendor;
+        Employee: Record Employee;
+        RespCenter: Record "Responsibility Center";
+        CompanyInfo: Record "Company Information";
+    begin
+        if OwnerCode = '' then
+            exit('');
+
+        case OwnerType of
+            OwnerType::"Our Company":
+                begin
+                    if CompanyInfo.Get() then
+                        exit(CompanyInfo.Name)
+                    else
+                        exit('Our Company');
+                end;
+            OwnerType::Customer:
+                if Customer.Get(OwnerCode) then
+                    exit(Customer.Name);
+            OwnerType::Vendor:
+                if Vendor.Get(OwnerCode) then
+                    exit(Vendor.Name);
+            OwnerType::Employee:
+                if Employee.Get(OwnerCode) then
+                    exit(Employee."First Name" + ' ' + Employee."Last Name");
+            OwnerType::"Responsibility Center":
+                if RespCenter.Get(OwnerCode) then
+                    exit(RespCenter.Name);
+        end;
+
+        exit('');
+    end;
+
     local procedure ValidateAssetCanBeDeleted()
     var
         ChildAsset: Record "JML AP Asset";
+        HolderEntry: Record "JML AP Holder Entry";
     begin
         // Cannot delete if has children
         ChildAsset.SetRange("Parent Asset No.", "No.");
         if not ChildAsset.IsEmpty then
             Error(CannotDeleteWithChildrenErr, "No.");
 
-        // Could add more validations:
-        // - Check if referenced in posted documents
-        // - Check if has transaction history
+        // Cannot delete if holder history entries exist
+        HolderEntry.SetRange("Asset No.", "No.");
+        if not HolderEntry.IsEmpty then
+            Error(CannotDeleteWithHolderHistoryErr, "No.");
     end;
 
-    local procedure GetLevelCaption(LevelNo: Integer): Text
+    local procedure DeleteRelatedRecords()
+    var
+        Component: Record "JML AP Component";
+        AttributeValue: Record "JML AP Attribute Value";
     begin
-        exit(StrSubstNo('JML-ASSET:%1:%2:N', "Industry Code", LevelNo));
+        // Delete component BOM entries
+        Component.SetRange("Asset No.", "No.");
+        if not Component.IsEmpty then
+            Component.DeleteAll(true);
+
+        // Delete attribute values
+        AttributeValue.SetRange("Asset No.", "No.");
+        if not AttributeValue.IsEmpty then
+            AttributeValue.DeleteAll(true);
+    end;
+
+    /// <summary>
+    /// Gets the full classification path from root to current classification.
+    /// </summary>
+    /// <returns>Full path like "Commercial / Cargo Ship / Panamax"</returns>
+    procedure GetClassificationPath(): Text[250]
+    var
+        ClassValue: Record "JML AP Classification Val";
+        Path: Text[250];
+        CurrentCode: Code[20];
+        CurrentLevelNo: Integer;
+        Separator: Text[3];
+    begin
+        if "Classification Code" = '' then
+            exit('');
+
+        CalcFields("Classification Level No.");
+        CurrentCode := "Classification Code";
+        CurrentLevelNo := "Classification Level No.";
+        Separator := ' / ';
+
+        // Build path from current up to root
+        while (CurrentCode <> '') and (CurrentLevelNo > 0) do begin
+            if ClassValue.Get("Industry Code", CurrentLevelNo, CurrentCode) then begin
+                if Path = '' then
+                    Path := ClassValue.Description
+                else
+                    Path := ClassValue.Description + Separator + Path;
+
+                CurrentCode := ClassValue."Parent Value Code";
+                CurrentLevelNo -= 1;
+            end else
+                CurrentCode := '';
+        end;
+
+        exit(Path);
+    end;
+
+    /// <summary>
+    /// Gets classification value at a specific parent level.
+    /// </summary>
+    /// <param name="LevelNo">The level to retrieve (1 = root)</param>
+    /// <returns>Classification code at that level, or empty if not applicable</returns>
+    procedure GetClassificationAtLevel(LevelNo: Integer): Code[20]
+    var
+        ClassValue: Record "JML AP Classification Val";
+        CurrentCode: Code[20];
+        CurrentLevelNo: Integer;
+    begin
+        if "Classification Code" = '' then
+            exit('');
+
+        CalcFields("Classification Level No.");
+
+        // If requested level is deeper than asset's classification, return empty
+        if LevelNo > "Classification Level No." then
+            exit('');
+
+        // If requested level is the current level, return it
+        if LevelNo = "Classification Level No." then
+            exit("Classification Code");
+
+        // Walk up the tree to find the requested level
+        CurrentCode := "Classification Code";
+        CurrentLevelNo := "Classification Level No.";
+
+        while (CurrentCode <> '') and (CurrentLevelNo > LevelNo) do begin
+            if ClassValue.Get("Industry Code", CurrentLevelNo, CurrentCode) then begin
+                CurrentCode := ClassValue."Parent Value Code";
+                CurrentLevelNo -= 1;
+            end else
+                CurrentCode := '';
+        end;
+
+        if CurrentLevelNo = LevelNo then
+            exit(CurrentCode)
+        else
+            exit('');
+    end;
+
+    /// <summary>
+    /// Checks if this asset is classified under a specific parent classification.
+    /// </summary>
+    /// <param name="ParentClassCode">The parent classification code to check</param>
+    /// <returns>True if asset's classification is under this parent</returns>
+    procedure IsClassifiedUnder(ParentClassCode: Code[20]): Boolean
+    var
+        ClassValue: Record "JML AP Classification Val";
+        CurrentCode: Code[20];
+        MaxIterations: Integer;
+        Iterations: Integer;
+    begin
+        if ("Classification Code" = '') or (ParentClassCode = '') then
+            exit(false);
+
+        if "Classification Code" = ParentClassCode then
+            exit(true);
+
+        CalcFields("Classification Level No.");
+        CurrentCode := "Classification Code";
+        MaxIterations := 50; // Safety limit
+        Iterations := 0;
+
+        // Walk up parent chain
+        while (CurrentCode <> '') and (Iterations < MaxIterations) do begin
+            if ClassValue.Get("Industry Code", ClassValue."Level Number", CurrentCode) then begin
+                if ClassValue."Parent Value Code" = ParentClassCode then
+                    exit(true);
+                CurrentCode := ClassValue."Parent Value Code";
+            end else
+                CurrentCode := '';
+
+            Iterations += 1;
+        end;
+
+        exit(false);
     end;
 
     // === CONSTANTS ===
     var
         MaxParentChainDepth: Integer;
-        MustSetPreviousLevelErr: Label 'You must set Level %1 before setting Level %2.';
         CannotDeleteWithChildrenErr: Label 'Cannot delete asset %1 because it has child assets.';
+        CannotDeleteWithHolderHistoryErr: Label 'Cannot delete asset %1 because it has holder history entries.';
+        ClassificationNotFoundErr: Label 'Classification %1 does not exist in industry %2.';
 
     begin
         MaxParentChainDepth := 100;
     end;
 }
 ```
+
+---
+
+## Classification Filtering Approaches
+
+### The Challenge
+
+With normalized classification (single field), filtering by parent levels requires traversal:
+
+**Example:** "Show all Cargo Ships"
+- Old approach (denormalized): `WHERE "Classification Level 2" = 'CARGO'` ✅ Simple
+- New approach (normalized): Must find all classifications where parent chain includes 'CARGO' 🔄 Complex
+
+### Approach 1: Application-Level Filtering
+
+**Use the helper procedures:**
+```al
+// Filter in code
+TempAsset.Reset();
+Asset.SetRange("Industry Code", 'FLEET');
+if Asset.FindSet() then
+    repeat
+        if Asset.IsClassifiedUnder('CARGO') then begin
+            TempAsset := Asset;
+            TempAsset.Insert();
+        end;
+    until Asset.Next() = 0;
+
+// Show TempAsset on page
+```
+
+**Pros:** Simple to implement, works immediately
+**Cons:** Slow for large datasets (must load all assets)
+
+---
+
+### Approach 2: Classification Path Helper Table (RECOMMENDED)
+
+**Create a helper table that pre-computes all paths:**
+
+```al
+table 70182311 "JML AP Classification Path"
+{
+    fields
+    {
+        field(1; "Industry Code"; Code[20]) { }
+        field(2; "Classification Code"; Code[20]) { }
+        field(3; "Ancestor Level No."; Integer) { }
+        field(4; "Ancestor Code"; Code[20]) { }
+    }
+    keys
+    {
+        key(PK; "Industry Code", "Classification Code", "Ancestor Level No.") { }
+        key(Ancestor; "Industry Code", "Ancestor Code") { } // For filtering!
+    }
+}
+```
+
+**Example data for PANAMAX:**
+| Classification | Ancestor Level | Ancestor Code |
+|----------------|----------------|---------------|
+| PANAMAX        | 1              | COMMERCIAL    |
+| PANAMAX        | 2              | CARGO         |
+| PANAMAX        | 3              | PANAMAX       |
+
+**Filtering becomes simple:**
+```al
+// Find all assets classified under CARGO
+ClassPath.SetRange("Industry Code", 'FLEET');
+ClassPath.SetRange("Ancestor Code", 'CARGO');
+if ClassPath.FindSet() then
+    repeat
+        Asset.SetRange("Classification Code", ClassPath."Classification Code");
+        // Process assets
+    until ClassPath.Next() = 0;
+```
+
+**Pros:** Fast filtering (indexed), simple queries
+**Cons:** Extra table to maintain, rebuild when classification changes
+
+---
+
+### Approach 3: Temporary Table with FlowFilter
+
+**Use FlowFilter + FieldClass calc:**
+```al
+// On Asset List page
+field("Classific ation Filter Level 1"; ClassFilterL1)
+{
+    trigger OnValidate()
+    begin
+        FilterAssetsByClassification(1, ClassFilterL1);
+    end;
+}
+
+local procedure FilterAssetsByClassification(Level: Integer; FilterValue: Code[20])
+var
+    TempFilteredAsset: Record "JML AP Asset" temporary;
+begin
+    // Build temp table of matching assets
+    Asset.Reset();
+    if Asset.FindSet() then
+        repeat
+            if Asset.GetClassificationAtLevel(Level) = FilterValue then begin
+                TempFilteredAsset := Asset;
+                TempFilteredAsset.Insert();
+            end;
+        until Asset.Next() = 0;
+
+    // Apply to page source
+    CurrPage.SetTableView(TempFilteredAsset);
+end;
+```
+
+**Pros:** Flexible, no extra tables
+**Cons:** Recalculates on every filter change
+
+---
+
+### Recommended Implementation Strategy
+
+**Phase 1 (MVP):**
+- Use Approach 1 (Application-Level) for initial release
+- Document performance limitations
+- Works fine for <10,000 assets
+
+**Phase 2 (Performance):**
+- Implement Approach 2 (Classification Path Helper Table)
+- Build path table when classification values change
+- Use for filtering and reporting
+
+**Phase 3 (Advanced):**
+- Add SQL views for complex queries
+- Implement caching layer
+- Optimize for 100,000+ assets
 
 ---
 
@@ -1098,10 +1508,8 @@ table 70182302 "JML AP Asset Industry"
             Caption = 'Blocked';
         }
 
-        field(110; "Template Type"; Enum "JML AP Industry Template")
-        {
-            Caption = 'Template Type';
-        }
+        // Note: Industry Template feature (field 110) deferred to Phase 2
+        // Will allow pre-populating classification structures from templates
     }
 
     keys
@@ -1130,6 +1538,7 @@ table 70182302 "JML AP Asset Industry"
     local procedure ValidateIndustryCanBeDeleted()
     var
         Asset: Record "JML AP Asset";
+        ClassificationValue: Record "JML AP Classification Val";
         ClassificationLevel: Record "JML AP Classification Lvl";
     begin
         // Cannot delete if assets exist
@@ -1137,14 +1546,21 @@ table 70182302 "JML AP Asset Industry"
         if not Asset.IsEmpty then
             Error(CannotDeleteIndustryWithAssetsErr, Code);
 
-        // Delete related classification data
+        // Cannot delete if classification values exist
+        ClassificationValue.SetRange("Industry Code", Code);
+        if not ClassificationValue.IsEmpty then
+            Error(CannotDeleteIndustryWithClassificationErr, Code);
+
+        // Cannot delete if classification levels exist
         ClassificationLevel.SetRange("Industry Code", Code);
         if not ClassificationLevel.IsEmpty then
-            ClassificationLevel.DeleteAll(true);
+            Error(CannotDeleteIndustryWithLevelsErr, Code);
     end;
 
     var
         CannotDeleteIndustryWithAssetsErr: Label 'Cannot delete industry %1 because assets are using it.';
+        CannotDeleteIndustryWithClassificationErr: Label 'Cannot delete industry %1 because classification values exist. Delete classification values first.';
+        CannotDeleteIndustryWithLevelsErr: Label 'Cannot delete industry %1 because classification levels exist. Delete classification levels first.';
 }
 ```
 
@@ -1363,8 +1779,10 @@ table 70182304 "JML AP Classification Val"
             FieldClass = FlowField;
             CalcFormula = Count("JML AP Asset"
                 where("Industry Code" = field("Industry Code"),
-                      "Classification Level 1" = field(Code)));
-            // Note: This only counts Level 1. Need separate FlowFields for other levels.
+                      "Classification Code" = field(Code)));
+            // Note: With normalized approach, this counts only assets DIRECTLY classified here (leaf nodes).
+            // Does NOT count assets classified under child values.
+            // For hierarchical count, use GetTotalAssetCount() procedure instead.
             Editable = false;
         }
     }
@@ -1427,15 +1845,9 @@ table 70182304 "JML AP Classification Val"
         Asset: Record "JML AP Asset";
         ChildValue: Record "JML AP Classification Val";
     begin
-        // Cannot delete if assets use this value
+        // Cannot delete if assets use this value (directly as their leaf classification)
         Asset.SetRange("Industry Code", "Industry Code");
-        case "Level Number" of
-            1: Asset.SetRange("Classification Level 1", Code);
-            2: Asset.SetRange("Classification Level 2", Code);
-            3: Asset.SetRange("Classification Level 3", Code);
-            // Continue for levels 4-10
-        end;
-
+        Asset.SetRange("Classification Code", Code);
         if not Asset.IsEmpty then
             Error(CannotDeleteValueInUseErr, Code);
 
@@ -1508,11 +1920,6 @@ table 70182308 "JML AP Holder Entry"
         {
             Caption = 'Posting Date';
             NotBlank = true;
-        }
-
-        field(21; "Posting Time"; Time)
-        {
-            Caption = 'Posting Time';
         }
 
         field(22; "Entry Type"; Enum "JML AP Holder Entry Type")
@@ -1600,7 +2007,7 @@ table 70182308 "JML AP Holder Entry"
         {
             Clustered = true;
         }
-        key(Asset; "Asset No.", "Posting Date", "Posting Time")
+        key(Asset; "Asset No.", "Posting Date")
         {
             // Enables efficient holder lookup at specific date
         }
@@ -1642,7 +2049,7 @@ table 70182308 "JML AP Holder Entry"
         LastEntryNo: Integer;
     begin
         // Find the last entry for this asset up to the specified date
-        HolderEntry.SetCurrentKey("Asset No.", "Posting Date", "Posting Time");
+        HolderEntry.SetCurrentKey("Asset No.", "Posting Date");
         HolderEntry.SetRange("Asset No.", AssetNo);
         HolderEntry.SetRange("Posting Date", 0D, OnDate);
         if HolderEntry.FindLast() then begin
@@ -2056,9 +2463,12 @@ table 70182307 "JML AP Component"
 {
     Caption = 'Asset Component';
     DataClassification = CustomerContent;
+    LookupPageId = "JML AP Components";
+    DrillDownPageId = "JML AP Components";
 
     fields
     {
+        // === PRIMARY KEY ===
         field(1; "Asset No."; Code[20])
         {
             Caption = 'Asset No.';
@@ -2072,6 +2482,7 @@ table 70182307 "JML AP Component"
             NotBlank = true;
         }
 
+        // === ITEM INFORMATION ===
         field(10; "Item No."; Code[20])
         {
             Caption = 'Item No.';
@@ -2092,17 +2503,18 @@ table 70182307 "JML AP Component"
             Editable = false;
         }
 
+        field(12; "Variant Code"; Code[10])
+        {
+            Caption = 'Variant Code';
+            TableRelation = "Item Variant".Code where("Item No." = field("Item No."));
+        }
+
+        // === QUANTITY ===
         field(20; Quantity; Decimal)
         {
             Caption = 'Quantity';
             DecimalPlaces = 0:5;
-            MinValue = 0;
-
-            trigger OnValidate()
-            begin
-                if Quantity < 0 then
-                    Error(QuantityCannotBeNegativeErr);
-            end;
+            Description = 'Positive for Install/Add, Negative for Remove. Sum all entries = Current balance.';
         }
 
         field(21; "Unit of Measure Code"; Code[10])
@@ -2111,6 +2523,7 @@ table 70182307 "JML AP Component"
             TableRelation = "Item Unit of Measure".Code where("Item No." = field("Item No."));
         }
 
+        // === PHYSICAL DETAILS ===
         field(30; Position; Text[50])
         {
             Caption = 'Position';
@@ -2123,6 +2536,12 @@ table 70182307 "JML AP Component"
             Description = 'For serialized components';
         }
 
+        field(41; "Lot No."; Code[50])
+        {
+            Caption = 'Lot No.';
+        }
+
+        // === DATES ===
         field(50; "Installation Date"; Date)
         {
             Caption = 'Installation Date';
@@ -2133,9 +2552,60 @@ table 70182307 "JML AP Component"
             Caption = 'Next Replacement Date';
         }
 
+        // === DOCUMENT TRACKING ===
+        field(60; "Document Type"; Enum "JML AP Document Type")
+        {
+            Caption = 'Document Type';
+        }
+
+        field(61; "Document No."; Code[20])
+        {
+            Caption = 'Document No.';
+        }
+
+        field(62; "Document Line No."; Integer)
+        {
+            Caption = 'Document Line No.';
+        }
+
+        field(63; "Posting Date"; Date)
+        {
+            Caption = 'Posting Date';
+        }
+
+        field(64; "External Document No."; Code[35])
+        {
+            Caption = 'External Document No.';
+        }
+
+        // === ENTRY TYPE ===
+        field(70; "Entry Type"; Enum "JML AP Component Entry Type")
+        {
+            Caption = 'Entry Type';
+        }
+
+        field(71; "Reason Code"; Code[10])
+        {
+            Caption = 'Reason Code';
+            TableRelation = "Reason Code";
+        }
+
+        // === SYSTEM ===
         field(100; Blocked; Boolean)
         {
             Caption = 'Blocked';
+        }
+
+        field(110; "Created Date"; Date)
+        {
+            Caption = 'Created Date';
+            Editable = false;
+        }
+
+        field(111; "Created By"; Code[50])
+        {
+            Caption = 'Created By';
+            Editable = false;
         }
     }
 
@@ -2148,7 +2618,19 @@ table 70182307 "JML AP Component"
         key(Item; "Item No.")
         {
         }
+        key(Document; "Document Type", "Document No.", "Document Line No.")
+        {
+        }
+        key(Installation; "Installation Date")
+        {
+        }
     }
+
+    trigger OnInsert()
+    begin
+        "Created Date" := Today;
+        "Created By" := CopyStr(UserId, 1, MaxStrLen("Created By"));
+    end;
 
     local procedure GetItemDefaults()
     var
@@ -2157,11 +2639,9 @@ table 70182307 "JML AP Component"
         if Item.Get("Item No.") then begin
             if "Unit of Measure Code" = '' then
                 "Unit of Measure Code" := Item."Base Unit of Measure";
+            CalcFields("Item Description");
         end;
     end;
-
-    var
-        QuantityCannotBeNegativeErr: Label 'Quantity cannot be negative.';
 }
 ```
 
@@ -2361,45 +2841,47 @@ enum 70182403 "JML AP Attribute Type"
 }
 ```
 
-### Enum 70182404: JML AP Industry Template
+---
+
+### Enum 70182404: JML AP Owner Type
 
 ```al
-enum 70182404 "JML AP Industry Template"
+enum 70182404 "JML AP Owner Type"
 {
-    Caption = 'Industry Template';
+    Caption = 'Owner Type';
     Extensible = true;
 
-    value(0; Custom)
+    value(0; " ")
     {
-        Caption = 'Custom';
+        Caption = ' ';
     }
-    value(1; Fleet)
+    value(1; "Our Company")
     {
-        Caption = 'Fleet Management';
+        Caption = 'Our Company';
     }
-    value(2; Dispenser)
+    value(2; Customer)
     {
-        Caption = 'Dispenser Management';
+        Caption = 'Customer';
     }
-    value(3; Medical)
+    value(3; Vendor)
     {
-        Caption = 'Medical Equipment';
+        Caption = 'Vendor';
     }
-    value(4; "IT Equipment")
+    value(4; Employee)
     {
-        Caption = 'IT Equipment';
+        Caption = 'Employee';
     }
-    value(5; Construction)
+    value(5; "Responsibility Center")
     {
-        Caption = 'Construction Equipment';
+        Caption = 'Responsibility Center';
     }
 }
 ```
 
-### Enum 70182406: JML AP Document Type
+### Enum 70182405: JML AP Document Type
 
 ```al
-enum 70182406 "JML AP Document Type"
+enum 70182405 "JML AP Document Type"
 {
     Caption = 'Document Type';
     Extensible = true;
@@ -2433,6 +2915,39 @@ enum 70182406 "JML AP Document Type"
 
 ---
 
+### Enum 70182406: JML AP Component Entry Type
+
+```al
+enum 70182406 "JML AP Component Entry Type"
+{
+    Caption = 'Component Entry Type';
+    Extensible = true;
+
+    value(0; " ")
+    {
+        Caption = ' ';
+    }
+    value(1; Install)
+    {
+        Caption = 'Install';
+    }
+    value(2; Remove)
+    {
+        Caption = 'Remove';
+    }
+    value(3; Replace)
+    {
+        Caption = 'Replace';
+    }
+    value(4; Adjustment)
+    {
+        Caption = 'Adjustment';
+    }
+}
+```
+
+---
+
 ## Core Codeunits
 
 ### Codeunit 70182380: JML AP Asset Management
@@ -2443,18 +2958,6 @@ enum 70182406 "JML AP Document Type"
 ```al
 codeunit 70182380 "JML AP Asset Management"
 {
-    /// <summary>
-    /// Creates a new asset with classification and initial holder.
-    /// </summary>
-    procedure CreateAsset(IndustryCode: Code[20]; Description: Text[100]; var Asset: Record "JML AP Asset"): Boolean
-    begin
-        Asset.Init();
-        Asset.Validate("Industry Code", IndustryCode);
-        Asset.Validate(Description, Description);
-        Asset.Insert(true);
-        exit(true);
-    end;
-
     /// <summary>
     /// Copies an asset including optional children and components.
     /// </summary>
@@ -2640,7 +3143,6 @@ codeunit 70182385 "JML AP Transfer Mgt"
         HolderEntry.Init();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := Today;
-        HolderEntry."Posting Time" := Time;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer Out";
         HolderEntry."Holder Type" := Asset."Current Holder Type";
         HolderEntry."Holder Code" := Asset."Current Holder Code";
@@ -2669,7 +3171,6 @@ codeunit 70182385 "JML AP Transfer Mgt"
         HolderEntry.Init();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := Today;
-        HolderEntry."Posting Time" := Time;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer In";
         HolderEntry."Holder Type" := NewHolderType;
         HolderEntry."Holder Code" := NewHolderCode;
@@ -2765,7 +3266,8 @@ codeunit 70182387 "JML AP Asset Validation"
         CurrentAssetNo := Asset."Parent Asset No.";
         Depth := 0;
 
-        while (CurrentAssetNo <> '') and (Depth < MaxCircularCheckDepth) do begin
+        // Use constant limit instead of setup field
+        while (CurrentAssetNo <> '') and (Depth < MaxCircularCheckDepth()) do begin
             if not CheckAsset.Get(CurrentAssetNo) then
                 exit; // Parent chain ends
 
@@ -2777,8 +3279,8 @@ codeunit 70182387 "JML AP Asset Validation"
             Depth += 1;
         end;
 
-        if Depth >= MaxCircularCheckDepth then
-            Error(MaxDepthExceededErr, MaxCircularCheckDepth);
+        if Depth >= MaxCircularCheckDepth() then
+            Error(MaxDepthExceededErr, MaxCircularCheckDepth());
     end;
 
     local procedure CheckClassificationCompatibility(var ChildAsset: Record "JML AP Asset"; var ParentAsset: Record "JML AP Asset")
@@ -2800,30 +3302,40 @@ codeunit 70182387 "JML AP Asset Validation"
     end;
 
     local procedure GetClassificationDepth(var Asset: Record "JML AP Asset"): Integer
-    var
-        Depth: Integer;
     begin
-        Depth := 0;
-        if Asset."Classification Level 1" <> '' then Depth := 1;
-        if Asset."Classification Level 2" <> '' then Depth := 2;
-        if Asset."Classification Level 3" <> '' then Depth := 3;
-        if Asset."Classification Level 4" <> '' then Depth := 4;
-        if Asset."Classification Level 5" <> '' then Depth := 5;
-        // Continue for levels 6-10
-        exit(Depth);
+        // With normalized classification, level number is stored as FlowField
+        Asset.CalcFields("Classification Level No.");
+        exit(Asset."Classification Level No.");
+    end;
+
+    /// <summary>
+    /// Returns the maximum depth for circular reference checking.
+    /// </summary>
+    /// <returns>Maximum parent-child depth allowed (100 levels).</returns>
+    local procedure MaxCircularCheckDepth(): Integer
+    begin
+        // System limit: Prevents infinite loops in deeply nested hierarchies
+        // 100 levels is far more than any practical use case (typical: 3-10 levels)
+        exit(100);
+    end;
+
+    /// <summary>
+    /// Returns the maximum number of classification levels per industry.
+    /// </summary>
+    /// <returns>Maximum classification levels allowed (50 levels).</returns>
+    procedure MaxClassificationLevels(): Integer
+    begin
+        // System limit: Prevents creation of unusable deep classification structures
+        // 50 levels is far more than any practical use case (typical: 2-5 levels)
+        exit(50);
     end;
 
     var
-        MaxCircularCheckDepth: Integer;
         CannotBeOwnParentErr: Label 'Asset cannot be its own parent.';
         ParentAssetNotFoundErr: Label 'Parent asset %1 does not exist.';
         CircularReferenceDetectedErr: Label 'Circular reference detected: Asset %1 is already a child of current asset.';
         MaxDepthExceededErr: Label 'Maximum parent-child depth (%1) exceeded.';
         ChildCannotBeHigherLevelErr: Label 'Child asset cannot be at a higher classification level than its parent within the same industry.';
-
-    begin
-        MaxCircularCheckDepth := 100;
-    end;
 }
 ```
 
@@ -3165,8 +3677,7 @@ begin
 
     // === STEP 1: Purchase from Manufacturer ===
     Dispenser := CreateTestAsset('DISPENSER', 'WD-200 Premium #12345');
-    Dispenser."Classification Level 1" := 'OFFICE';
-    Dispenser."Classification Level 2" := 'WD200';
+    Dispenser."Classification Code" := 'WD200';  // OFFICE/WD200 (leaf node)
     Dispenser."Serial No." := 'VENDEN-2025-0012';
     Dispenser.Modify();
 
@@ -3302,6 +3813,1106 @@ All performance tests run with dataset:
 
 ---
 
+## Pages
+
+### Page 70182300: JML AP Asset Setup
+
+**Object Name:** `JML AP Asset Setup` (20 chars)
+**Caption:** `Asset Setup`
+**Type:** Card
+**Source Table:** `JML AP Asset Setup`
+**Usage Mode:** View
+
+```al
+page 70182300 "JML AP Asset Setup"
+{
+    Caption = 'Asset Setup';
+    PageType = Card;
+    SourceTable = "JML AP Asset Setup";
+    InsertAllowed = false;
+    DeleteAllowed = false;
+    UsageCategory = Administration;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            group(General)
+            {
+                Caption = 'General';
+
+                field("Asset Nos."; Rec."Asset Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series for assets.';
+                }
+                field("Default Industry Code"; Rec."Default Industry Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the default industry automatically applied when creating new assets.';
+                }
+            }
+            group(Features)
+            {
+                Caption = 'Features';
+
+                field("Enable Attributes"; Rec."Enable Attributes")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Enable custom attributes for assets.';
+                }
+                field("Enable Holder History"; Rec."Enable Holder History")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Enable holder history tracking.';
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182301: JML AP Asset Card
+
+**Object Name:** `JML AP Asset Card` (19 chars)
+**Caption:** `Asset Card`
+**Type:** Card
+**Source Table:** `JML AP Asset`
+
+```al
+page 70182301 "JML AP Asset Card"
+{
+    Caption = 'Asset Card';
+    PageType = Card;
+    SourceTable = "JML AP Asset";
+    UsageCategory = None;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            group(General)
+            {
+                Caption = 'General';
+
+                field("No."; Rec."No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the asset number.';
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the asset description.';
+                }
+                field("Description 2"; Rec."Description 2")
+                {
+                    ApplicationArea = All;
+                }
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
+                field("Serial No."; Rec."Serial No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Manufacturer"; Rec."Manufacturer")
+                {
+                    ApplicationArea = All;
+                }
+                field("Model"; Rec."Model")
+                {
+                    ApplicationArea = All;
+                }
+            }
+            group(Classification)
+            {
+                Caption = 'Classification';
+
+                field("Industry Code"; Rec."Industry Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Classification Code"; Rec."Classification Code")
+                {
+                    ApplicationArea = All;
+
+                    trigger OnAssistEdit()
+                    var
+                        ClassValue: Record "JML AP Classification Val";
+                    begin
+                        ClassValue.SetRange("Industry Code", Rec."Industry Code");
+                        if Page.RunModal(Page::"JML AP Classification Vals", ClassValue) = Action::LookupOK then begin
+                            Rec.Validate("Classification Code", ClassValue.Code);
+                        end;
+                    end;
+                }
+                field("Classification Level No."; Rec."Classification Level No.")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Classification Description"; Rec."Classification Description")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+            }
+            group(Hierarchy)
+            {
+                Caption = 'Physical Hierarchy';
+
+                field("Parent Asset No."; Rec."Parent Asset No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Hierarchy Level"; Rec."Hierarchy Level")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Root Asset No."; Rec."Root Asset No.")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+            }
+            group(CurrentHolder)
+            {
+                Caption = 'Current Holder';
+
+                field("Current Holder Type"; Rec."Current Holder Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Code"; Rec."Current Holder Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Name"; Rec."Current Holder Name")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Current Holder Since"; Rec."Current Holder Since")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+            }
+            group(Ownership)
+            {
+                Caption = 'Ownership Roles';
+
+                group(Owner)
+                {
+                    Caption = 'Owner (Legal Ownership)';
+
+                    field("Owner Type"; Rec."Owner Type")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Owner Code"; Rec."Owner Code")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Owner Name"; Rec."Owner Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
+                }
+                group(Operator)
+                {
+                    Caption = 'Operator (Day-to-day User)';
+
+                    field("Operator Type"; Rec."Operator Type")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Operator Code"; Rec."Operator Code")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Operator Name"; Rec."Operator Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
+                }
+                group(Lessee)
+                {
+                    Caption = 'Lessee (If Leased/Rented)';
+
+                    field("Lessee Type"; Rec."Lessee Type")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Lessee Code"; Rec."Lessee Code")
+                    {
+                        ApplicationArea = All;
+                    }
+                    field("Lessee Name"; Rec."Lessee Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                    }
+                }
+            }
+            group(Dates)
+            {
+                Caption = 'Dates';
+
+                field("Acquisition Date"; Rec."Acquisition Date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Warranty Expiry Date"; Rec."Warranty Expiry Date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Last Service Date"; Rec."Last Service Date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Next Service Date"; Rec."Next Service Date")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+        area(FactBoxes)
+        {
+            part(Components; "JML AP Component ListPart")
+            {
+                ApplicationArea = All;
+                SubPageLink = "Asset No." = field("No.");
+            }
+            part(ChildAssets; "JML AP Asset ListPart")
+            {
+                ApplicationArea = All;
+                Caption = 'Child Assets';
+                SubPageLink = "Parent Asset No." = field("No.");
+            }
+            systempart(Links; Links)
+            {
+                ApplicationArea = All;
+            }
+            systempart(Notes; Notes)
+            {
+                ApplicationArea = All;
+            }
+        }
+    }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(CopyAsset)
+            {
+                ApplicationArea = All;
+                Caption = 'Copy Asset';
+                Image = Copy;
+                ToolTip = 'Create a copy of this asset with optional children and components.';
+
+                trigger OnAction()
+                var
+                    AssetMgt: Codeunit "JML AP Asset Management";
+                    NewAsset: Record "JML AP Asset";
+                    IncludeChildren: Boolean;
+                    IncludeComponents: Boolean;
+                begin
+                    // TODO: Add dialog to select options
+                    IncludeChildren := Confirm('Include child assets?', false);
+                    IncludeComponents := Confirm('Include components?', true);
+
+                    if AssetMgt.CopyAsset(Rec."No.", IncludeChildren, IncludeComponents, NewAsset) then begin
+                        Message('Asset copied. New asset number: %1', NewAsset."No.");
+                        Page.Run(Page::"JML AP Asset Card", NewAsset);
+                    end;
+                end;
+            }
+            action(TransferHolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Transfer Holder';
+                Image = Transfer;
+
+                trigger OnAction()
+                var
+                    TransferMgt: Codeunit "JML AP Transfer Mgt";
+                begin
+                    // Transfer holder dialog
+                end;
+            }
+            action(ViewHolderHistory)
+            {
+                ApplicationArea = All;
+                Caption = 'Holder History';
+                Image = History;
+                RunObject = page "JML AP Holder Entries";
+                RunPageLink = "Asset No." = field("No.");
+            }
+            action(ViewComponents)
+            {
+                ApplicationArea = All;
+                Caption = 'Components';
+                Image = Components;
+                RunObject = page "JML AP Components";
+                RunPageLink = "Asset No." = field("No.");
+            }
+            action(ViewChildAssets)
+            {
+                ApplicationArea = All;
+                Caption = 'Child Assets';
+                Image = Hierarchy;
+                RunObject = page "JML AP Assets";
+                RunPageLink = "Parent Asset No." = field("No.");
+            }
+        }
+        area(Navigation)
+        {
+            action(ClassificationPath)
+            {
+                ApplicationArea = All;
+                Caption = 'Show Classification Path';
+                Image = Tree;
+
+                trigger OnAction()
+                begin
+                    Message(Rec.GetClassificationPath());
+                end;
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182302: JML AP Assets
+
+**Object Name:** `JML AP Assets` (15 chars)
+**Caption:** `Assets`
+**Type:** List
+**Source Table:** `JML AP Asset`
+
+```al
+page 70182302 "JML AP Assets"
+{
+    Caption = 'Assets';
+    PageType = List;
+    SourceTable = "JML AP Asset";
+    CardPageId = "JML AP Asset Card";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+    Editable = false;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("No."; Rec."No.")
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field("Industry Code"; Rec."Industry Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Classification Code"; Rec."Classification Code")
+                {
+                    ApplicationArea = All;
+                }
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Type"; Rec."Current Holder Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Code"; Rec."Current Holder Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Name"; Rec."Current Holder Name")
+                {
+                    ApplicationArea = All;
+                }
+                field("Parent Asset No."; Rec."Parent Asset No.")
+                {
+                    ApplicationArea = All;
+                    Visible = false;
+                }
+                field("Serial No."; Rec."Serial No.")
+                {
+                    ApplicationArea = All;
+                    Visible = false;
+                }
+            }
+        }
+        area(FactBoxes)
+        {
+            part(AssetDetails; "JML AP Asset FactBox")
+            {
+                ApplicationArea = All;
+                SubPageLink = "No." = field("No.");
+            }
+            systempart(Links; Links)
+            {
+                ApplicationArea = All;
+            }
+            systempart(Notes; Notes)
+            {
+                ApplicationArea = All;
+            }
+        }
+    }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(TransferHolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Transfer Holder';
+                Image = Transfer;
+
+                trigger OnAction()
+                begin
+                    // Batch transfer
+                end;
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182303: JML AP Asset ListPart
+
+**Object Name:** `JML AP Asset ListPart` (25 chars)
+**Caption:** `Assets`
+**Type:** ListPart
+**Source Table:** `JML AP Asset`
+
+```al
+page 70182303 "JML AP Asset ListPart"
+{
+    Caption = 'Assets';
+    PageType = ListPart;
+    SourceTable = "JML AP Asset";
+    CardPageId = "JML AP Asset Card";
+    Editable = false;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("No."; Rec."No.")
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Name"; Rec."Current Holder Name")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182304: JML AP Industries
+
+**Object Name:** `JML AP Industries` (19 chars)
+**Caption:** `Industries`
+**Type:** List
+**Source Table:** `JML AP Asset Industry`
+
+```al
+page 70182304 "JML AP Industries"
+{
+    Caption = 'Industries';
+    PageType = List;
+    SourceTable = "JML AP Asset Industry";
+    CardPageId = "JML AP Industry Card";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field(Code; Rec.Code)
+                {
+                    ApplicationArea = All;
+                }
+                field(Name; Rec.Name)
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field("Number of Levels"; Rec."Number of Levels")
+                {
+                    ApplicationArea = All;
+                }
+                field("Number of Values"; Rec."Number of Values")
+                {
+                    ApplicationArea = All;
+                }
+                field("Number of Assets"; Rec."Number of Assets")
+                {
+                    ApplicationArea = All;
+                }
+                field(Blocked; Rec.Blocked)
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+
+    actions
+    {
+        area(Navigation)
+        {
+            action(ClassificationLevels)
+            {
+                ApplicationArea = All;
+                Caption = 'Classification Levels';
+                Image = Hierarchy;
+                RunObject = page "JML AP Classification Lvls";
+                RunPageLink = "Industry Code" = field(Code);
+            }
+            action(ClassificationValues)
+            {
+                ApplicationArea = All;
+                Caption = 'Classification Values';
+                Image = ItemGroup;
+                RunObject = page "JML AP Classification Vals";
+                RunPageLink = "Industry Code" = field(Code);
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182305: JML AP Industry Card
+
+**Object Name:** `JML AP Industry Card` (23 chars)
+**Caption:** `Industry Card`
+**Type:** Card
+**Source Table:** `JML AP Asset Industry`
+
+```al
+page 70182305 "JML AP Industry Card"
+{
+    Caption = 'Industry Card';
+    PageType = Card;
+    SourceTable = "JML AP Asset Industry";
+    UsageCategory = None;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            group(General)
+            {
+                Caption = 'General';
+
+                field(Code; Rec.Code)
+                {
+                    ApplicationArea = All;
+                }
+                field(Name; Rec.Name)
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                    MultiLine = true;
+                }
+                field(Blocked; Rec.Blocked)
+                {
+                    ApplicationArea = All;
+                }
+            }
+            group(Statistics)
+            {
+                Caption = 'Statistics';
+
+                field("Number of Levels"; Rec."Number of Levels")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Number of Values"; Rec."Number of Values")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Number of Assets"; Rec."Number of Assets")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182306: JML AP Classification Lvls
+
+**Object Name:** `JML AP Classification Lvls` (29 chars)
+**Caption:** `Classification Levels`
+**Type:** List
+**Source Table:** `JML AP Classification Lvl`
+
+```al
+page 70182306 "JML AP Classification Lvls"
+{
+    Caption = 'Classification Levels';
+    PageType = List;
+    SourceTable = "JML AP Classification Lvl";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("Industry Code"; Rec."Industry Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Level Number"; Rec."Level Number")
+                {
+                    ApplicationArea = All;
+                }
+                field(Name; Rec.Name)
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field("Parent Level Number"; Rec."Parent Level Number")
+                {
+                    ApplicationArea = All;
+                }
+                field("Value Count"; Rec."Value Count")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+
+    actions
+    {
+        area(Navigation)
+        {
+            action(ClassificationValues)
+            {
+                ApplicationArea = All;
+                Caption = 'Values';
+                Image = ItemGroup;
+                RunObject = page "JML AP Classification Vals";
+                RunPageLink = "Industry Code" = field("Industry Code"),
+                              "Level Number" = field("Level Number");
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182307: JML AP Classification Vals
+
+**Object Name:** `JML AP Classification Vals` (30 chars - LIMIT!)
+**Caption:** `Classification Values`
+**Type:** List
+**Source Table:** `JML AP Classification Val`
+
+```al
+page 70182307 "JML AP Classification Vals"
+{
+    Caption = 'Classification Values';
+    PageType = List;
+    SourceTable = "JML AP Classification Val";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("Industry Code"; Rec."Industry Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Level Number"; Rec."Level Number")
+                {
+                    ApplicationArea = All;
+                }
+                field(Code; Rec.Code)
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field("Parent Value Code"; Rec."Parent Value Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Parent Level Number"; Rec."Parent Level Number")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                }
+                field("Asset Count"; Rec."Asset Count")
+                {
+                    ApplicationArea = All;
+                }
+                field(Blocked; Rec.Blocked)
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182308: JML AP Components
+
+**Object Name:** `JML AP Components` (20 chars)
+**Caption:** `Asset Components`
+**Type:** List
+**Source Table:** `JML AP Component`
+
+```al
+page 70182308 "JML AP Components"
+{
+    Caption = 'Asset Components';
+    PageType = List;
+    SourceTable = "JML AP Component";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("Asset No."; Rec."Asset No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Line No."; Rec."Line No.")
+                {
+                    ApplicationArea = All;
+                    Visible = false;
+                }
+                field("Item No."; Rec."Item No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Item Description"; Rec."Item Description")
+                {
+                    ApplicationArea = All;
+                }
+                field("Variant Code"; Rec."Variant Code")
+                {
+                    ApplicationArea = All;
+                }
+                field(Quantity; Rec.Quantity)
+                {
+                    ApplicationArea = All;
+                }
+                field("Unit of Measure Code"; Rec."Unit of Measure Code")
+                {
+                    ApplicationArea = All;
+                }
+                field(Position; Rec.Position)
+                {
+                    ApplicationArea = All;
+                }
+                field("Serial No."; Rec."Serial No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Installation Date"; Rec."Installation Date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Entry Type"; Rec."Entry Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Document No."; Rec."Document No.")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182309: JML AP Component ListPart
+
+**Object Name:** `JML AP Component ListPart` (28 chars)
+**Caption:** `Components`
+**Type:** ListPart
+**Source Table:** `JML AP Component`
+
+```al
+page 70182309 "JML AP Component ListPart"
+{
+    Caption = 'Components';
+    PageType = ListPart;
+    SourceTable = "JML AP Component";
+    Editable = true;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("Item No."; Rec."Item No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Item Description"; Rec."Item Description")
+                {
+                    ApplicationArea = All;
+                }
+                field(Quantity; Rec.Quantity)
+                {
+                    ApplicationArea = All;
+                }
+                field("Unit of Measure Code"; Rec."Unit of Measure Code")
+                {
+                    ApplicationArea = All;
+                }
+                field(Position; Rec.Position)
+                {
+                    ApplicationArea = All;
+                }
+                field("Installation Date"; Rec."Installation Date")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182310: JML AP Holder Entries
+
+**Object Name:** `JML AP Holder Entries` (24 chars)
+**Caption:** `Holder Entries`
+**Type:** List
+**Source Table:** `JML AP Holder Entry`
+
+```al
+page 70182310 "JML AP Holder Entries"
+{
+    Caption = 'Holder Entries';
+    PageType = List;
+    SourceTable = "JML AP Holder Entry";
+    UsageCategory = Lists;
+    ApplicationArea = All;
+    Editable = false;
+    InsertAllowed = false;
+    DeleteAllowed = false;
+    ModifyAllowed = false;
+
+    layout
+    {
+        area(Content)
+        {
+            repeater(Group)
+            {
+                field("Entry No."; Rec."Entry No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Asset No."; Rec."Asset No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Asset Description"; Rec."Asset Description")
+                {
+                    ApplicationArea = All;
+                }
+                field("Posting Date"; Rec."Posting Date")
+                {
+                    ApplicationArea = All;
+                }
+                field("Entry Type"; Rec."Entry Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Holder Type"; Rec."Holder Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Holder Code"; Rec."Holder Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Holder Name"; Rec."Holder Name")
+                {
+                    ApplicationArea = All;
+                }
+                field("Transaction No."; Rec."Transaction No.")
+                {
+                    ApplicationArea = All;
+                }
+                field("Document Type"; Rec."Document Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Document No."; Rec."Document No.")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+### Page 70182311: JML AP Asset FactBox
+
+**Object Name:** `JML AP Asset FactBox` (25 chars)
+**Caption:** `Asset Details`
+**Type:** CardPart
+**Source Table:** `JML AP Asset`
+
+```al
+page 70182311 "JML AP Asset FactBox"
+{
+    Caption = 'Asset Details';
+    PageType = CardPart;
+    SourceTable = "JML AP Asset";
+    Editable = false;
+
+    layout
+    {
+        area(Content)
+        {
+            group(General)
+            {
+                field("No."; Rec."No.")
+                {
+                    ApplicationArea = All;
+                }
+                field(Description; Rec.Description)
+                {
+                    ApplicationArea = All;
+                }
+                field(Status; Rec.Status)
+                {
+                    ApplicationArea = All;
+                }
+            }
+            group(Classification)
+            {
+                field("Industry Code"; Rec."Industry Code")
+                {
+                    ApplicationArea = All;
+                }
+                field("Classification Code"; Rec."Classification Code")
+                {
+                    ApplicationArea = All;
+                }
+            }
+            group(Holder)
+            {
+                Caption = 'Current Holder';
+
+                field("Current Holder Type"; Rec."Current Holder Type")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Name"; Rec."Current Holder Name")
+                {
+                    ApplicationArea = All;
+                }
+                field("Current Holder Since"; Rec."Current Holder Since")
+                {
+                    ApplicationArea = All;
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
 ## Object Inventory (Updated with Naming Convention)
 
 ### Production Objects (70182300-70182449)
@@ -3360,8 +4971,9 @@ All performance tests run with dataset:
 | 70182401 | JML AP Holder Entry Type | Holder Entry Type | 3 | Phase 1 |
 | 70182402 | JML AP Asset Status | Asset Status | 5 | Phase 1 |
 | 70182403 | JML AP Attribute Type | Attribute Data Type | 6 | Phase 1 |
-| 70182404 | JML AP Industry Template | Industry Template | 6 | Phase 1 |
-| 70182406 | JML AP Document Type | Document Type | 6 | Phase 2 |
+| 70182404 | JML AP Owner Type | Owner Type | 6 | Phase 1 |
+| 70182405 | JML AP Document Type | Document Type | 6 | Phase 2 |
+| 70182406 | JML AP Component Entry Type | Component Entry Type | 5 | Phase 2 |
 
 ---
 
@@ -3562,16 +5174,26 @@ All risks from v2.0 remain valid with additional note:
 | 1.0 | 2025-11-04 | Claude | Initial planning document |
 | 2.0 | 2025-11-05 | Claude | Two-structure architecture |
 | 2.1 | 2025-11-09 | Claude | Naming convention, Holder Entry redesign, Clean code, Full structures, Test plan |
+| 2.1.1 | 2025-11-09 | Claude | Removed "Enable Classification" and "Enable Parent-Child" toggles (core features always available) |
+| 2.1.2 | 2025-11-09 | Claude | Moved validation limits (Max Circular Check Depth, Max Classification Levels) from Setup to constants in validation codeunit |
+| 2.1.3 | 2025-11-09 | Claude | Removed "Current Industry Context" field from Setup (unused - CaptionClass resolves per-asset) |
+| 2.2.0 | 2025-11-09 | Claude | **MAJOR:** Normalized classification to single field. Removed Level 1-5 fields, added Classification Code + helper procedures. Truly unlimited depth. |
+| 2.2.1 | 2025-11-10 | Claude | **MAJOR:** Ownership roles refactored to Type/Code pattern. Removed Customer-only fields, added Owner/Operator/Lessee Type+Code+Name fields and JML AP Owner Type enum. Enables flexible ownership by any entity type. |
+| 2.2.2 | 2025-11-10 | Claude | Fixed remaining references to old Classification Level 1-5 fields: Asset table Industry key, Classification Value Asset Count FlowField, validation procedures, test data. All now use normalized Classification Code. |
+| 2.2.3 | 2025-11-10 | Claude | Multiple refinements: Fixed ValidateClassification (CalcFields before Get), simplified CalculateHierarchyLevel, added holder entries check to asset deletion, added DeleteRelatedRecords to Asset/Industry OnDelete, removed Posting Time from Holder Entry, **MAJOR:** Component table updated with document tracking fields (Document Type/No., Posting Date, Entry Type, etc.) following Rollsberg new-line-per-entry pattern. Added Component Entry Type enum. |
+| 2.2.4 | 2025-11-10 | Claude | Removed "Template Type" field from Industry table (deferred to Phase 2). Removed JML AP Industry Template enum. Renumbered enums: Owner Type 70182404, Document Type 70182405, Component Entry Type 70182406. Feature will be implemented in Phase 2 with proper template table and import functionality. |
+| 2.3.0 | 2025-11-10 | Claude | **MAJOR:** Added comprehensive Pages section with 12 page definitions for Phase 1 implementation (Card, List, ListPart, FactBox pages). Full AL code provided for Setup, Asset, Industry, Classification, Component, and Holder Entry pages with layouts, actions, and navigation. |
+| 2.3.1 | 2025-11-10 | Claude | Removed redundant CreateAsset procedure from Asset Management codeunit (normal page behavior handles this). Implemented Default Industry Code from Setup - now automatically applied when creating new assets in InitializeAsset procedure. Added "Copy Asset" action to Asset Card page to use CopyAsset procedure. |
 
 **Approval Status:** DRAFT - Awaiting Review
 
 ---
 
-**END OF DOCUMENT v2.1**
+**END OF DOCUMENT v2.3.1**
 
-Total Pages: ~150
-Total Lines of Code: ~3,000
+Total Pages: ~200
+Total Lines of Code: ~4,500
 Test Scenarios: 50+
-Objects Documented: 30+
+Objects Documented: 42+ (10 Tables, 6 Enums, 3 Codeunits, 12 Pages)
 
-**Status:** Ready for implementation. All objects have complete structures, clean code principles applied, comprehensive test plan defined.
+**Status:** Ready for implementation. All objects have complete structures with full AL code, clean code principles applied, comprehensive test plan defined, and UI pages fully specified.

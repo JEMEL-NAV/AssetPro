@@ -1,0 +1,33 @@
+{
+  "conversationId": "conv-1762435061958-50880a2e",
+  "activeSkills": {
+    "al-development-core": {
+      "activatedAt": "2025-11-06T13:17:41.965Z",
+      "lastUsedAt": "2025-11-06T13:17:41.969Z",
+      "phase": null,
+      "usageCount": 2,
+      "status": "active",
+      "relevanceScore": 0.2
+    },
+    "al-symbols-navigator": {
+      "activatedAt": "2025-11-06T13:17:41.965Z",
+      "lastUsedAt": "2025-11-06T13:17:41.965Z",
+      "phase": null,
+      "usageCount": 1,
+      "status": "active",
+      "relevanceScore": 0,
+      "activatedByDependency": "al-development-core"
+    },
+    "al-testing-specialist": {
+      "activatedAt": "2025-11-06T13:17:41.969Z",
+      "lastUsedAt": "2025-11-06T13:17:41.969Z",
+      "phase": null,
+      "usageCount": 1,
+      "status": "active",
+      "relevanceScore": 0.9
+    }
+  },
+  "completedSkills": [],
+  "conversationContext": "bc-development",
+  "lastPromptAt": "2025-11-06T13:17:41.973Z"
+}
