@@ -2,9 +2,8 @@ table 70182315 "JML AP Posted Asset Transfer"
 {
     Caption = 'Posted Asset Transfer';
     DataClassification = CustomerContent;
-    // LookupPageId and DrillDownPageId will be set in Stage 1.4
-    // LookupPageId = "JML AP Asset Posted Transfers";
-    // DrillDownPageId = "JML AP Asset Posted Transfers";
+    LookupPageId = "JML AP Asset Posted Transfers";
+    DrillDownPageId = "JML AP Asset Posted Transfers";
 
     fields
     {

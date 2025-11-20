@@ -2,9 +2,8 @@ table 70182313 "JML AP Asset Transfer Header"
 {
     Caption = 'Asset Transfer Header';
     DataClassification = CustomerContent;
-    // LookupPageId and DrillDownPageId will be set in Stage 1.4
-    // LookupPageId = "JML AP Asset Transfer Orders";
-    // DrillDownPageId = "JML AP Asset Transfer Orders";
+    LookupPageId = "JML AP Asset Transfer Orders";
+    DrillDownPageId = "JML AP Asset Transfer Orders";
 
     fields
     {
