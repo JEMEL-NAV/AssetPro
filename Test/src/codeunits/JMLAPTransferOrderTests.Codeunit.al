@@ -5,7 +5,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
     var
         Assert: Codeunit "Library - Assert";
-        LibraryRandom: Codeunit "Library - Random";
+        // LibraryRandom: Codeunit "Library - Random";  // Temporarily disabled - missing package
 
     // ============================================
     // Happy Path Tests
@@ -397,7 +397,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
     local procedure CreateLocation(var Location: Record Location)
     begin
         Location.Init();
-        Location.Code := 'LOC-' + Format(LibraryRandom.RandIntInRange(10000, 99999));
+        Location.Code := 'LOC-TEST';  // LibraryRandom.RandIntInRange(10000, 99999);
         Location.Name := 'Test Location ' + Location.Code;
         Location.Insert(true);
     end;
@@ -405,7 +405,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
     local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
     begin
         Asset.Init();
-        Asset."No." := 'ASSET-' + Format(LibraryRandom.RandIntInRange(10000, 99999));
+        Asset."No." := 'ASSET-TEST';  // LibraryRandom.RandIntInRange(10000, 99999);
         Asset.Description := 'Test Asset ' + Asset."No.";
         Asset.Validate("Current Holder Type", Asset."Current Holder Type"::Location);
         Asset.Validate("Current Holder Code", LocationCode);
