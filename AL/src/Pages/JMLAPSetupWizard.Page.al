@@ -35,8 +35,9 @@ page 70182331 "JML AP Setup Wizard"
             {
                 ApplicationArea = All;
                 Caption = 'Run Setup';
-                ToolTip = 'Run the setup wizard.';
+                ToolTip = 'Run the setup wizard to configure Asset Pro.';
                 Image = Setup;
+                InFooterBar = true;
 
                 trigger OnAction()
                 var

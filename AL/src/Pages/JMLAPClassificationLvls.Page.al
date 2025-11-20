@@ -40,4 +40,23 @@ page 70182335 "JML AP Classification Lvls"
             }
         }
     }
+    actions
+    {
+        area(Navigation)
+        {
+            action(LevelAttributes)
+            {
+                ApplicationArea = All;
+                Caption = 'Attributes';
+                ToolTip = 'View classification levels for this industry.';
+                Image = Hierarchy;
+                RunObject = page "JML AP Attribute Defns";
+                RunPageLink = "Industry Code" = field("Industry Code"), "Level Number" = field("Level Number");
+            }
+        }
+        area(Promoted)
+        {
+            actionref(LevelAttributes_Promoted; LevelAttributes) { }
+        }
+    }
 }

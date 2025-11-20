@@ -5,6 +5,7 @@ page 70182336 "JML AP Classification Vals"
     SourceTable = "JML AP Classification Val";
     UsageCategory = Administration;
     ApplicationArea = All;
+    DelayedInsert = true;
 
     layout
     {

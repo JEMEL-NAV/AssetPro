@@ -1,6 +1,6 @@
 page 70182334 "JML AP Industries"
 {
-    Caption = 'Industries';
+    Caption = 'Asset Industries';
     PageType = List;
     SourceTable = "JML AP Asset Industry";
     ApplicationArea = All;
@@ -12,7 +12,7 @@ page 70182334 "JML AP Industries"
         {
             repeater(Industries)
             {
-                field(Code; Rec.Code)
+                field("Code"; Rec.Code)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the industry code.';
@@ -58,6 +58,11 @@ page 70182334 "JML AP Industries"
                 RunObject = page "JML AP Classification Vals";
                 RunPageLink = "Industry Code" = field(Code);
             }
+        }
+        area(Promoted)
+        {
+            actionref(ClassificationLevels_Promoted; ClassificationLevels) { }
+            actionref(ClassificationValues_Promoted; ClassificationValues) { }
         }
     }
 }

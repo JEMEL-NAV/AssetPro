@@ -163,8 +163,8 @@ table 70182301 "JML AP Asset"
             Caption = 'Current Holder Code';
             ToolTip = 'Specifies the code of the entity currently holding the asset.';
             TableRelation = if ("Current Holder Type" = const(Customer)) Customer."No."
-                            else if ("Current Holder Type" = const(Vendor)) Vendor."No."
-                            else if ("Current Holder Type" = const(Location)) Location.Code;
+            else if ("Current Holder Type" = const(Vendor)) Vendor."No."
+            else if ("Current Holder Type" = const(Location)) Location.Code;
 
             trigger OnValidate()
             begin
@@ -208,9 +208,9 @@ table 70182301 "JML AP Asset"
             Caption = 'Owner Code';
             ToolTip = 'Specifies the code of the entity that owns the asset.';
             TableRelation = if ("Owner Type" = const(Customer)) Customer."No."
-                            else if ("Owner Type" = const(Vendor)) Vendor."No."
-                            else if ("Owner Type" = const(Employee)) Employee."No."
-                            else if ("Owner Type" = const("Responsibility Center")) "Responsibility Center";
+            else if ("Owner Type" = const(Vendor)) Vendor."No."
+            else if ("Owner Type" = const(Employee)) Employee."No."
+            else if ("Owner Type" = const("Responsibility Center")) "Responsibility Center";
 
             trigger OnValidate()
             begin
@@ -243,9 +243,9 @@ table 70182301 "JML AP Asset"
             Caption = 'Operator Code';
             ToolTip = 'Specifies the code of the entity that operates the asset.';
             TableRelation = if ("Operator Type" = const(Customer)) Customer."No."
-                            else if ("Operator Type" = const(Vendor)) Vendor."No."
-                            else if ("Operator Type" = const(Employee)) Employee."No."
-                            else if ("Operator Type" = const("Responsibility Center")) "Responsibility Center";
+            else if ("Operator Type" = const(Vendor)) Vendor."No."
+            else if ("Operator Type" = const(Employee)) Employee."No."
+            else if ("Operator Type" = const("Responsibility Center")) "Responsibility Center";
 
             trigger OnValidate()
             begin
@@ -278,9 +278,9 @@ table 70182301 "JML AP Asset"
             Caption = 'Lessee Code';
             ToolTip = 'Specifies the code of the entity that leases the asset.';
             TableRelation = if ("Lessee Type" = const(Customer)) Customer."No."
-                            else if ("Lessee Type" = const(Vendor)) Vendor."No."
-                            else if ("Lessee Type" = const(Employee)) Employee."No."
-                            else if ("Lessee Type" = const("Responsibility Center")) "Responsibility Center";
+            else if ("Lessee Type" = const(Vendor)) Vendor."No."
+            else if ("Lessee Type" = const(Employee)) Employee."No."
+            else if ("Lessee Type" = const("Responsibility Center")) "Responsibility Center";
 
             trigger OnValidate()
             begin
@@ -459,11 +459,12 @@ table 70182301 "JML AP Asset"
         DeleteRelatedRecords();
     end;
 
-    // === VALIDATION PROCEDURES ===
-    local procedure ValidateNumberSeries()
     var
         AssetSetup: Record "JML AP Asset Setup";
         NoSeries: Codeunit "No. Series";
+
+    // === VALIDATION PROCEDURES ===
+    local procedure ValidateNumberSeries()
     begin
         AssetSetup.GetRecordOnce();
         NoSeries.TestManual(AssetSetup."Asset Nos.");
@@ -471,9 +472,6 @@ table 70182301 "JML AP Asset"
     end;
 
     local procedure InitializeAsset()
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Codeunit "No. Series";
     begin
         AssetSetup.GetRecordOnce();
 
@@ -493,6 +491,20 @@ table 70182301 "JML AP Asset"
         // Initialize hierarchy
         CalculateHierarchyLevel();
         UpdateRootAssetNo();
+    end;
+
+    procedure AssistEdit(OldAsset: Record "JML AP Asset"): Boolean
+    var
+        Asset: Record "JML AP Asset";
+    begin
+        Asset := Rec;
+        AssetSetup.Get();
+        AssetSetup.TestField("Asset Nos.");
+        if NoSeries.LookupRelatedNoSeries(AssetSetup."Asset Nos.", OldAsset."No. Series", Asset."No. Series") then begin
+            Asset."No." := NoSeries.GetNextNo(Asset."No. Series");
+            Rec := Asset;
+            exit(true);
+        end;
     end;
 
     local procedure ValidateClassification()

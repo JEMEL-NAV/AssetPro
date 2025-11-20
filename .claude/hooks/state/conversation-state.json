@@ -2,24 +2,15 @@
   "conversationId": "conv-1762434865505-078b6d57",
   "activeSkills": {
     "al-development-core": {
-      "activatedAt": "2025-11-10T20:00:47.369Z",
-      "lastUsedAt": "2025-11-10T20:00:47.369Z",
+      "activatedAt": "2025-11-20T20:05:07.139Z",
+      "lastUsedAt": "2025-11-20T20:12:12.596Z",
       "phase": null,
-      "usageCount": 1,
+      "usageCount": 2,
       "status": "active",
-      "relevanceScore": 0.7
-    },
-    "al-symbols-navigator": {
-      "activatedAt": "2025-11-10T20:00:47.369Z",
-      "lastUsedAt": "2025-11-10T20:00:47.369Z",
-      "phase": null,
-      "usageCount": 1,
-      "status": "active",
-      "relevanceScore": 0,
-      "activatedByDependency": "al-development-core"
+      "relevanceScore": 1
     }
   },
   "completedSkills": [],
   "conversationContext": "bc-development",
-  "lastPromptAt": "2025-11-10T20:00:47.369Z"
+  "lastPromptAt": "2025-11-20T20:12:12.596Z"
 }

@@ -1,0 +1,175 @@
+<!--
+    BC AL Development Analysis Template
+
+    Purpose: Analysis, planning, and architecture tasks WITHOUT implementation
+
+    Workflow Mode: ANALYSIS (Relaxed)
+    - No Phase 3 approval stop point
+    - Free-form discussion and exploration
+    - Ask questions, propose solutions, iterate on design
+    - Still follows standards (ID management, file structure, naming)
+
+    Use this template for:
+    ✓ Requirements gathering and analysis
+    ✓ Architecture planning and design
+    ✓ Research and feasibility studies
+    ✓ Creating implementation plans
+    ✓ Exploring multiple solution approaches
+    ✓ Analyzing existing code or systems
+
+    For actual implementation (writing code), use task_template_bc_al_development.xml instead.
+
+    Usage:
+    1. Copy this template for each analysis/planning task
+    2. Fill in project_info, external_references, and task sections
+    3. Paste into Claude Code when starting work
+    4. Hook system will auto-activate skills in analysis mode
+-->
+
+// usage claude --permission-mode bypassPermissions "$(Get-Content .\.claude\ai_implementation_plan_phase2_analysis.xml -Raw)"
+
+
+<task type="bc_al_development_analysis" workflow_mode="analysis">
+
+    <!-- ========================================
+         PROJECT INFORMATION
+         Configure project-specific paths and settings
+         ======================================== -->
+    <project_info>
+        <name>Asset Pro</name>
+        <full_name>Asset Pro - Multi-Industry Asset Management</full_name>
+        <repository_root>C:\GIT\JEMEL\JML_AssetPro</repository_root>
+        <al_project_folder>C:\GIT\JEMEL\JML_AssetPro\AL</al_project_folder>
+        <test_project_folder>C:\GIT\JEMEL\JML_AssetPro\Test</test_project_folder>
+        <claude_folder>C:\GIT\JEMEL\JML_AssetPro\.claude</claude_folder>
+        <documentation_folder>C:\GIT\JEMEL\jemel_web\docusaurus\docs\asset-pro</documentation_folder>
+        <description>Multi-industry asset management platform for Microsoft Business Central that adapts to any industry</description>
+        <tagline>Track any asset, any industry, your way</tagline>
+    </project_info>
+
+
+    <!-- ========================================
+         EXTERNAL REFERENCES
+         Link to resources Claude should reference
+         ======================================== -->
+    <external_references>
+        <research>
+            <document>
+                <title>Analysis for previous (initial) implementation</title>
+                <location>.\.claude\Analysis_and_Planning_Asset_Pro_v2_1.md</location>
+            </document>
+            <document>
+                <title>Global solution analysis</title>
+                <location>.\.claude\Analysis_and_Planning_Asset_Pro.md</location>
+            </document>
+        </research>
+    </external_references>
+
+
+    <!-- ========================================
+         TASK CONTEXT
+         Background information for this work
+         ======================================== -->
+    <context>
+        <overall_project>
+            <goal>
+                Build complete universal Asset Management solution.
+            </goal>
+            <current_status>
+                Phase 2 - implement asset handler change tracking, using documents.
+            </current_status>
+        </overall_project>
+
+        <existing_work>
+            Existing solution is first phase implementation, try to not change too much of it. 
+        </existing_work>
+    </context>
+
+
+    <!-- ========================================
+         ANALYSIS TASK
+         What needs to be analyzed/planned
+         ======================================== -->
+    <current_task>
+
+        <title>Analysis and planning for [hase 2 Asset Pro management application</title>
+
+        <description>
+            We need to create plan for pahse 2 of Asset Pro management application.
+            Need to analyze requirements and create architecture plan.
+            In phase 2 we create part of solution that allows to transition assets between different holders using standard BC documents (Sales Order, Purchase Order, Transfer Order).
+            Also we create Asset Journal for manual adjustments.
+        </description>
+
+        <requirements>
+            <!-- Functional Requirements -->
+            <functional>
+                <requirement priority="must">
+                    Register transition of assets via Asset journal. Manual adjustments of asset location, owner, cost center. Posting journal create asset entries, changes holder in asset records.
+                </requirement>                
+                <requirement priority="must">
+                    Register transition of assets via Asset Transfer Order (like transfer documents for items in BC). When document is posted, entries are registered in journal and posted. Also we save Posted Asset Transfer document.                    
+                </requirement>
+                <requirement priority="must">
+                    Register transition of assets via Sales Order, Purchase Order, Transfer Order. When asset is sold to customer or purchased from vendor or moved between locations, we register change of ownership in asset records and log entries.                    
+                    One example how it cam be achieved I found in one implementation of my customer - they;ve made new Type in Sales/Purchase Line "Asset" and when such line is posted, asset ownership is changed.
+                    We can do similar approach or use another way. Propose solutions.
+                </requirement>
+                <requirement priority="must">
+                    Changing asset holder also changes it in linked subassets. E.g. if vehicle is moved to another location, its engine and other components also move to that location.
+                </requirement>
+                <requirement priority="must">
+                    Changing subasset holder should not be available. May be first need to "free" the asset. Need discussion in this point.
+                </requirement>                
+            </functional>
+        </requirements>
+    </current_task>
+
+    <workflow>
+        <phase id="1" name="Analysis">
+            <description>
+                Gather requirements, analyze existing solutions, read previous plan, ask questions if something is unclear.
+            </description>
+            <approval_stop_point>false</approval_stop_point>
+        </phase>
+        <phase id="2" name="Architecture Planning">
+            <description>
+                For every part of proposed solution propose architecture, objects needed, data flows, interactions in text.
+                Wait for approval before proceeding write it into document. Change if needed based on feedback, until user approve it as decided.
+            </description>
+            <approval_stop_point>true</approval_stop_point>
+        </phase>
+        <phase id="3" name="Implementation in document">
+            <description>
+                For every part of proposed solution implement it in the document.
+            </description>
+            <approval_stop_point>true</approval_stop_point>
+        </phase>
+    </workflow>
+
+
+
+    <!-- ========================================
+         NOTES & SPECIAL INSTRUCTIONS
+         Anything else Claude should know
+         ======================================== -->
+    <notes>
+        <note type="reminder">
+            Always verify BC objects structure from Symbols/ before proposing changes.
+            Do NOT assume field numbers or names.
+        </note>
+    </notes>
+
+    <output_preferences>
+        <format>
+            Create a comprehensive markdown document in .claude/ folder.
+            File name should be Analysis_and_Planning_Asset_Pro_Phase2_v1.md
+            Include sections for:
+            - Executive Summary
+            - Requirements Analysis
+            - Proposed Architecture
+            - Object Inventory (tables, pages, codeunits with IDs)
+            - Implementation Phases            
+            - mermaid shemas for complex processes and data flows
+        </output_preferences>
+    </task>

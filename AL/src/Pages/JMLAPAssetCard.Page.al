@@ -3,7 +3,6 @@ page 70182333 "JML AP Asset Card"
     Caption = 'Asset';
     PageType = Card;
     SourceTable = "JML AP Asset";
-    UsageCategory = Documents;
     ApplicationArea = All;
 
     layout
@@ -18,6 +17,12 @@ page 70182333 "JML AP Asset Card"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the asset number.';
+
+                    trigger OnAssistEdit()
+                    begin
+                        if Rec.AssistEdit(xRec) then
+                            CurrPage.Update();
+                    end;
                 }
                 field(Description; Rec.Description)
                 {
@@ -55,6 +60,14 @@ page 70182333 "JML AP Asset Card"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the classification code.';
                 }
+                field("Classification Path"; ClassificationPathText)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Classification Path';
+                    ToolTip = 'Shows the full classification path from root to current classification.';
+                    Editable = false;
+                    StyleExpr = true;
+                }
             }
 
             group("Physical Hierarchy")
@@ -65,6 +78,33 @@ page 70182333 "JML AP Asset Card"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the parent asset number.';
+
+                    trigger OnLookup(var Text: Text): Boolean
+                    var
+                        Asset: Record "JML AP Asset";
+                        AssetList: Page "JML AP Asset List";
+                    begin
+                        // Filter to show only assets at hierarchy level minus 1
+                        // If current asset is level 1, no parents available (root level)
+                        // If current asset is level 2+, show assets at level current-1
+                        if Rec."Hierarchy Level" > 1 then
+                            Asset.SetRange("Hierarchy Level", Rec."Hierarchy Level" - 1)
+                        else
+                            Asset.SetRange("Hierarchy Level", 1); // Allow level 1 assets to select other level 1 as parent
+
+                        // Exclude self
+                        Asset.SetFilter("No.", '<>%1', Rec."No.");
+
+                        AssetList.SetTableView(Asset);
+                        AssetList.LookupMode := true;
+                        if AssetList.RunModal() = Action::LookupOK then begin
+                            AssetList.GetRecord(Asset);
+                            Text := Asset."No.";
+                            exit(true);
+                        end;
+
+                        exit(false);
+                    end;
                 }
                 field("Hierarchy Level"; Rec."Hierarchy Level")
                 {
@@ -217,6 +257,33 @@ page 70182333 "JML AP Asset Card"
                     ToolTip = 'Specifies the year of manufacture.';
                 }
             }
+            group(Components)
+            {
+                Caption = 'Components';
+
+                part(ComponentsList; "JML AP Components")
+                {
+                    ApplicationArea = All;
+                    SubPageLink = "Asset No." = field("No.");
+                    Editable = false;
+                }
+            }
+        }
+        area(FactBoxes)
+        {
+            part(AttributesFactBox; "JML AP Attributes FB")
+            {
+                ApplicationArea = All;
+                SubPageLink = "Asset No." = field("No.");
+            }
+            systempart(LinksFactBox; Links)
+            {
+                ApplicationArea = All;
+            }
+            systempart(NotesFactBox; Notes)
+            {
+                ApplicationArea = All;
+            }
         }
     }
 
@@ -232,6 +299,24 @@ page 70182333 "JML AP Asset Card"
                 Image = History;
                 RunObject = page "JML AP Holder Entries";
                 RunPageLink = "Asset No." = field("No.");
+            }
+            action(ChildrenAssets)
+            {
+                ApplicationArea = All;
+                Caption = 'Children Assets';
+                ToolTip = 'View all child assets in a tree structure (children, grandchildren, etc.).';
+                Image = Hierarchy;
+
+                trigger OnAction()
+                var
+                    Asset: Record "JML AP Asset";
+                    AssetTreePage: Page "JML AP Asset Tree";
+                begin
+                    Asset.SetRange("Root Asset No.", Rec."No.");
+                    Asset.SetFilter("No.", '<>%1', Rec."No."); // Exclude self
+                    AssetTreePage.SetTableView(Asset);
+                    AssetTreePage.Run();
+                end;
             }
         }
         area(Processing)
@@ -250,4 +335,20 @@ page 70182333 "JML AP Asset Card"
             }
         }
     }
+
+    var
+        ClassificationPathText: Text[250];
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        UpdateClassificationPath();
+    end;
+
+    local procedure UpdateClassificationPath()
+    begin
+        if Rec."Classification Code" <> '' then
+            ClassificationPathText := Rec.GetClassificationPath()
+        else
+            ClassificationPathText := '';
+    end;
 }

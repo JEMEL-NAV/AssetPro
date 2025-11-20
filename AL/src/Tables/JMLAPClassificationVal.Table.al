@@ -21,9 +21,13 @@ table 70182304 "JML AP Classification Val"
             ToolTip = 'Specifies the classification level this value belongs to.';
             TableRelation = "JML AP Classification Lvl"."Level Number" where("Industry Code" = field("Industry Code"));
             NotBlank = true;
-        }
 
-        field(3; Code; Code[20])
+            trigger OnValidate()
+            begin
+                CalcFields("Parent Level Number");
+            end;
+        }
+        field(3; "Code"; Code[20])
         {
             Caption = 'Code';
             ToolTip = 'Specifies the unique code for this classification value.';
