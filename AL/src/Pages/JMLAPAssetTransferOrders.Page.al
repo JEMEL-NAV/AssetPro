@@ -146,11 +146,14 @@ page 70182353 "JML AP Asset Transfer Orders"
                 ShortcutKey = 'F9';
 
                 trigger OnAction()
+                var
+                    AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
                 begin
                     if Rec.Status <> Rec.Status::Released then
                         Error(NotReleasedErr);
 
-                    Message('Posting functionality will be implemented in Stage 1.5.');
+                    AssetTransferPost.Run(Rec);
+                    CurrPage.Update(false);
                 end;
             }
         }
