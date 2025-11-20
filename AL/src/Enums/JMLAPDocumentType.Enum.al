@@ -27,4 +27,8 @@ enum 70182405 "JML AP Document Type"
     {
         Caption = 'Manual';
     }
+    value(6; Journal)
+    {
+        Caption = 'Journal';
+    }
 }

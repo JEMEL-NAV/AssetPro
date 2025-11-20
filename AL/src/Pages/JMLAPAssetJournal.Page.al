@@ -132,11 +132,10 @@ page 70182352 "JML AP Asset Journal"
                     ShortcutKey = 'F9';
 
                     trigger OnAction()
+                    var
+                        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
                     begin
-                        // TODO: Implement posting in Stage 1.2
-                        // var AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
-                        // AssetJnlPost.Run(Rec);
-                        Message('Posting will be implemented in Stage 1.2');
+                        AssetJnlPost.Run(Rec);
                         CurrPage.Update(false);
                     end;
                 }
