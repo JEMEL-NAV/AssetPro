@@ -58,6 +58,11 @@ page 70182330 "JML AP Asset Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies whether holder history tracking is enabled.';
                 }
+                field("Block Manual Holder Change"; Rec."Block Manual Holder Change")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether manual changes to Current Holder on Asset Card are blocked. When enabled, holders can only be changed via Asset Journal or Transfer Orders.';
+                }
             }
         }
     }

@@ -449,6 +449,7 @@ table 70182301 "JML AP Asset"
 
     trigger OnModify()
     begin
+        RegisterManualHolderChange();
         "Last Date Modified" := Today;
         "Last Modified By" := CopyStr(UserId, 1, MaxStrLen("Last Modified By"));
     end;
@@ -806,11 +807,41 @@ table 70182301 "JML AP Asset"
         exit(false);
     end;
 
+    local procedure RegisterManualHolderChange()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+    begin
+        // Check if holder fields changed
+        if (xRec."Current Holder Type" = "Current Holder Type") and
+           (xRec."Current Holder Code" = "Current Holder Code")
+        then
+            exit; // No holder change
+
+        // Get setup
+        AssetSetup.GetRecordOnce();
+
+        // R7: Block manual holder change if enabled
+        if AssetSetup."Block Manual Holder Change" then
+            Error(ManualHolderChangeBlockedErr);
+
+        // R8: Auto-register manual holder change via journal
+        // This includes initial holder assignment
+        // Pass OLD holder values (xRec) and NEW holder values (Rec)
+        AssetJnlPost.CreateAndPostManualChange(
+            Rec,
+            xRec."Current Holder Type",
+            xRec."Current Holder Code",
+            "Current Holder Type",
+            "Current Holder Code");
+    end;
+
     // === CONSTANTS ===
     var
         CannotDeleteWithChildrenErr: Label 'Cannot delete asset %1 because it has child assets.', Comment = '%1 = Asset No.';
         CannotDeleteWithHolderHistoryErr: Label 'Cannot delete asset %1 because it has holder history entries.', Comment = '%1 = Asset No.';
         ClassificationNotFoundErr: Label 'Classification %1 does not exist in industry %2.', Comment = '%1 = Classification Code, %2 = Industry Code';
+        ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
 
     local procedure GetMaxParentChainDepth(): Integer
     begin

@@ -57,6 +57,13 @@ table 70182300 "JML AP Asset Setup"
             InitValue = true;
         }
 
+        field(33; "Block Manual Holder Change"; Boolean)
+        {
+            Caption = 'Block Manual Holder Change';
+            ToolTip = 'Specifies whether manual changes to Current Holder on Asset Card are blocked. When enabled, holders can only be changed via Asset Journal or Transfer Orders.';
+            InitValue = false;
+        }
+
         // System
         // Note: Validation limits (Max Circular Check Depth, Max Classification Levels)
         // are now constants in JML AP Asset Validation codeunit, not user-configurable

@@ -290,4 +290,50 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         end;
         exit('');
     end;
+
+    /// <summary>
+    /// API for manual holder changes from Asset Card.
+    /// Creates a temporary journal line and posts it through standard validation.
+    /// </summary>
+    internal procedure CreateAndPostManualChange(
+        var Asset: Record "JML AP Asset";
+        OldHolderType: Enum "JML AP Holder Type";
+        OldHolderCode: Code[20];
+        NewHolderType: Enum "JML AP Holder Type";
+        NewHolderCode: Code[20])
+    var
+        TempJnlBatch: Record "JML AP Asset Journal Batch" temporary;
+        TempJnlLine: Record "JML AP Asset Journal Line" temporary;
+        DocumentNo: Code[20];
+    begin
+        // Generate document number with timestamp
+        DocumentNo := 'MAN-' + Format(CurrentDateTime, 0, '<Year4><Month,2><Day,2><Hours24,2><Minutes,2><Seconds,2>');
+
+        // Create temporary batch
+        TempJnlBatch.Init();
+        TempJnlBatch.Name := 'MANUAL';
+        TempJnlBatch.Description := 'Manual holder changes';
+        TempJnlBatch.Insert();
+
+        // Create temporary journal line
+        TempJnlLine.Init();
+        TempJnlLine."Journal Batch Name" := TempJnlBatch.Name;
+        TempJnlLine."Line No." := 10000;
+        TempJnlLine."Asset No." := Asset."No.";
+        TempJnlLine."Asset Description" := Asset.Description;
+        TempJnlLine."Current Holder Type" := OldHolderType;  // OLD holder
+        TempJnlLine."Current Holder Code" := OldHolderCode;  // OLD holder
+        TempJnlLine."New Holder Type" := NewHolderType;
+        TempJnlLine."New Holder Code" := NewHolderCode;
+        TempJnlLine."Posting Date" := WorkDate();
+        TempJnlLine."Document No." := DocumentNo;
+        TempJnlLine.Description := 'Manual holder change';
+        TempJnlLine.Insert();
+
+        // Post through standard journal posting (includes all validation)
+        PostJournalLine(TempJnlLine, TempJnlBatch);
+
+        // Refresh asset record after posting
+        Asset.Get(Asset."No.");
+    end;
 }
