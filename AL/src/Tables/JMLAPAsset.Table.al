@@ -540,6 +540,7 @@ table 70182301 "JML AP Asset"
 
     local procedure ValidateParentAsset()
     var
+        ParentAsset: Record "JML AP Asset";
         AssetValidator: Codeunit "JML AP Asset Validation";
         RelationshipMgt: Codeunit "JML AP Relationship Mgt";
     begin
@@ -555,6 +556,19 @@ table 70182301 "JML AP Asset"
             "Hierarchy Level" := 1;
             UpdateRootAssetNo();
             exit;
+        end;
+
+        // Validate same holder if both assets have holders
+        if ParentAsset.Get("Parent Asset No.") then begin
+            if ("Current Holder Type" <> "Current Holder Type"::" ") and
+               (ParentAsset."Current Holder Type" <> "Current Holder Type"::" ")
+            then begin
+                if ("Current Holder Type" <> ParentAsset."Current Holder Type") or
+                   ("Current Holder Code" <> ParentAsset."Current Holder Code")
+                then
+                    Error(DifferentHolderErr, "No.", "Parent Asset No.",
+                          ParentAsset."Current Holder Type", ParentAsset."Current Holder Code");
+            end;
         end;
 
         AssetValidator.ValidateParentAssignment(Rec);
@@ -868,6 +882,7 @@ table 70182301 "JML AP Asset"
         CannotDeleteWithHolderHistoryErr: Label 'Cannot delete asset %1 because it has holder history entries.', Comment = '%1 = Asset No.';
         ClassificationNotFoundErr: Label 'Classification %1 does not exist in industry %2.', Comment = '%1 = Classification Code, %2 = Industry Code';
         ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
+        DifferentHolderErr: Label 'Cannot assign asset %1 to parent %2. Parent is at %3 %4, but child is at different holder. Both assets must be at same location to create parent-child relationship.', Comment = '%1 = Child Asset No., %2 = Parent Asset No., %3 = Parent Holder Type, %4 = Parent Holder Code';
 
     local procedure GetMaxParentChainDepth(): Integer
     begin

@@ -16,12 +16,15 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         LineCount: Integer;
         NoOfRecords: Integer;
         SuppressSuccessMessage: Boolean;
+        SuppressConfirmation: Boolean;
         PostingDateErr: Label 'Posting date %1 cannot be before last entry date %2 for asset %3 or its children.', Comment = '%1 = Posting Date, %2 = Last Entry Date, %3 = Asset No.';
         PostingDateBeforeRangeErr: Label 'Posting date %1 is before allowed range start date %2.', Comment = '%1 = Posting Date, %2 = Allow Posting From';
         PostingDateAfterRangeErr: Label 'Posting date %1 is after allowed range end date %2.', Comment = '%1 = Posting Date, %2 = Allow Posting To';
         SubassetErr: Label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.', Comment = '%1 = Asset No., %2 = Parent Asset No.';
         PostingMsg: Label 'Posting journal lines #1########## @2@@@@@@@@@@@@@';
         JournalPostedMsg: Label 'Journal lines have been posted successfully.';
+        ConfirmPostQst: Label 'Do you want to post %1 journal line(s)?', Comment = '%1 = Number of lines';
+        SameHolderAddressErr: Label 'New holder and address must be different from current holder and address for asset %1. Specify a different address for same-holder transfers.', Comment = '%1 = Asset No.';
 
     local procedure Code()
     var
@@ -37,6 +40,12 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
             exit;
 
         NoOfRecords := AssetJnlLine.Count;
+
+        // Confirm posting unless suppressed
+        if not SuppressConfirmation then
+            if not Confirm(ConfirmPostQst, true, NoOfRecords) then
+                exit;
+
         LineCount := 0;
 
         Window.Open(PostingMsg);
@@ -105,6 +114,13 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         // Cannot transfer subasset independently
         if Asset."Parent Asset No." <> '' then
             Error(SubassetErr, Asset."No.", Asset."Parent Asset No.");
+
+        // Validate not transferring to same holder and address
+        if (JnlLine."New Holder Type" = JnlLine."Current Holder Type") and
+           (JnlLine."New Holder Code" = JnlLine."Current Holder Code") and
+           (JnlLine."New Holder Addr Code" = JnlLine."Current Holder Addr Code")
+        then
+            Error(SameHolderAddressErr, Asset."No.");
     end;
 
     internal procedure ValidatePostingDate(AssetNo: Code[20]; PostingDate: Date)
@@ -321,6 +337,15 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
     internal procedure SetSuppressSuccessMessage(Suppress: Boolean)
     begin
         SuppressSuccessMessage := Suppress;
+    end;
+
+    /// <summary>
+    /// Suppresses the confirmation dialog when posting journal lines.
+    /// Used for automated posting scenarios (API, document posting, manual holder changes, testing).
+    /// </summary>
+    procedure SetSuppressConfirmation(Suppress: Boolean)
+    begin
+        SuppressConfirmation := Suppress;
     end;
 
     /// <summary>

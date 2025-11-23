@@ -17,12 +17,19 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
         NoLinesErr: Label 'There are no lines to post in Transfer Order %1.', Comment = '%1 = Document No.';
         PostingMsg: Label 'Posting Transfer Order #1########## @2@@@@@@@@@@@@@';
         PostedMsg: Label 'Transfer Order %1 has been posted as %2.', Comment = '%1 = Transfer Order No., %2 = Posted Document No.';
+        SameHolderAddressErr: Label 'From Holder and To Holder cannot be identical (same type, code, and address). Specify a different address for same-holder transfers.';
+        ConfirmPostQst: Label 'Do you want to post Transfer Order %1?', Comment = '%1 = Transfer Order No.';
 
     local procedure Code()
     var
         PostedTransferNo: Code[20];
     begin
         CheckTransferOrder(TransferHeader);
+
+        // Confirm posting
+        if not Confirm(ConfirmPostQst, true, TransferHeader."No.") then
+            exit;
+
         Window.Open(PostingMsg);
         Window.Update(1, TransferHeader."No.");
 
@@ -46,11 +53,12 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
         if TransferHdr.Status <> TransferHdr.Status::Released then
             Error(NotReleasedErr, TransferHdr."No.");
 
-        // Validate different holders
+        // Allow same holder if address changes
         if (TransferHdr."From Holder Type" = TransferHdr."To Holder Type") and
-           (TransferHdr."From Holder Code" = TransferHdr."To Holder Code")
+           (TransferHdr."From Holder Code" = TransferHdr."To Holder Code") and
+           (TransferHdr."From Holder Addr Code" = TransferHdr."To Holder Addr Code")
         then
-            Error('From Holder and To Holder must be different.');
+            Error(SameHolderAddressErr);
 
         // Must have lines
         TransferLine.SetRange("Document No.", TransferHdr."No.");
@@ -100,8 +108,9 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
         end;
 
         // Post journal (creates holder entries)
-        // Suppress journal success message - Transfer Order has its own message
+        // Suppress journal success message and confirmation - Transfer Order has its own
         AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlLine.SetRange("Journal Batch Name", AssetJnlBatch.Name);
         if AssetJnlLine.FindFirst() then
             AssetJnlPost.Run(AssetJnlLine);

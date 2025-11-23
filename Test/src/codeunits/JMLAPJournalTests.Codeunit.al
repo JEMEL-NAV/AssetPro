@@ -194,20 +194,121 @@ codeunit 50107 "JML AP Journal Tests"
         CleanupLocation(Location2);
     end;
 
-    // TODO: Add test for Customer with Ship-to Address
-    // [Test]
-    // procedure PostJournal_WithShipToAddress_SavesAddressCode()
-    // Test that address code is saved in holder entries when transferring to customer with ship-to address
+    [Test]
+    procedure PostJournal_SameHolderDifferentAddress_Success()
+    var
+        Asset: Record "JML AP Asset";
+        Customer: Record Customer;
+        ShipToAddr1, ShipToAddr2 : Record "Ship-to Address";
+        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        AssetJnlLine: Record "JML AP Asset Journal Line";
+        HolderEntry: Record "JML AP Holder Entry";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+    begin
+        // [SCENARIO] Asset can be transferred to same holder with different address
+        // [GIVEN] Asset at Customer A, Address 1
+        CreateCustomer(Customer);
+        CreateShipToAddress(ShipToAddr1, Customer."No.", 'ADDR1');
+        CreateShipToAddress(ShipToAddr2, Customer."No.", 'ADDR2');
+        CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr1.Code);
 
-    // TODO: Add test for Vendor with Order Address
-    // [Test]
-    // procedure PostJournal_WithOrderAddress_SavesAddressCode()
-    // Test that address code is saved in holder entries when transferring to vendor with order address
+        // [GIVEN] Journal line to transfer to Customer A, Address 2
+        CreateJournalBatch(AssetJnlBatch);
+        CreateJournalLineWithAddress(AssetJnlLine, AssetJnlBatch.Name, Asset."No.",
+            AssetJnlLine."New Holder Type"::Customer, Customer."No.", ShipToAddr2.Code);
 
-    // TODO: Add test for address code validation
-    // [Test]
-    // procedure PostJournal_InvalidShipToAddress_ErrorThrown()
-    // Test that invalid ship-to address code throws validation error
+        // [WHEN] Posting the journal
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.Run(AssetJnlLine);
+
+        // [THEN] Transfer succeeds, asset moved to Address 2
+        Asset.Get(Asset."No.");
+        Assert.AreEqual(Customer."No.", Asset."Current Holder Code", 'Holder should be same customer');
+        Assert.AreEqual(ShipToAddr2.Code, Asset."Current Holder Addr Code", 'Address should be Address 2');
+
+        // [THEN] Holder entries created with correct addresses
+        HolderEntry.SetRange("Asset No.", Asset."No.");
+        HolderEntry.SetRange("Entry Type", HolderEntry."Entry Type"::"Transfer Out");
+        HolderEntry.FindFirst();
+        Assert.AreEqual(ShipToAddr1.Code, HolderEntry."Holder Addr Code", 'Transfer Out should have Address 1');
+
+        HolderEntry.SetRange("Entry Type", HolderEntry."Entry Type"::"Transfer In");
+        HolderEntry.FindFirst();
+        Assert.AreEqual(ShipToAddr2.Code, HolderEntry."Holder Addr Code", 'Transfer In should have Address 2');
+
+        // Cleanup
+        CleanupAsset(Asset);
+        CleanupShipToAddress(ShipToAddr1);
+        CleanupShipToAddress(ShipToAddr2);
+        CleanupCustomer(Customer);
+    end;
+
+    [Test]
+    procedure PostJournal_SameHolderSameAddress_ErrorThrown()
+    var
+        Asset: Record "JML AP Asset";
+        Customer: Record Customer;
+        ShipToAddr: Record "Ship-to Address";
+        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        AssetJnlLine: Record "JML AP Asset Journal Line";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+    begin
+        // [SCENARIO] Cannot transfer asset to same holder and same address
+        // [GIVEN] Asset at Customer A, Address 1
+        CreateCustomer(Customer);
+        CreateShipToAddress(ShipToAddr, Customer."No.", 'ADDR1');
+        CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr.Code);
+
+        // [GIVEN] Journal line trying to "transfer" to same holder and same address
+        CreateJournalBatch(AssetJnlBatch);
+        CreateJournalLineWithAddress(AssetJnlLine, AssetJnlBatch.Name, Asset."No.",
+            AssetJnlLine."New Holder Type"::Customer, Customer."No.", ShipToAddr.Code);
+
+        // [WHEN] Attempting to post
+        // [THEN] Error thrown
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        asserterror AssetJnlPost.Run(AssetJnlLine);
+        Assert.ExpectedError('must be different');
+
+        // Cleanup
+        CleanupAsset(Asset);
+        CleanupShipToAddress(ShipToAddr);
+        CleanupCustomer(Customer);
+    end;
+
+    [Test]
+    procedure JournalLine_AssetNoValidate_PopulatesCurrentHolderAddress()
+    var
+        Asset: Record "JML AP Asset";
+        Customer: Record Customer;
+        ShipToAddr: Record "Ship-to Address";
+        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        AssetJnlLine: Record "JML AP Asset Journal Line";
+    begin
+        // [SCENARIO] Current Holder Address field auto-populated from asset
+        // [GIVEN] Asset at Customer with Ship-to Address
+        CreateCustomer(Customer);
+        CreateShipToAddress(ShipToAddr, Customer."No.", 'MAIN');
+        CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr.Code);
+
+        // [WHEN] Creating journal line and validating Asset No.
+        CreateJournalBatch(AssetJnlBatch);
+        AssetJnlLine.Init();
+        AssetJnlLine."Journal Batch Name" := AssetJnlBatch.Name;
+        AssetJnlLine."Line No." := 10000;
+        AssetJnlLine.Validate("Asset No.", Asset."No.");
+
+        // [THEN] Current Holder Address Code populated
+        Assert.AreEqual(Customer."No.", AssetJnlLine."Current Holder Code", 'Current holder code should be populated');
+        Assert.AreEqual(ShipToAddr.Code, AssetJnlLine."Current Holder Addr Code", 'Current holder address should be populated');
+
+        // Cleanup
+        CleanupAsset(Asset);
+        CleanupShipToAddress(ShipToAddr);
+        CleanupCustomer(Customer);
+    end;
 
     [Test]
     procedure ValidatePostingDate_ChildHasLaterEntry_ParentBackdatingBlocked()
@@ -253,7 +354,7 @@ codeunit 50107 "JML AP Journal Tests"
     local procedure CreateLocation(var Location: Record Location)
     begin
         Location.Init();
-        Location.Code := 'LOC-' + Format(CreateGuid()).Substring(1, 8);
+        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
         Location.Name := 'Test Location ' + Location.Code;
         Location.Insert(true);
     end;
@@ -359,5 +460,74 @@ codeunit 50107 "JML AP Journal Tests"
     begin
         if Location.Get(Location.Code) then
             Location.Delete(true);
+    end;
+
+    local procedure CreateCustomer(var Customer: Record Customer)
+    begin
+        Customer.Init();
+        Customer."No." := 'CUST-' + Format(CreateGuid()).Substring(1, 8);
+        Customer.Name := 'Test Customer ' + Customer."No.";
+        Customer.Insert(true);
+    end;
+
+    local procedure CreateShipToAddress(var ShipToAddr: Record "Ship-to Address"; CustomerNo: Code[20]; AddrCode: Code[10])
+    begin
+        ShipToAddr.Init();
+        ShipToAddr."Customer No." := CustomerNo;
+        ShipToAddr.Code := AddrCode;
+        ShipToAddr.Name := 'Address ' + AddrCode;
+        ShipToAddr.Address := '123 Test St';
+        ShipToAddr.City := 'Test City';
+        ShipToAddr.Insert(true);
+    end;
+
+    local procedure CreateAssetAtCustomerAddress(var Asset: Record "JML AP Asset"; CustomerNo: Code[20]; AddrCode: Code[10])
+    begin
+        Asset.Init();
+        Asset."No." := 'TST-' + Format(CreateGuid()).Substring(1, 15);
+        Asset.Description := 'Test Asset ' + Asset."No.";
+        Asset."Current Holder Type" := Asset."Current Holder Type"::Customer;
+        Asset."Current Holder Code" := CustomerNo;
+        Asset."Current Holder Addr Code" := AddrCode;
+        Asset."Current Holder Since" := WorkDate();
+        Asset.Insert(true);
+    end;
+
+    local procedure CreateJournalLineWithAddress(
+        var AssetJnlLine: Record "JML AP Asset Journal Line";
+        BatchName: Code[10];
+        AssetNo: Code[20];
+        NewHolderType: Enum "JML AP Holder Type";
+        NewHolderCode: Code[20];
+        NewHolderAddrCode: Code[10])
+    var
+        LastLineNo: Integer;
+    begin
+        AssetJnlLine.SetRange("Journal Batch Name", BatchName);
+        if AssetJnlLine.FindLast() then
+            LastLineNo := AssetJnlLine."Line No.";
+
+        AssetJnlLine.Init();
+        AssetJnlLine."Journal Batch Name" := BatchName;
+        AssetJnlLine."Line No." := LastLineNo + 10000;
+        AssetJnlLine.Validate("Asset No.", AssetNo);
+        AssetJnlLine.Validate("New Holder Type", NewHolderType);
+        AssetJnlLine.Validate("New Holder Code", NewHolderCode);
+        AssetJnlLine.Validate("New Holder Addr Code", NewHolderAddrCode);
+        AssetJnlLine."Posting Date" := WorkDate();
+        AssetJnlLine."Document No." := 'TEST-' + Format(AssetJnlLine."Line No.");
+        AssetJnlLine.Insert(true);
+    end;
+
+    local procedure CleanupCustomer(var Customer: Record Customer)
+    begin
+        if Customer.Get(Customer."No.") then
+            Customer.Delete(true);
+    end;
+
+    local procedure CleanupShipToAddress(var ShipToAddr: Record "Ship-to Address")
+    begin
+        if ShipToAddr.Get(ShipToAddr."Customer No.", ShipToAddr.Code) then
+            ShipToAddr.Delete(true);
     end;
 }

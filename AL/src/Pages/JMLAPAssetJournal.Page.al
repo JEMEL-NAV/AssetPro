@@ -61,6 +61,12 @@ page 70182352 "JML AP Asset Journal"
                     ToolTip = 'Specifies the current holder of the asset.';
                 }
 
+                field("Current Holder Addr Code"; Rec."Current Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the current address code of the asset holder.';
+                }
+
                 field("New Holder Type"; Rec."New Holder Type")
                 {
                     ApplicationArea = All;

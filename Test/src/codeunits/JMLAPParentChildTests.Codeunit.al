@@ -137,6 +137,106 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Assert.AreEqual(3, ChildCount, '3 children should exist');
     end;
 
+    [Test]
+    procedure Test_AssignParent_SameHolderRequired_ErrorThrown()
+    var
+        Parent, Child: Record "JML AP Asset";
+        Location1, Location2 : Record Location;
+    begin
+        // [SCENARIO] Cannot assign parent if assets are at different holders
+        // [GIVEN] Parent at Location 1, Child at Location 2
+        Initialize();
+        CreateLocation(Location1);
+        CreateLocation(Location2);
+        CreateAssetAtLocation(Parent, 'Parent Asset', Location1.Code);
+        CreateAssetAtLocation(Child, 'Child Asset', Location2.Code);
+
+        // [WHEN] Attempting to assign parent
+        // [THEN] Error thrown - different holders
+        asserterror Child.Validate("Parent Asset No.", Parent."No.");
+        Assert.ExpectedError('must be at same location');
+    end;
+
+    [Test]
+    procedure Test_AssignParent_SameHolder_Success()
+    var
+        Parent, Child: Record "JML AP Asset";
+        Location: Record Location;
+    begin
+        // [SCENARIO] Can assign parent when both assets at same holder
+        // [GIVEN] Parent and Child both at Location 1
+        Initialize();
+        CreateLocation(Location);
+        CreateAssetAtLocation(Parent, 'Parent Asset', Location.Code);
+        CreateAssetAtLocation(Child, 'Child Asset', Location.Code);
+
+        // [WHEN] Assigning parent
+        Child.Validate("Parent Asset No.", Parent."No.");
+        Child.Modify();
+
+        // [THEN] Assignment succeeds
+        Child.Get(Child."No.");
+        Assert.AreEqual(Parent."No.", Child."Parent Asset No.", 'Parent should be assigned');
+        Assert.AreEqual(2, Child."Hierarchy Level", 'Child should be level 2');
+    end;
+
+    [Test]
+    procedure Test_AssignParent_WrongLevel_ErrorThrown()
+    var
+        Parent, Child: Record "JML AP Asset";
+        Industry: Record "JML AP Asset Industry";
+        ClassLevel1, ClassLevel2, ClassLevel3 : Record "JML AP Classification Val";
+        Location: Record Location;
+    begin
+        // [SCENARIO] Cannot assign parent if classification levels incorrect
+        // [GIVEN] Industry and classifications (proper hierarchy)
+        Initialize();
+        CreateIndustry(Industry);
+        CreateClassification(ClassLevel1, Industry.Code, 1, '', 'Level 1');
+        CreateClassification(ClassLevel2, Industry.Code, 2, ClassLevel1.Code, 'Level 2');
+        CreateClassification(ClassLevel3, Industry.Code, 3, ClassLevel2.Code, 'Level 3');
+
+        // [GIVEN] Parent at Level 3, Child at Level 3 (same level - wrong!)
+        CreateLocation(Location);
+        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassLevel3.Code);
+        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassLevel3.Code);
+
+        // [WHEN] Attempting to assign parent
+        // [THEN] Error thrown - parent must be Level 2 for Level 3 child
+        asserterror Child.Validate("Parent Asset No.", Parent."No.");
+        Assert.ExpectedError('must be exactly one level above');
+    end;
+
+    [Test]
+    procedure Test_AssignParent_CorrectLevel_Success()
+    var
+        Parent, Child: Record "JML AP Asset";
+        Industry: Record "JML AP Asset Industry";
+        ClassLevel1, ClassLevel2, ClassLevel3 : Record "JML AP Classification Val";
+        Location: Record Location;
+    begin
+        // [SCENARIO] Can assign parent when levels are correct (parent = child - 1)
+        // [GIVEN] Industry and classifications (proper hierarchy)
+        Initialize();
+        CreateIndustry(Industry);
+        CreateClassification(ClassLevel1, Industry.Code, 1, '', 'Level 1');
+        CreateClassification(ClassLevel2, Industry.Code, 2, ClassLevel1.Code, 'Level 2');
+        CreateClassification(ClassLevel3, Industry.Code, 3, ClassLevel2.Code, 'Level 3');
+
+        // [GIVEN] Parent at Level 2, Child at Level 3 (correct!)
+        CreateLocation(Location);
+        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassLevel2.Code);
+        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassLevel3.Code);
+
+        // [WHEN] Assigning parent
+        Child.Validate("Parent Asset No.", Parent."No.");
+        Child.Modify();
+
+        // [THEN] Assignment succeeds
+        Child.Get(Child."No.");
+        Assert.AreEqual(Parent."No.", Child."Parent Asset No.", 'Parent should be assigned');
+    end;
+
     local procedure Initialize()
     var
         Asset: Record "JML AP Asset";
@@ -191,5 +291,64 @@ codeunit 50106 "JML AP Parent-Child Tests"
         NoSeriesLine."Ending No." := 'AT-9999';
         NoSeriesLine."Increment-by No." := 1;
         if NoSeriesLine.Insert() then;
+    end;
+
+    local procedure CreateLocation(var Location: Record Location)
+    begin
+        Location.Init();
+        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
+        Location.Name := 'Test Location ' + Location.Code;
+        Location.Insert(true);
+    end;
+
+    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; Description: Text[100]; LocationCode: Code[10])
+    begin
+        Asset.Init();
+        Asset.Validate(Description, Description);
+        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
+        Asset."Current Holder Code" := LocationCode;
+        Asset."Current Holder Since" := WorkDate();
+        Asset.Insert(true);
+    end;
+
+    local procedure CreateIndustry(var Industry: Record "JML AP Asset Industry")
+    begin
+        Industry.Init();
+        Industry.Code := 'IND-' + Format(CreateGuid()).Substring(1, 8);
+        Industry.Description := 'Test Industry';
+        Industry.Insert(true);
+    end;
+
+    local procedure CreateClassification(
+        var ClassVal: Record "JML AP Classification Val";
+        IndustryCode: Code[20];
+        LevelNo: Integer;
+        ParentCode: Code[20];
+        Description: Text[100])
+    begin
+        ClassVal.Init();
+        ClassVal."Industry Code" := IndustryCode;
+        ClassVal."Level Number" := LevelNo;
+        ClassVal.Code := 'CL' + Format(LevelNo) + '-' + Format(CreateGuid()).Substring(1, 6);
+        ClassVal.Description := Description;
+        ClassVal."Parent Value Code" := ParentCode;
+        ClassVal.Insert(true);
+    end;
+
+    local procedure CreateAssetWithClassification(
+        var Asset: Record "JML AP Asset";
+        Description: Text[100];
+        LocationCode: Code[10];
+        IndustryCode: Code[20];
+        ClassificationCode: Code[20])
+    begin
+        Asset.Init();
+        Asset.Validate(Description, Description);
+        Asset."Industry Code" := IndustryCode;
+        Asset."Classification Code" := ClassificationCode;
+        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
+        Asset."Current Holder Code" := LocationCode;
+        Asset."Current Holder Since" := WorkDate();
+        Asset.Insert(true);
     end;
 }

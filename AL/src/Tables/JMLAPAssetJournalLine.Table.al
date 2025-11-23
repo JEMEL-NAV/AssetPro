@@ -32,6 +32,7 @@ table 70182312 "JML AP Asset Journal Line"
                     Clear("Asset Description");
                     Clear("Current Holder Type");
                     Clear("Current Holder Code");
+                    Clear("Current Holder Addr Code");
                     exit;
                 end;
 
@@ -41,6 +42,7 @@ table 70182312 "JML AP Asset Journal Line"
                 "Asset Description" := Asset.Description;
                 "Current Holder Type" := Asset."Current Holder Type";
                 "Current Holder Code" := Asset."Current Holder Code";
+                "Current Holder Addr Code" := Asset."Current Holder Addr Code";
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
@@ -65,6 +67,14 @@ table 70182312 "JML AP Asset Journal Line"
         field(13; "Current Holder Code"; Code[20])
         {
             Caption = 'Current Holder Code';
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
+
+        field(14; "Current Holder Addr Code"; Code[10])
+        {
+            Caption = 'Current Holder Address Code';
+            ToolTip = 'Specifies the current address code of the asset holder.';
             Editable = false;
             DataClassification = CustomerContent;
         }
@@ -117,11 +127,13 @@ table 70182312 "JML AP Asset Journal Line"
                         Location.Get("New Holder Code");
                 end;
 
-                // Validate different from current
+                // Allow same holder if address changes
+                // Only block if holder AND address are identical
                 if ("New Holder Type" = "Current Holder Type") and
-                   ("New Holder Code" = "Current Holder Code")
+                   ("New Holder Code" = "Current Holder Code") and
+                   ("New Holder Addr Code" = "Current Holder Addr Code")
                 then
-                    Error(SameHolderErr, "Asset No.");
+                    Error(SameHolderAddressErr, "Asset No.");
             end;
 
             trigger OnLookup()
@@ -216,5 +228,5 @@ table 70182312 "JML AP Asset Journal Line"
 
     var
         SubassetErr: Label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.';
-        SameHolderErr: Label 'New holder must be different from current holder for asset %1.';
+        SameHolderAddressErr: Label 'New holder and address must be different from current holder and address for asset %1. Specify a different address for same-holder transfers.';
 }
