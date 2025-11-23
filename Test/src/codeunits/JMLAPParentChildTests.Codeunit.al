@@ -185,21 +185,29 @@ codeunit 50106 "JML AP Parent-Child Tests"
     var
         Parent, Child: Record "JML AP Asset";
         Industry: Record "JML AP Asset Industry";
-        ClassLevel1, ClassLevel2, ClassLevel3 : Record "JML AP Classification Val";
+        Level1, Level2, Level3: Record "JML AP Classification Lvl";
+        ClassValue1, ClassValue2, ClassValue3: Record "JML AP Classification Val";
         Location: Record Location;
     begin
         // [SCENARIO] Cannot assign parent if classification levels incorrect
         // [GIVEN] Industry and classifications (proper hierarchy)
         Initialize();
         CreateIndustry(Industry);
-        CreateClassification(ClassLevel1, Industry.Code, 1, '', 'Level 1');
-        CreateClassification(ClassLevel2, Industry.Code, 2, ClassLevel1.Code, 'Level 2');
-        CreateClassification(ClassLevel3, Industry.Code, 3, ClassLevel2.Code, 'Level 3');
+
+        // Create classification levels first
+        CreateClassificationLevel(Level1, Industry.Code, 1, 'Level 1');
+        CreateClassificationLevel(Level2, Industry.Code, 2, 'Level 2');
+        CreateClassificationLevel(Level3, Industry.Code, 3, 'Level 3');
+
+        // Create classification values
+        CreateClassification(ClassValue1, Industry.Code, 1, '', 'Value Level 1');
+        CreateClassification(ClassValue2, Industry.Code, 2, ClassValue1.Code, 'Value Level 2');
+        CreateClassification(ClassValue3, Industry.Code, 3, ClassValue2.Code, 'Value Level 3');
 
         // [GIVEN] Parent at Level 3, Child at Level 3 (same level - wrong!)
         CreateLocation(Location);
-        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassLevel3.Code);
-        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassLevel3.Code);
+        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassValue3.Code);
+        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassValue3.Code);
 
         // [WHEN] Attempting to assign parent
         // [THEN] Error thrown - parent must be Level 2 for Level 3 child
@@ -212,21 +220,29 @@ codeunit 50106 "JML AP Parent-Child Tests"
     var
         Parent, Child: Record "JML AP Asset";
         Industry: Record "JML AP Asset Industry";
-        ClassLevel1, ClassLevel2, ClassLevel3 : Record "JML AP Classification Val";
+        Level1, Level2, Level3: Record "JML AP Classification Lvl";
+        ClassValue1, ClassValue2, ClassValue3: Record "JML AP Classification Val";
         Location: Record Location;
     begin
         // [SCENARIO] Can assign parent when levels are correct (parent = child - 1)
         // [GIVEN] Industry and classifications (proper hierarchy)
         Initialize();
         CreateIndustry(Industry);
-        CreateClassification(ClassLevel1, Industry.Code, 1, '', 'Level 1');
-        CreateClassification(ClassLevel2, Industry.Code, 2, ClassLevel1.Code, 'Level 2');
-        CreateClassification(ClassLevel3, Industry.Code, 3, ClassLevel2.Code, 'Level 3');
+
+        // Create classification levels first
+        CreateClassificationLevel(Level1, Industry.Code, 1, 'Level 1');
+        CreateClassificationLevel(Level2, Industry.Code, 2, 'Level 2');
+        CreateClassificationLevel(Level3, Industry.Code, 3, 'Level 3');
+
+        // Create classification values
+        CreateClassification(ClassValue1, Industry.Code, 1, '', 'Value Level 1');
+        CreateClassification(ClassValue2, Industry.Code, 2, ClassValue1.Code, 'Value Level 2');
+        CreateClassification(ClassValue3, Industry.Code, 3, ClassValue2.Code, 'Value Level 3');
 
         // [GIVEN] Parent at Level 2, Child at Level 3 (correct!)
         CreateLocation(Location);
-        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassLevel2.Code);
-        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassLevel3.Code);
+        CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassValue2.Code);
+        CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassValue3.Code);
 
         // [WHEN] Assigning parent
         Child.Validate("Parent Asset No.", Parent."No.");
@@ -319,6 +335,18 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Industry.Insert(true);
     end;
 
+    local procedure CreateClassificationLevel(var ClassLevel: Record "JML AP Classification Lvl"; IndustryCode: Code[20]; LevelNo: Integer; LevelName: Text[50])
+    begin
+        if not ClassLevel.Get(IndustryCode, LevelNo) then begin
+            ClassLevel.Init();
+            ClassLevel."Industry Code" := IndustryCode;
+            ClassLevel."Level Number" := LevelNo;
+            ClassLevel."Level Name" := LevelName;
+            ClassLevel."Level Name Plural" := CopyStr(LevelName + 's', 1, 50);
+            ClassLevel.Insert(true);
+        end;
+    end;
+
     local procedure CreateClassification(
         var ClassVal: Record "JML AP Classification Val";
         IndustryCode: Code[20];
@@ -326,13 +354,15 @@ codeunit 50106 "JML AP Parent-Child Tests"
         ParentCode: Code[20];
         Description: Text[100])
     begin
-        ClassVal.Init();
-        ClassVal."Industry Code" := IndustryCode;
-        ClassVal."Level Number" := LevelNo;
-        ClassVal.Code := 'CL' + Format(LevelNo) + '-' + Format(CreateGuid()).Substring(1, 6);
-        ClassVal.Description := Description;
-        ClassVal."Parent Value Code" := ParentCode;
-        ClassVal.Insert(true);
+        if not ClassVal.Get(IndustryCode, LevelNo, 'CL' + Format(LevelNo) + '-' + Format(CreateGuid()).Substring(1, 6)) then begin
+            ClassVal.Init();
+            ClassVal."Industry Code" := IndustryCode;
+            ClassVal."Level Number" := LevelNo;
+            ClassVal.Code := 'CL' + Format(LevelNo) + '-' + Format(CreateGuid()).Substring(1, 6);
+            ClassVal.Description := Description;
+            ClassVal."Parent Value Code" := ParentCode;
+            ClassVal.Insert(true);
+        end;
     end;
 
     local procedure CreateAssetWithClassification(
