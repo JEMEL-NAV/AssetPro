@@ -73,6 +73,12 @@ page 70182352 "JML AP Asset Journal"
                     ToolTip = 'Specifies the new holder for the asset.';
                 }
 
+                field("New Holder Addr Code"; Rec."New Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors).';
+                }
+
                 field("Posting Date"; Rec."Posting Date")
                 {
                     ApplicationArea = All;

@@ -43,6 +43,12 @@ page 70182358 "JML AP Asset Posted Trans. Sub"
                     ToolTip = 'Specifies the holder name the asset was transferred from.';
                 }
 
+                field("From Holder Addr Code"; Rec."From Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the holder address code the asset was transferred from.';
+                }
+
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;

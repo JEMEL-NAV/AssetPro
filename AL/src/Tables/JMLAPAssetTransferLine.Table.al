@@ -43,6 +43,7 @@ table 70182314 "JML AP Asset Transfer Line"
                 "Current Holder Type" := Asset."Current Holder Type";
                 "Current Holder Code" := Asset."Current Holder Code";
                 "Current Holder Name" := Asset."Current Holder Name";
+                "Current Holder Addr Code" := Asset."Current Holder Addr Code";
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
@@ -56,6 +57,32 @@ table 70182314 "JML AP Asset Transfer Line"
                         Error(WrongHolderErr, Asset."No.",
                             Format(Asset."Current Holder Type"), Asset."Current Holder Code",
                             Format(TransferHeader."From Holder Type"), TransferHeader."From Holder Code");
+                end;
+            end;
+
+            trigger OnLookup()
+            var
+                Asset: Record "JML AP Asset";
+                AssetList: Page "JML AP Asset List";
+                TransferHeader: Record "JML AP Asset Transfer Header";
+            begin
+                // Filter assets by From Holder if header exists
+                if TransferHeader.Get("Document No.") then begin
+                    Asset.SetRange("Current Holder Type", TransferHeader."From Holder Type");
+                    Asset.SetRange("Current Holder Code", TransferHeader."From Holder Code");
+                end;
+
+                // Exclude subassets (they cannot be transferred independently)
+                Asset.SetRange("Parent Asset No.", '');
+
+                // Exclude blocked assets
+                Asset.SetRange(Blocked, false);
+
+                AssetList.SetTableView(Asset);
+                AssetList.LookupMode := true;
+                if AssetList.RunModal() = Action::LookupOK then begin
+                    AssetList.GetRecord(Asset);
+                    Validate("Asset No.", Asset."No.");
                 end;
             end;
         }
@@ -84,6 +111,14 @@ table 70182314 "JML AP Asset Transfer Line"
         field(14; "Current Holder Name"; Text[100])
         {
             Caption = 'Current Holder Name';
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
+
+        field(15; "Current Holder Addr Code"; Code[10])
+        {
+            Caption = 'Current Holder Address Code';
+            ToolTip = 'Specifies the current holder address code of the asset.';
             Editable = false;
             DataClassification = CustomerContent;
         }
@@ -125,11 +160,9 @@ table 70182314 "JML AP Asset Transfer Line"
     end;
 
     trigger OnDelete()
-    var
-        TransferHeader: Record "JML AP Asset Transfer Header";
     begin
-        if TransferHeader.Get("Document No.") then
-            TransferHeader.TestField(Status, TransferHeader.Status::Open);
+        // Note: No status check here - Released documents can be deleted after posting
+        // Status validation is enforced in OnInsert, OnModify
     end;
 
     var

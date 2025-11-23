@@ -48,6 +48,11 @@ page 70182339 "JML AP Holder Entries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the holder name.';
                 }
+                field("Holder Addr Code"; Rec."Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the holder address code.';
+                }
                 field("Transaction No."; Rec."Transaction No.")
                 {
                     ApplicationArea = All;

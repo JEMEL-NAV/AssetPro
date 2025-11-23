@@ -126,11 +126,34 @@ page 70182333 "JML AP Asset Card"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current holder type.';
+                    Editable = false;
                 }
                 field("Current Holder Code"; Rec."Current Holder Code")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current holder code.';
+                    Editable = false;
+
+                    trigger OnAssistEdit()
+                    var
+                        ChangeHolderDialog: Page "JML AP Change Holder Dialog";
+                    begin
+                        // Open dialog to change holder
+                        ChangeHolderDialog.SetOldHolder(
+                            Rec."Current Holder Type",
+                            Rec."Current Holder Code",
+                            Rec."Current Holder Name",
+                            Rec."Current Holder Addr Code");
+                        ChangeHolderDialog.SetAssetNo(Rec."No.");
+                        ChangeHolderDialog.RunModal();
+                        CurrPage.Update(false);
+                    end;
+                }
+                field("Current Holder Addr Code"; Rec."Current Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors).';
+                    Editable = false;
                 }
                 field("Current Holder Name"; Rec."Current Holder Name")
                 {
@@ -349,6 +372,29 @@ page 70182333 "JML AP Asset Card"
                     Message('Asset detached from parent.');
                 end;
             }
+            action(ChangeHolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Change Holder';
+                ToolTip = 'Change the current holder of this asset (creates holder entry).';
+                Image = ChangeTo;
+                Visible = ManualHolderChangeAllowed;
+
+                trigger OnAction()
+                var
+                    ChangeHolderDialog: Page "JML AP Change Holder Dialog";
+                begin
+                    // Open dialog to change holder
+                    ChangeHolderDialog.SetOldHolder(
+                        Rec."Current Holder Type",
+                        Rec."Current Holder Code",
+                        Rec."Current Holder Name",
+                        Rec."Current Holder Addr Code");
+                    ChangeHolderDialog.SetAssetNo(Rec."No.");
+                    ChangeHolderDialog.RunModal();
+                    CurrPage.Update(false);
+                end;
+            }
             action(TransferAsset)
             {
                 ApplicationArea = All;
@@ -366,6 +412,15 @@ page 70182333 "JML AP Asset Card"
 
     var
         ClassificationPathText: Text[250];
+        ManualHolderChangeAllowed: Boolean;
+
+    trigger OnOpenPage()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+    begin
+        AssetSetup.GetRecordOnce();
+        ManualHolderChangeAllowed := not AssetSetup."Block Manual Holder Change";
+    end;
 
     trigger OnAfterGetCurrRecord()
     begin

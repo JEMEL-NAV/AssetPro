@@ -153,8 +153,10 @@ table 70182301 "JML AP Asset"
 
             trigger OnValidate()
             begin
-                if "Current Holder Type" <> xRec."Current Holder Type" then
+                if "Current Holder Type" <> xRec."Current Holder Type" then begin
                     "Current Holder Code" := '';
+                    "Current Holder Addr Code" := '';
+                end;
             end;
         }
 
@@ -168,6 +170,8 @@ table 70182301 "JML AP Asset"
 
             trigger OnValidate()
             begin
+                if "Current Holder Code" <> xRec."Current Holder Code" then
+                    "Current Holder Addr Code" := '';
                 UpdateCurrentHolderName();
             end;
         }
@@ -183,6 +187,22 @@ table 70182301 "JML AP Asset"
         {
             Caption = 'Current Holder Since';
             ToolTip = 'Specifies the date when the current holder received the asset.';
+        }
+
+        field(304; "Current Holder Addr Code"; Code[10])
+        {
+            Caption = 'Current Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors).';
+            DataClassification = CustomerContent;
+            TableRelation = if ("Current Holder Type" = const(Customer)) "Ship-to Address".Code where("Customer No." = field("Current Holder Code"))
+            else if ("Current Holder Type" = const(Vendor)) "Order Address".Code where("Vendor No." = field("Current Holder Code"));
+
+            trigger OnValidate()
+            begin
+                // Clear address code if holder type doesn't support addresses
+                if not ("Current Holder Type" in ["Current Holder Type"::Customer, "Current Holder Type"::Vendor]) then
+                    "Current Holder Addr Code" := '';
+            end;
         }
 
         // === OWNERSHIP ROLES ===
@@ -809,7 +829,6 @@ table 70182301 "JML AP Asset"
 
     local procedure RegisterManualHolderChange()
     var
-        AssetSetup: Record "JML AP Asset Setup";
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // Check if holder fields changed
@@ -817,6 +836,11 @@ table 70182301 "JML AP Asset"
            (xRec."Current Holder Code" = "Current Holder Code")
         then
             exit; // No holder change
+
+        // Skip if new holder code is empty (incomplete user input - user is still configuring)
+        // This prevents premature journal posting when only Type is changed but Code not yet set
+        if "Current Holder Code" = '' then
+            exit;
 
         // Get setup
         AssetSetup.GetRecordOnce();
@@ -832,8 +856,10 @@ table 70182301 "JML AP Asset"
             Rec,
             xRec."Current Holder Type",
             xRec."Current Holder Code",
+            xRec."Current Holder Addr Code",
             "Current Holder Type",
-            "Current Holder Code");
+            "Current Holder Code",
+            "Current Holder Addr Code");
     end;
 
     // === CONSTANTS ===

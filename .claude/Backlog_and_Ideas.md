@@ -91,6 +91,13 @@
 
 ---
 
+### 9. Customer/Vendor/Ship-to address cards factboxes with linked assets count
+**Description:** To show in customer/vendor etc card data with assets linked to that entity.
+**Status:** Pending
+**Scope:** After Phase 2 complete
+
+---
+
 ## Notes
 
 - Items here are NOT part of Phase 2 implementation plan
@@ -98,4 +105,4 @@
 - Prioritize based on user feedback
 - Some ideas may become Phase 3 features
 
-**Last Updated:** 2025-11-21
+**Last Updated:** 2025-11-22

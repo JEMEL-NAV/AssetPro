@@ -68,6 +68,11 @@ page 70182357 "JML AP Asset Posted Transfer"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the name of the holder that transferred the assets.';
                 }
+                field("From Holder Addr Code"; Rec."From Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the sender address code.';
+                }
             }
 
             group("Transfer To")
@@ -90,6 +95,11 @@ page 70182357 "JML AP Asset Posted Transfer"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the name of the holder that received the assets.';
+                }
+                field("To Holder Addr Code"; Rec."To Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the receiver address code.';
                 }
             }
 

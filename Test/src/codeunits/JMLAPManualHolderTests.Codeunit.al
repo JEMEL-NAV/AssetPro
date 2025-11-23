@@ -208,6 +208,16 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Assert.AreEqual(Asset."Current Holder Type"::Location, Asset."Current Holder Type", 'Holder type should be Location');
     end;
 
+    // TODO: Add test for manual holder change with Ship-to Address
+    // [Test]
+    // procedure TestManualHolderChange_WithShipToAddress_SavesAddressCode()
+    // Test that address code is preserved when manually changing holder to customer with ship-to address
+
+    // TODO: Add test for manual holder change with Order Address
+    // [Test]
+    // procedure TestManualHolderChange_WithOrderAddress_SavesAddressCode()
+    // Test that address code is preserved when manually changing holder to vendor with order address
+
     local procedure Initialize()
     begin
         if IsInitialized then

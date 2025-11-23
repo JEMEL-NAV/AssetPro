@@ -100,6 +100,8 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
         end;
 
         // Post journal (creates holder entries)
+        // Suppress journal success message - Transfer Order has its own message
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlLine.SetRange("Journal Batch Name", AssetJnlBatch.Name);
         if AssetJnlLine.FindFirst() then
             AssetJnlPost.Run(AssetJnlLine);
@@ -155,6 +157,7 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
 
         AssetJnlLine."New Holder Type" := TransferHdr."To Holder Type";
         AssetJnlLine."New Holder Code" := TransferHdr."To Holder Code";
+        AssetJnlLine."New Holder Addr Code" := TransferHdr."To Holder Addr Code";
         AssetJnlLine."Reason Code" := TransferLine.Description <> '' ? TransferLine.Description : TransferHdr."Reason Code";
         AssetJnlLine.Description := TransferLine.Description;
 
@@ -171,9 +174,11 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
         PostedTransfer."From Holder Type" := TransferHdr."From Holder Type";
         PostedTransfer."From Holder Code" := TransferHdr."From Holder Code";
         PostedTransfer."From Holder Name" := TransferHdr."From Holder Name";
+        PostedTransfer."From Holder Addr Code" := TransferHdr."From Holder Addr Code";
         PostedTransfer."To Holder Type" := TransferHdr."To Holder Type";
         PostedTransfer."To Holder Code" := TransferHdr."To Holder Code";
         PostedTransfer."To Holder Name" := TransferHdr."To Holder Name";
+        PostedTransfer."To Holder Addr Code" := TransferHdr."To Holder Addr Code";
         PostedTransfer."Posting Date" := TransferHdr."Posting Date";
         PostedTransfer."Document Date" := TransferHdr."Document Date";
         PostedTransfer."No. Series" := TransferHdr."Posting No. Series";
@@ -203,6 +208,7 @@ codeunit 70182391 "JML AP Asset Transfer-Post"
                 PostedLine."From Holder Type" := TransferLine."Current Holder Type";
                 PostedLine."From Holder Code" := TransferLine."Current Holder Code";
                 PostedLine."From Holder Name" := TransferLine."Current Holder Name";
+                PostedLine."From Holder Addr Code" := TransferLine."Current Holder Addr Code";
                 PostedLine.Description := TransferLine.Description;
 
                 // Get Transaction No. from holder entry

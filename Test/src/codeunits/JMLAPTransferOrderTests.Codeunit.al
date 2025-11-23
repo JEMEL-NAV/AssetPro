@@ -390,6 +390,16 @@ codeunit 50108 "JML AP Transfer Order Tests"
         CleanupLocation(Location2);
     end;
 
+    // TODO: Add test for Transfer Order with address codes
+    // [Test]
+    // procedure PostTransferOrder_WithShipToAddress_SavesAddressCodeInPostedDoc()
+    // Test that From/To address codes are saved in posted transfer header and lines
+
+    // TODO: Add test for address code validation in Transfer Order
+    // [Test]
+    // procedure CreateTransferOrder_InvalidAddressCode_ValidationError()
+    // Test that invalid address codes are caught during transfer order creation
+
     // ============================================
     // Helper Procedures
     // ============================================

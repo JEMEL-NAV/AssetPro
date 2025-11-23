@@ -11,8 +11,7 @@ table 70182308 "JML AP Holder Entry"
         field(1; "Entry No."; Integer)
         {
             Caption = 'Entry No.';
-            ToolTip = 'Specifies the entry number (auto-incremented).';
-            AutoIncrement = true;
+            ToolTip = 'Specifies the entry number.';
         }
 
         // === ASSET IDENTIFICATION ===
@@ -68,6 +67,12 @@ table 70182308 "JML AP Holder Entry"
         {
             Caption = 'Holder Name';
             ToolTip = 'Specifies the holder name.';
+        }
+
+        field(33; "Holder Addr Code"; Code[10])
+        {
+            Caption = 'Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors).';
         }
 
         // === TRANSACTION LINKING ===

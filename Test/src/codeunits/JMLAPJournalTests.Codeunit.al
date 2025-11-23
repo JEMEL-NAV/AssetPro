@@ -194,6 +194,21 @@ codeunit 50107 "JML AP Journal Tests"
         CleanupLocation(Location2);
     end;
 
+    // TODO: Add test for Customer with Ship-to Address
+    // [Test]
+    // procedure PostJournal_WithShipToAddress_SavesAddressCode()
+    // Test that address code is saved in holder entries when transferring to customer with ship-to address
+
+    // TODO: Add test for Vendor with Order Address
+    // [Test]
+    // procedure PostJournal_WithOrderAddress_SavesAddressCode()
+    // Test that address code is saved in holder entries when transferring to vendor with order address
+
+    // TODO: Add test for address code validation
+    // [Test]
+    // procedure PostJournal_InvalidShipToAddress_ErrorThrown()
+    // Test that invalid ship-to address code throws validation error
+
     [Test]
     procedure ValidatePostingDate_ChildHasLaterEntry_ParentBackdatingBlocked()
     var

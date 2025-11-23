@@ -15,6 +15,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         Window: Dialog;
         LineCount: Integer;
         NoOfRecords: Integer;
+        SuppressSuccessMessage: Boolean;
         PostingDateErr: Label 'Posting date %1 cannot be before last entry date %2 for asset %3 or its children.', Comment = '%1 = Posting Date, %2 = Last Entry Date, %3 = Asset No.';
         PostingDateBeforeRangeErr: Label 'Posting date %1 is before allowed range start date %2.', Comment = '%1 = Posting Date, %2 = Allow Posting From';
         PostingDateAfterRangeErr: Label 'Posting date %1 is after allowed range end date %2.', Comment = '%1 = Posting Date, %2 = Allow Posting To';
@@ -53,7 +54,8 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         // Delete posted lines
         AssetJnlLine.DeleteAll(true);
 
-        Message(JournalPostedMsg);
+        if not SuppressSuccessMessage then
+            Message(JournalPostedMsg);
     end;
 
     local procedure PostJournalLine(
@@ -78,6 +80,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
             Asset,
             JnlLine."New Holder Type",
             JnlLine."New Holder Code",
+            JnlLine."New Holder Addr Code",
             DocumentType,
             JnlLine."Document No.",
             JnlLine."Reason Code",
@@ -163,6 +166,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         var Asset: Record "JML AP Asset";
         NewHolderType: Enum "JML AP Holder Type";
         NewHolderCode: Code[20];
+        NewHolderAddrCode: Code[10];
         DocumentType: Enum "JML AP Document Type";
         DocumentNo: Code[20];
         ReasonCode: Code[10];
@@ -180,6 +184,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
             Asset,
             NewHolderType,
             NewHolderCode,
+            NewHolderAddrCode,
             DocumentType,
             DocumentNo,
             ReasonCode,
@@ -195,6 +200,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
                     ChildAsset,
                     NewHolderType,
                     NewHolderCode,
+                    NewHolderAddrCode,
                     DocumentType,
                     DocumentNo,
                     ReasonCode,
@@ -207,6 +213,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         var Asset: Record "JML AP Asset";
         NewHolderType: Enum "JML AP Holder Type";
         NewHolderCode: Code[20];
+        NewHolderAddrCode: Code[10];
         DocumentType: Enum "JML AP Document Type";
         DocumentNo: Code[20];
         ReasonCode: Code[10];
@@ -219,12 +226,14 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
     begin
         // Create Transfer Out entry (from old holder)
         HolderEntry.Init();
+        HolderEntry."Entry No." := FindNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := PostingDate;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer Out";
         HolderEntry."Holder Type" := Asset."Current Holder Type";
         HolderEntry."Holder Code" := Asset."Current Holder Code";
         HolderEntry."Holder Name" := Asset."Current Holder Name";
+        HolderEntry."Holder Addr Code" := Asset."Current Holder Addr Code";
         HolderEntry."Transaction No." := TransactionNo;
         HolderEntry."Document Type" := DocumentType;
         HolderEntry."Document No." := DocumentNo;
@@ -238,12 +247,14 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
 
         // Create Transfer In entry (to new holder)
         HolderEntry.Init();
+        HolderEntry."Entry No." := FindNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := PostingDate;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer In";
         HolderEntry."Holder Type" := NewHolderType;
         HolderEntry."Holder Code" := NewHolderCode;
         HolderEntry."Holder Name" := HolderName;
+        HolderEntry."Holder Addr Code" := NewHolderAddrCode;
         HolderEntry."Transaction No." := TransactionNo;
         HolderEntry."Document Type" := DocumentType;
         HolderEntry."Document No." := DocumentNo;
@@ -256,6 +267,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         Asset."Current Holder Type" := NewHolderType;
         Asset."Current Holder Code" := NewHolderCode;
         Asset."Current Holder Name" := HolderName;
+        Asset."Current Holder Addr Code" := NewHolderAddrCode;
         Asset."Current Holder Since" := PostingDate;
         Asset.Modify(true);
     end;
@@ -267,6 +279,17 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         HolderEntry.LockTable();
         if HolderEntry.FindLast() then
             exit(HolderEntry."Transaction No." + 1)
+        else
+            exit(1);
+    end;
+
+    local procedure FindNextEntryNo(): Integer
+    var
+        HolderEntry: Record "JML AP Holder Entry";
+    begin
+        HolderEntry.LockTable();
+        if HolderEntry.FindLast() then
+            exit(HolderEntry."Entry No." + 1)
         else
             exit(1);
     end;
@@ -292,6 +315,15 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
     end;
 
     /// <summary>
+    /// Suppresses the success message when posting journal lines.
+    /// Used when posting from documents that have their own success message.
+    /// </summary>
+    internal procedure SetSuppressSuccessMessage(Suppress: Boolean)
+    begin
+        SuppressSuccessMessage := Suppress;
+    end;
+
+    /// <summary>
     /// API for manual holder changes from Asset Card.
     /// Creates a temporary journal line and posts it through standard validation.
     /// </summary>
@@ -299,8 +331,10 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         var Asset: Record "JML AP Asset";
         OldHolderType: Enum "JML AP Holder Type";
         OldHolderCode: Code[20];
+        OldHolderAddrCode: Code[10];
         NewHolderType: Enum "JML AP Holder Type";
-        NewHolderCode: Code[20])
+        NewHolderCode: Code[20];
+        NewHolderAddrCode: Code[10])
     var
         TempJnlBatch: Record "JML AP Asset Journal Batch" temporary;
         TempJnlLine: Record "JML AP Asset Journal Line" temporary;
@@ -325,6 +359,7 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         TempJnlLine."Current Holder Code" := OldHolderCode;  // OLD holder
         TempJnlLine."New Holder Type" := NewHolderType;
         TempJnlLine."New Holder Code" := NewHolderCode;
+        TempJnlLine."New Holder Addr Code" := NewHolderAddrCode;
         TempJnlLine."Posting Date" := WorkDate();
         TempJnlLine."Document No." := DocumentNo;
         TempJnlLine.Description := 'Manual holder change';

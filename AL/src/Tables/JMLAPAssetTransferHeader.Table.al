@@ -26,8 +26,10 @@ table 70182313 "JML AP Asset Transfer Header"
 
             trigger OnValidate()
             begin
-                if "From Holder Type" <> xRec."From Holder Type" then
+                if "From Holder Type" <> xRec."From Holder Type" then begin
                     "From Holder Code" := '';
+                    "From Holder Addr Code" := '';
+                end;
             end;
         }
 
@@ -47,8 +49,13 @@ table 70182313 "JML AP Asset Transfer Header"
             begin
                 if "From Holder Code" = '' then begin
                     "From Holder Name" := '';
+                    "From Holder Addr Code" := '';
                     exit;
                 end;
+
+                // Clear address code when holder code changes
+                if "From Holder Code" <> xRec."From Holder Code" then
+                    "From Holder Addr Code" := '';
 
                 case "From Holder Type" of
                     "From Holder Type"::Customer:
@@ -77,6 +84,22 @@ table 70182313 "JML AP Asset Transfer Header"
             Editable = false;
         }
 
+        field(5; "From Holder Addr Code"; Code[10])
+        {
+            Caption = 'From Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors) of the sender.';
+            DataClassification = CustomerContent;
+            TableRelation = if ("From Holder Type" = const(Customer)) "Ship-to Address".Code where("Customer No." = field("From Holder Code"))
+            else if ("From Holder Type" = const(Vendor)) "Order Address".Code where("Vendor No." = field("From Holder Code"));
+
+            trigger OnValidate()
+            begin
+                // Clear address code if holder type doesn't support addresses
+                if not ("From Holder Type" in ["From Holder Type"::Customer, "From Holder Type"::Vendor]) then
+                    "From Holder Addr Code" := '';
+            end;
+        }
+
         field(10; "To Holder Type"; Enum "JML AP Holder Type")
         {
             Caption = 'To Holder Type';
@@ -84,8 +107,10 @@ table 70182313 "JML AP Asset Transfer Header"
 
             trigger OnValidate()
             begin
-                if "To Holder Type" <> xRec."To Holder Type" then
+                if "To Holder Type" <> xRec."To Holder Type" then begin
                     "To Holder Code" := '';
+                    "To Holder Addr Code" := '';
+                end;
             end;
         }
 
@@ -105,8 +130,13 @@ table 70182313 "JML AP Asset Transfer Header"
             begin
                 if "To Holder Code" = '' then begin
                     "To Holder Name" := '';
+                    "To Holder Addr Code" := '';
                     exit;
                 end;
+
+                // Clear address code when holder code changes
+                if "To Holder Code" <> xRec."To Holder Code" then
+                    "To Holder Addr Code" := '';
 
                 case "To Holder Type" of
                     "To Holder Type"::Customer:
@@ -139,6 +169,22 @@ table 70182313 "JML AP Asset Transfer Header"
             Caption = 'To Holder Name';
             DataClassification = CustomerContent;
             Editable = false;
+        }
+
+        field(13; "To Holder Addr Code"; Code[10])
+        {
+            Caption = 'To Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors) of the receiver.';
+            DataClassification = CustomerContent;
+            TableRelation = if ("To Holder Type" = const(Customer)) "Ship-to Address".Code where("Customer No." = field("To Holder Code"))
+            else if ("To Holder Type" = const(Vendor)) "Order Address".Code where("Vendor No." = field("To Holder Code"));
+
+            trigger OnValidate()
+            begin
+                // Clear address code if holder type doesn't support addresses
+                if not ("To Holder Type" in ["To Holder Type"::Customer, "To Holder Type"::Vendor]) then
+                    "To Holder Addr Code" := '';
+            end;
         }
 
         field(20; "Posting Date"; Date)
@@ -256,7 +302,8 @@ table 70182313 "JML AP Asset Transfer Header"
     var
         AssetTransferLine: Record "JML AP Asset Transfer Line";
     begin
-        TestField(Status, Status::Open);
+        // Note: No status check here - Released documents can be deleted after posting
+        // Status validation is enforced in OnInsert, OnModify, OnRename
 
         AssetTransferLine.SetRange("Document No.", "No.");
         AssetTransferLine.DeleteAll(true);

@@ -37,6 +37,13 @@ table 70182315 "JML AP Posted Asset Transfer"
             DataClassification = CustomerContent;
         }
 
+        field(6; "From Holder Addr Code"; Code[10])
+        {
+            Caption = 'From Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors) of the sender.';
+            DataClassification = CustomerContent;
+        }
+
         field(10; "To Holder Type"; Enum "JML AP Holder Type")
         {
             Caption = 'To Holder Type';
@@ -52,6 +59,13 @@ table 70182315 "JML AP Posted Asset Transfer"
         field(12; "To Holder Name"; Text[100])
         {
             Caption = 'To Holder Name';
+            DataClassification = CustomerContent;
+        }
+
+        field(13; "To Holder Addr Code"; Code[10])
+        {
+            Caption = 'To Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors) of the receiver.';
             DataClassification = CustomerContent;
         }
 

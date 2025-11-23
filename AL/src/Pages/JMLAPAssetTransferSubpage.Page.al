@@ -42,6 +42,12 @@ page 70182355 "JML AP Asset Transfer Subpage"
                     ToolTip = 'Specifies the current holder name of the asset.';
                 }
 
+                field("Current Holder Addr Code"; Rec."Current Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the current holder address code.';
+                }
+
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;

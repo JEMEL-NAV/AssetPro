@@ -49,6 +49,13 @@ table 70182316 "JML AP Pstd. Asset Trans. Line"
             DataClassification = CustomerContent;
         }
 
+        field(15; "From Holder Addr Code"; Code[10])
+        {
+            Caption = 'From Holder Address Code';
+            ToolTip = 'Specifies the holder address code of the asset at time of transfer.';
+            DataClassification = CustomerContent;
+        }
+
         field(20; Description; Text[100])
         {
             Caption = 'Description';

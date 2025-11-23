@@ -79,9 +79,11 @@ table 70182312 "JML AP Asset Journal Line"
                 if "New Holder Type" <> "New Holder Type"::" " then
                     TestField("Asset No.");
 
-                // Clear code when type changes
-                if "New Holder Type" <> xRec."New Holder Type" then
+                // Clear code and address code when type changes
+                if "New Holder Type" <> xRec."New Holder Type" then begin
                     "New Holder Code" := '';
+                    "New Holder Addr Code" := '';
+                end;
             end;
         }
 
@@ -98,6 +100,10 @@ table 70182312 "JML AP Asset Journal Line"
             begin
                 if "New Holder Code" = '' then
                     exit;
+
+                // Clear address code when holder code changes
+                if "New Holder Code" <> xRec."New Holder Code" then
+                    "New Holder Addr Code" := '';
 
                 TestField("New Holder Type");
 
@@ -135,6 +141,22 @@ table 70182312 "JML AP Asset Journal Line"
                         if Page.RunModal(Page::"Location List", Location) = Action::LookupOK then
                             Validate("New Holder Code", Location.Code);
                 end;
+            end;
+        }
+
+        field(22; "New Holder Addr Code"; Code[10])
+        {
+            Caption = 'New Holder Address Code';
+            ToolTip = 'Specifies the ship-to address code (for customers) or order address code (for vendors).';
+            DataClassification = CustomerContent;
+            TableRelation = if ("New Holder Type" = const(Customer)) "Ship-to Address".Code where("Customer No." = field("New Holder Code"))
+            else if ("New Holder Type" = const(Vendor)) "Order Address".Code where("Vendor No." = field("New Holder Code"));
+
+            trigger OnValidate()
+            begin
+                // Clear address code if holder type doesn't support addresses
+                if not ("New Holder Type" in ["New Holder Type"::Customer, "New Holder Type"::Vendor]) then
+                    "New Holder Addr Code" := '';
             end;
         }
 

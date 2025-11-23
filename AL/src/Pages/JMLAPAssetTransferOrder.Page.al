@@ -59,6 +59,12 @@ page 70182354 "JML AP Asset Transfer Order"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the name of the holder transferring the assets.';
                 }
+                field("From Holder Addr Code"; Rec."From Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the sender address code.';
+                    Importance = Additional;
+                }
             }
 
             group("Transfer To")
@@ -81,6 +87,12 @@ page 70182354 "JML AP Asset Transfer Order"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the name of the holder receiving the assets.';
+                }
+                field("To Holder Addr Code"; Rec."To Holder Addr Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the receiver address code.';
+                    Importance = Additional;
                 }
             }
 
