@@ -27,11 +27,6 @@ page 70182335 "JML AP Classification Lvls"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the level name.';
                 }
-                field("Level Name Plural"; Rec."Level Name Plural")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the plural level name.';
-                }
                 field("Use in Lists"; Rec."Use in Lists")
                 {
                     ApplicationArea = All;

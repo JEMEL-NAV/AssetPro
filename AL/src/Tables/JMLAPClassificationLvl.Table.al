@@ -29,12 +29,6 @@ table 70182303 "JML AP Classification Lvl"
             NotBlank = true;
         }
 
-        field(11; "Level Name Plural"; Text[50])
-        {
-            Caption = 'Level Name Plural';
-            ToolTip = 'Specifies the plural name of this level (e.g., "Fleets", "Vessel Types").';
-        }
-
         field(20; "Parent Level Number"; Integer)
         {
             Caption = 'Parent Level Number';

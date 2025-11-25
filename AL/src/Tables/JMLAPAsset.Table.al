@@ -145,6 +145,13 @@ table 70182301 "JML AP Asset"
             Editable = false;
         }
 
+        field(205; "Presentation Order"; Integer)
+        {
+            Caption = 'Presentation Order';
+            ToolTip = 'Specifies the order for tree view presentation (calculated automatically).';
+            Editable = false;
+        }
+
         // === CURRENT HOLDER (OWNERSHIP/LOCATION) ===
         field(300; "Current Holder Type"; Enum "JML AP Holder Type")
         {
@@ -445,6 +452,9 @@ table 70182301 "JML AP Asset"
         key(Parent; "Parent Asset No.")
         {
         }
+        key(Tree; "Root Asset No.", "Presentation Order")
+        {
+        }
         key(Search; "Search Description")
         {
         }
@@ -526,6 +536,72 @@ table 70182301 "JML AP Asset"
             Rec := Asset;
             exit(true);
         end;
+    end;
+
+    /// <summary>
+    /// Opens the Change Holder dialog to manually change the asset's holder.
+    /// </summary>
+    procedure OpenChangeHolderDialog()
+    var
+        ChangeHolderDialog: Page "JML AP Change Holder Dialog";
+    begin
+        ChangeHolderDialog.SetOldHolder(
+            "Current Holder Type",
+            "Current Holder Code",
+            "Current Holder Name",
+            "Current Holder Addr Code");
+        ChangeHolderDialog.SetAssetNo("No.");
+        ChangeHolderDialog.RunModal();
+    end;
+
+    /// <summary>
+    /// Opens parent asset lookup with proper filtering.
+    /// </summary>
+    procedure LookupParentAsset(var ParentAssetNo: Code[20]): Boolean
+    var
+        Asset: Record "JML AP Asset";
+        AssetList: Page "JML AP Asset List";
+    begin
+        // Filter potential parent assets
+        FilterPotentialParents(Asset);
+
+        AssetList.SetTableView(Asset);
+        AssetList.LookupMode := true;
+        if AssetList.RunModal() = Action::LookupOK then begin
+            AssetList.GetRecord(Asset);
+            ParentAssetNo := Asset."No.";
+            exit(true);
+        end;
+
+        exit(false);
+    end;
+
+    /// <summary>
+    /// Filters asset list to show only valid potential parent assets.
+    /// </summary>
+    local procedure FilterPotentialParents(var Asset: Record "JML AP Asset")
+    begin
+        // Exclude self
+        Asset.SetFilter("No.", '<>%1', "No.");
+
+        // Must be in same industry if industry is assigned
+        if "Industry Code" <> '' then
+            Asset.SetRange("Industry Code", "Industry Code");
+
+        // Filter by hierarchy level:
+        // - If classification is set, filter by classification hierarchy
+        // - Otherwise, allow any hierarchy level (for flexible physical hierarchy)
+        if "Classification Code" <> '' then begin
+            // Classification-based filtering
+            CalcFields("Classification Level No.");
+            if "Classification Level No." > 1 then
+                // Show assets at one classification level above
+                Asset.SetRange("Classification Level No.", "Classification Level No." - 1)
+            else
+                // Level 1 - show only other Level 1 assets
+                Asset.SetRange("Classification Level No.", 1);
+        end;
+        // Note: If no classification, no hierarchy filtering applied (flexible physical hierarchy)
     end;
 
     local procedure ValidateClassification()

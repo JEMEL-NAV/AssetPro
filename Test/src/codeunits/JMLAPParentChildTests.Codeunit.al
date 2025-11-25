@@ -342,7 +342,6 @@ codeunit 50106 "JML AP Parent-Child Tests"
             ClassLevel."Industry Code" := IndustryCode;
             ClassLevel."Level Number" := LevelNo;
             ClassLevel."Level Name" := LevelName;
-            ClassLevel."Level Name Plural" := CopyStr(LevelName + 's', 1, 50);
             ClassLevel.Insert(true);
         end;
     end;

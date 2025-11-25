@@ -5,6 +5,7 @@ page 70182343 "JML AP Asset Tree"
     SourceTable = "JML AP Asset";
     Editable = false;
     ApplicationArea = All;
+    SourceTableView = sorting("Root Asset No.", "Presentation Order");
 
     layout
     {
@@ -12,8 +13,9 @@ page 70182343 "JML AP Asset Tree"
         {
             repeater(Assets)
             {
-                IndentationColumn = Rec."Hierarchy Level";
+                IndentationColumn = Indentation;
                 IndentationControls = "No.";
+                ShowAsTree = true;
 
                 field("No."; Rec."No.")
                 {
@@ -78,15 +80,40 @@ page 70182343 "JML AP Asset Tree"
 
     var
         StyleText: Text;
+        Indentation: Integer;
+        MinHierarchyLevel: Integer;
+        AssetTreeMgt: Codeunit "JML AP Asset Tree Mgt";
+        RootAssetNo: Code[20];
+
+    trigger OnOpenPage()
+    var
+        Asset: Record "JML AP Asset";
+    begin
+        // Calculate minimum hierarchy level in the filtered set
+        // This will be used as the base for relative indentation
+        Asset.CopyFilters(Rec);
+        if Asset.FindFirst() then begin
+            MinHierarchyLevel := Asset."Hierarchy Level";
+            RootAssetNo := Asset."Root Asset No.";
+
+            // Update presentation order for this tree
+            if RootAssetNo <> '' then
+                AssetTreeMgt.UpdatePresentationOrder(RootAssetNo);
+        end else
+            MinHierarchyLevel := 1;
+    end;
 
     trigger OnAfterGetRecord()
     begin
-        // Apply style based on hierarchy level for visual distinction
-        case Rec."Hierarchy Level" of
-            2:
+        // Calculate relative indentation (0-based from the root of this subtree)
+        Indentation := Rec."Hierarchy Level" - MinHierarchyLevel;
+
+        // Apply style based on relative hierarchy level for visual distinction
+        case Indentation of
+            0:
+                StyleText := 'Strong';
+            1:
                 StyleText := 'Standard';
-            3:
-                StyleText := 'Subordinate';
             else
                 StyleText := 'Subordinate';
         end;

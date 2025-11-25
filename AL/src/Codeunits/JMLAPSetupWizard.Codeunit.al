@@ -39,13 +39,11 @@ codeunit 70182381 "JML AP Setup Wizard"
             ClassLevel."Industry Code" := 'FLEET';
             ClassLevel."Level Number" := 1;
             ClassLevel."Level Name" := 'Fleet Type';
-            ClassLevel."Level Name Plural" := 'Fleet Types';
             ClassLevel.Insert();
 
             // Create Level 2
             ClassLevel."Level Number" := 2;
             ClassLevel."Level Name" := 'Vessel Type';
-            ClassLevel."Level Name Plural" := 'Vessel Types';
             ClassLevel.Insert();
 
             // Create sample values

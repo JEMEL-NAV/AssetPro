@@ -81,28 +81,13 @@ page 70182333 "JML AP Asset Card"
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
-                        Asset: Record "JML AP Asset";
-                        AssetList: Page "JML AP Asset List";
+                        ParentAssetNo: Code[20];
                     begin
-                        // Filter to show only assets at hierarchy level minus 1
-                        // If current asset is level 1, no parents available (root level)
-                        // If current asset is level 2+, show assets at level current-1
-                        if Rec."Hierarchy Level" > 1 then
-                            Asset.SetRange("Hierarchy Level", Rec."Hierarchy Level" - 1)
-                        else
-                            Asset.SetRange("Hierarchy Level", 1); // Allow level 1 assets to select other level 1 as parent
-
-                        // Exclude self
-                        Asset.SetFilter("No.", '<>%1', Rec."No.");
-
-                        AssetList.SetTableView(Asset);
-                        AssetList.LookupMode := true;
-                        if AssetList.RunModal() = Action::LookupOK then begin
-                            AssetList.GetRecord(Asset);
-                            Text := Asset."No.";
+                        ParentAssetNo := Rec."Parent Asset No.";
+                        if Rec.LookupParentAsset(ParentAssetNo) then begin
+                            Text := ParentAssetNo;
                             exit(true);
                         end;
-
                         exit(false);
                     end;
                 }
@@ -135,17 +120,8 @@ page 70182333 "JML AP Asset Card"
                     Editable = false;
 
                     trigger OnAssistEdit()
-                    var
-                        ChangeHolderDialog: Page "JML AP Change Holder Dialog";
                     begin
-                        // Open dialog to change holder
-                        ChangeHolderDialog.SetOldHolder(
-                            Rec."Current Holder Type",
-                            Rec."Current Holder Code",
-                            Rec."Current Holder Name",
-                            Rec."Current Holder Addr Code");
-                        ChangeHolderDialog.SetAssetNo(Rec."No.");
-                        ChangeHolderDialog.RunModal();
+                        Rec.OpenChangeHolderDialog();
                         CurrPage.Update(false);
                     end;
                 }
@@ -381,17 +357,8 @@ page 70182333 "JML AP Asset Card"
                 Visible = ManualHolderChangeAllowed;
 
                 trigger OnAction()
-                var
-                    ChangeHolderDialog: Page "JML AP Change Holder Dialog";
                 begin
-                    // Open dialog to change holder
-                    ChangeHolderDialog.SetOldHolder(
-                        Rec."Current Holder Type",
-                        Rec."Current Holder Code",
-                        Rec."Current Holder Name",
-                        Rec."Current Holder Addr Code");
-                    ChangeHolderDialog.SetAssetNo(Rec."No.");
-                    ChangeHolderDialog.RunModal();
+                    Rec.OpenChangeHolderDialog();
                     CurrPage.Update(false);
                 end;
             }
