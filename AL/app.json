@@ -5,9 +5,9 @@
   "version": "26.0.2.0",
   "brief": "Easy connect your Microsoft Dynamics 365 Business Central with Shopify web store",
   "description": "ShopifyConnect is a tool that allows you to import orders from and to send items/customers to Shopify",
-  "privacyStatement": "http://jemel.lv/BCApp/privacy_policy.pdf",
-  "EULA": "http://jemel.lv/BCApp/AppStandardContract.pdf",
-  "help": "https://jemel.lv/docs/asset-pro/",
+  "privacyStatement": "https://jemel.lv/en/privacy",
+  "EULA": "https://jemel.lv/downloads/AppStandardContract.pdf",
+  "help": "https://jemel.lv/docs/asset-pro",
   "url": "http://www.jemel.lv",
   "logo": "./jemel_logo_largel.png",
   "platform": "27.0.0.0", 
@@ -26,9 +26,9 @@
       "to": 70182449
     }
   ],
-  "contextSensitiveHelpUrl": "https://AL.com/help/",
+  "contextSensitiveHelpUrl": "https://jemel.lv/docs/asset-pro",
   "resourceExposurePolicy": {"allowDownloadingSource": false, "includeSourceInSymbolFile":false, "allowDebugging": false},
   "runtime":"15.2",
   "features": [ "TranslationFile" ],
-  "applicationInsightsConnectionString": "InstrumentationKey=6b5b6139-7557-46d9-b4b6-8a9cca99d36b;IngestionEndpoint=https://germanywestcentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://germanywestcentral.livediagnostics.monitor.azure.com/"
+  "applicationInsightsConnectionString": "InstrumentationKey=641f941e-29a2-4532-bf27-ba6ef1103c6d;IngestionEndpoint=https://germanywestcentral-1.in.applicationinsights.azure.com/;LiveEndpoint=https://germanywestcentral.livediagnostics.monitor.azure.com/;ApplicationId=f8f2bac3-d8d8-47e0-a1d2-4e35ca8fdffa"
 }
