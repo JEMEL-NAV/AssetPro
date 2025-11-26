@@ -32,7 +32,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
 | 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
 | 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | bf98411 |
-| 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | ✅ **COMPLETE** | (pending) |
+| 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | ✅ **COMPLETE** | 7e9b104 |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
 | 5.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
@@ -501,7 +501,7 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - ✅ Test App: Created, requires published production app to build
 - ⚠️ Test execution: Requires BC container configuration
 
-**Git Commit:** (pending) "Phase 2 Stage 4.3 - Component Ledger posting logic"
+**Git Commit:** `7e9b104` "Phase 2 Stage 4.3 - Component Ledger posting logic (BC pattern)"
 
 ---
 
@@ -746,7 +746,7 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - [x] **Stage 3.3** - Component removal (Git: c467645)
 - [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
 - [x] **Stage 4.2** - Component Ledger pages (Git: bf98411)
-- [x] **Stage 4.3** - Component Ledger posting logic (Git: pending)
+- [x] **Stage 4.3** - Component Ledger posting logic (Git: 7e9b104)
 - [ ] Stage 5.1 - Sales asset line tables
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables
