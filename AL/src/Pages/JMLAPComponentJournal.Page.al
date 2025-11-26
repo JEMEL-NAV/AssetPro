@@ -1,15 +1,40 @@
 page 70182376 "JML AP Component Journal"
 {
-    Caption = 'Component Journal';
+    Caption = 'Asset Component Journal';
     PageType = Worksheet;
     SourceTable = "JML AP Component Journal Line";
     ApplicationArea = All;
     UsageCategory = Tasks;
+    AutoSplitKey = true;
+    DelayedInsert = true;
 
     layout
     {
         area(Content)
         {
+            field(CurrentBatchName; CurrentBatchName)
+            {
+                ApplicationArea = All;
+                Caption = 'Batch Name';
+                ToolTip = 'Specifies the name of the component journal batch.';
+                Lookup = true;
+
+                trigger OnValidate()
+                begin
+                    SetBatchFilter();
+                end;
+
+                trigger OnLookup(var Text: Text): Boolean
+                var
+                    ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
+                begin
+                    if Page.RunModal(Page::"JML AP Component Jnl. Batches", ComponentJnlBatch) = Action::LookupOK then begin
+                        CurrentBatchName := ComponentJnlBatch.Name;
+                        SetBatchFilter();
+                    end;
+                end;
+            }
+
             repeater(Lines)
             {
                 field("Journal Batch"; Rec."Journal Batch")
@@ -156,4 +181,44 @@ page 70182376 "JML AP Component Journal"
             }
         }
     }
+
+    trigger OnOpenPage()
+    begin
+        if CurrentBatchName = '' then
+            SetDefaultBatch();
+        SetBatchFilter();
+    end;
+
+    trigger OnNewRecord(BelowxRec: Boolean)
+    begin
+        Rec."Journal Batch" := CurrentBatchName;
+        Rec."Posting Date" := WorkDate();
+    end;
+
+    local procedure SetBatchFilter()
+    begin
+        Rec.FilterGroup := 2;
+        Rec.SetRange("Journal Batch", CurrentBatchName);
+        Rec.FilterGroup := 0;
+        if Rec.Find('-') then;
+        CurrPage.Update(false);
+    end;
+
+    local procedure SetDefaultBatch()
+    var
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
+    begin
+        if ComponentJnlBatch.FindFirst() then
+            CurrentBatchName := ComponentJnlBatch.Name
+        else begin
+            ComponentJnlBatch.Init();
+            ComponentJnlBatch.Name := 'DEFAULT';
+            ComponentJnlBatch.Description := 'Default Batch';
+            ComponentJnlBatch.Insert();
+            CurrentBatchName := ComponentJnlBatch.Name;
+        end;
+    end;
+
+    var
+        CurrentBatchName: Code[10];
 }

@@ -297,6 +297,15 @@ page 70182333 "JML AP Asset Card"
                 RunObject = page "JML AP Relationship Entries";
                 RunPageLink = "Asset No." = field("No.");
             }
+            action(ComponentEntries)
+            {
+                ApplicationArea = All;
+                Caption = 'Component Entries';
+                ToolTip = 'View all component entries for this asset (installations, removals, replacements).';
+                Image = Components;
+                RunObject = page "JML AP Component Entries";
+                RunPageLink = "Asset No." = field("No.");
+            }
             action(ChildrenAssets)
             {
                 ApplicationArea = All;

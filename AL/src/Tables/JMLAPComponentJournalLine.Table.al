@@ -10,7 +10,7 @@ table 70182328 "JML AP Component Journal Line"
         {
             Caption = 'Journal Batch';
             ToolTip = 'Specifies the journal batch.';
-            TableRelation = "JML AP Asset Journal Batch";
+            TableRelation = "JML AP Component Jnl. Batch";
         }
 
         field(2; "Line No."; Integer)

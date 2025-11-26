@@ -10,7 +10,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
@@ -20,8 +20,8 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Asset, Item, and Component Journal Line with Install type and positive quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -38,7 +38,7 @@ codeunit 50111 "JML AP Component Tests"
         LibraryAssert.AreEqual(ComponentEntry."Entry Type"::Install, ComponentEntry."Entry Type", 'Entry Type should be Install');
 
         // [THEN] Journal line deleted
-        ComponentJnlLine.SetRange("Journal Batch", AssetJnlBatch."Name");
+        ComponentJnlLine.SetRange("Journal Batch", ComponentJnlBatch."Name");
         LibraryAssert.RecordIsEmpty(ComponentJnlLine);
     end;
 
@@ -47,7 +47,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
@@ -56,8 +56,8 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Asset, Item, and Component Journal Line with Remove type and negative quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -77,15 +77,15 @@ codeunit 50111 "JML AP Component Tests"
     procedure TestPostComponentJournal_MissingAsset_Error()
     var
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Asset does not exist
         // [GIVEN] Item and Component Journal Line with non-existent Asset
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", 'NONEXIST', Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", 'NONEXIST', Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -100,15 +100,15 @@ codeunit 50111 "JML AP Component Tests"
     procedure TestPostComponentJournal_MissingItem_Error()
     var
         Asset: Record "JML AP Asset";
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Item does not exist
         // [GIVEN] Asset and Component Journal Line with non-existent Item
         CreateTestAsset(Asset);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", 'NONEXIST', ComponentJnlLine."Entry Type"::Install, 1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", 'NONEXIST', ComponentJnlLine."Entry Type"::Install, 1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -124,7 +124,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
@@ -132,8 +132,8 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Component Journal Line with Install type and negative quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, -1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, -1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -149,7 +149,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
@@ -157,8 +157,8 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Component Journal Line with Remove type and positive quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, 1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, 1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -174,7 +174,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
@@ -183,9 +183,9 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Two component journal lines
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -206,7 +206,7 @@ codeunit 50111 "JML AP Component Tests"
     var
         Asset: Record "JML AP Asset";
         Item: Record Item;
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
@@ -215,10 +215,10 @@ codeunit 50111 "JML AP Component Tests"
         // [GIVEN] Three component journal lines
         CreateTestAsset(Asset);
         CreateTestItem(Item);
-        CreateTestJournalBatch(AssetJnlBatch);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 2);
-        CreateComponentJournalLine(ComponentJnlLine, AssetJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
+        CreateTestJournalBatch(ComponentJnlBatch);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 2);
+        CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
 
         // [WHEN] Post component journal
         ComponentJnlPost.SetSuppressConfirmation(true);
@@ -237,27 +237,33 @@ codeunit 50111 "JML AP Component Tests"
     end;
 
     local procedure CreateTestAsset(var Asset: Record "JML AP Asset")
+    var
+        GuidText: Text;
     begin
         Asset.Init();
-        Asset."No." := 'TEST-ASSET-' + Format(CreateGuid());
+        GuidText := Format(CreateGuid());
+        Asset."No." := CopyStr('TST-A-' + CopyStr(GuidText, 2, 13), 1, 20);
         Asset.Description := 'Test Asset for Component Tests';
         Asset.Insert(true);
     end;
 
     local procedure CreateTestItem(var Item: Record Item)
+    var
+        GuidText: Text;
     begin
         Item.Init();
-        Item."No." := 'TEST-ITEM-' + Format(CreateGuid());
+        GuidText := Format(CreateGuid());
+        Item."No." := CopyStr('TST-I-' + CopyStr(GuidText, 2, 13), 1, 20);
         Item.Description := 'Test Item for Component Tests';
         Item."Base Unit of Measure" := 'PCS';
         Item.Insert(true);
     end;
 
-    local procedure CreateTestJournalBatch(var AssetJnlBatch: Record "JML AP Asset Journal Batch")
+    local procedure CreateTestJournalBatch(var ComponentJnlBatch: Record "JML AP Component Jnl. Batch")
     begin
-        AssetJnlBatch.Init();
-        AssetJnlBatch."Name" := 'TESTBATCH';
-        if AssetJnlBatch.Insert(true) then;
+        ComponentJnlBatch.Init();
+        ComponentJnlBatch."Name" := 'TESTBATCH';
+        if ComponentJnlBatch.Insert(true) then;
     end;
 
     local procedure CreateComponentJournalLine(
