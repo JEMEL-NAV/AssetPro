@@ -30,7 +30,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 3.1 | Manual Holder Change Control | Table enhancements, tests | ✅ **COMPLETE** | b17de0f |
 | 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
-| 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | Pending | - |
+| 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | (pending) |
 | 4.2 | Component Ledger - Pages | 2 pages | Pending | - |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | Pending | - |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
@@ -42,7 +42,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 7.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
 | 8.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
 
-**Progress: 10/21 stages complete (48%)**
+**Progress: 11/21 stages complete (52%)**
 
 ---
 
@@ -370,24 +370,30 @@ Refactored from direct holder entry creation to journal-based pattern for unifie
 
 ## Stage 4: Component Ledger
 
-### Stage 4.1: Component Ledger - Tables & Enum ⏸️ PENDING
+### Stage 4.1: Component Ledger - Tables & Enum ✅ COMPLETE
 
 **Objective:** Create ledger-based component tracking (following Holder Entry pattern)
 
 **Design Document:** `.claude/Component_Ledger_Design.md`
 
-**Objects to Create:**
-- Table 70182329 "JML AP Component Entry" (ledger table, auto-increment Entry No.)
-- Table 70182308 "JML AP Component Journal Line" (reuse available ID)
-- Enum 70182406 "JML AP Component Entry Type" (recreate: Install, Remove, Replace, Adjustment)
+**Objects Created:**
+- ✅ Table 70182329 "JML AP Component Entry" (ledger table, auto-increment Entry No.)
+- ✅ Table 70182328 "JML AP Component Journal Line"
+- ✅ Enum 70182406 "JML AP Component Entry Type" (Install, Remove, Replace, Adjustment)
 
-**Key Features:**
+**Objects Enhanced:**
+- ✅ Permissionset 70182300 "JMLAssetPro" - Added Component Entry and Journal Line permissions
+
+**Key Features Implemented:**
 - ✅ Ledger-based architecture (immutable entries)
 - ✅ Entry Type: Install (+qty), Remove (-qty), Replace, Adjustment
 - ✅ Complete audit trail (Asset No., Item No., Posting Date, User, Transaction No.)
 - ✅ Document tracking (Document Type, Document No., External Doc No.)
 - ✅ Physical details (Position, Serial No., Lot No.)
 - ✅ Auto-increment Entry No. (no manual assignment)
+- ✅ Component Journal Line with validation (Asset, Item lookups)
+- ✅ Unit of Measure support with automatic default from Item
+- ✅ OnInsert triggers for User ID and Created DateTime
 
 **Architecture:**
 ```
@@ -395,11 +401,12 @@ Component Entry (Ledger) ← Component Jnl.-Post ← Component Journal Line
                          ← Sales/Purchase Integration
 ```
 
-**Testing:**
-- Manual: Create Component Entry and Component Journal Line records
-- Build: 0 errors, 0 warnings
+**Build Status:**
+- ✅ Main App: 0 errors, 0 warnings
+- ✅ Permissionset updated with new objects
+- ✅ Page references commented out (will be enabled in Stage 4.2)
 
-**Git Commit:** "Phase 2 Stage 4.1 - Component Ledger tables and enum"
+**Git Commit:** (pending) "Phase 2 Stage 4.1 - Component Ledger tables and enum"
 
 ---
 
@@ -701,7 +708,9 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [x] **Stage 2.1** - Relationship tracking infrastructure (Git: 6aa8467)
 - [x] **Stage 2.2** - Asset Card relationship enhancements (Git: 3f01ce6)
 - [x] **Stage 3.1** - Manual holder change control (Git: b17de0f)
-- [ ] Stage 4.1 - Sales asset line tables
+- [x] **Stage 3.3** - Component removal (Git: c467645)
+- [x] **Stage 4.1** - Component Ledger tables and enum (Git: pending)
+- [ ] Stage 4.2 - Component Ledger pages
 - [ ] Stage 4.2 - Sales asset line pages
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables
@@ -711,14 +720,14 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [ ] Stage 7.1 - Role Center implementation
 
 ### Current Stage
-**Stage 2.2** - Asset Card Enhancements (Next to implement)
+**Stage 4.2** - Component Ledger Pages (Next to implement)
 
 ### Progress Summary
-- **Completed:** 6/17 stages (35%)
-- **Current Phase:** Stage 2 - Relationship Tracking (In Progress)
-- **Git Commits:** 6 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467)
-- **Objects Created:** 25 (3 enums, 7 tables, 9 pages, 4 codeunits, 2 table enhancements)
-- **Tests Created:** 21 test procedures (6 in 50107, 10 in 50108, 5 in 50109)
+- **Completed:** 11/21 stages (52%)
+- **Current Phase:** Stage 4 - Component Ledger (In Progress)
+- **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645)
+- **Objects Created:** 28 (4 enums, 9 tables, 9 pages, 4 codeunits, 2 table enhancements)
+- **Tests Created:** 27 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110)
 
 ---
 
@@ -742,7 +751,8 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - 70182325: Posted Purch. Rcpt. Asset Line
 - 70182326: Posted Ret. Shpt. Asset Line
 - 70182327: Posted Ret. Rcpt. Asset Line
-- 70182328: Asset Mgmt. Cue
+- 70182328: Component Journal Line ✅ CREATED
+- 70182329: Component Entry ✅ CREATED
 
 ### Pages (70182351-70182372)
 - 70182351: Asset Journal Batches ✅ CREATED
@@ -759,7 +769,8 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - 70182392: Document Integration
 - 70182393: Relationship Mgt ✅ CREATED
 
-### Enums (70182408-70182409)
+### Enums (70182406-70182409)
+- 70182406: Component Entry Type ✅ CREATED
 - 70182408: Relationship Entry Type ✅ CREATED
 - 70182409: Transfer Status ✅ CREATED
 
