@@ -12,7 +12,6 @@ table 70182329 "JML AP Component Entry"
         {
             Caption = 'Entry No.';
             ToolTip = 'Specifies the entry number.';
-            AutoIncrement = true;
         }
 
         // === ASSET REFERENCE ===

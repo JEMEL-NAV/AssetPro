@@ -122,9 +122,12 @@ page 70182376 "JML AP Component Journal"
                 PromotedIsBig = true;
 
                 trigger OnAction()
+                var
+                    ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
                 begin
-                    // Placeholder - will be implemented in Stage 4.3
-                    Message('Post action will be implemented in Stage 4.3 with Component Jnl.-Post codeunit.');
+                    Commit();
+                    ComponentJnlPost.Run(Rec);
+                    CurrPage.Update(false);
                 end;
             }
 
@@ -138,9 +141,17 @@ page 70182376 "JML AP Component Journal"
                 PromotedCategory = Process;
 
                 trigger OnAction()
+                var
+                    ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
+                    ComponentEntry: Record "JML AP Component Entry";
                 begin
-                    // Placeholder - will be implemented in Stage 4.3
-                    Message('Post and Print action will be implemented in Stage 4.3.');
+                    Commit();
+                    ComponentJnlPost.Run(Rec);
+                    CurrPage.Update(false);
+
+                    // Print functionality - open Component Entries page
+                    ComponentEntry.SetRange("Posting Date", WorkDate());
+                    Page.Run(Page::"JML AP Component Entries", ComponentEntry);
                 end;
             }
         }

@@ -46,6 +46,7 @@ permissionset 70182300 JMLAssetPro
         codeunit "JML AP Asset Validation"=X,
         codeunit "JML AP Attribute Mgmt"=X,
         codeunit "JML AP Classification Mgt"=X,
+        codeunit "JML AP Component Jnl.-Post"=X,
         codeunit "JML AP Install"=X,
         codeunit "JML AP Relationship Mgt"=X,
         codeunit "JML AP Release Asset Transfer"=X,
