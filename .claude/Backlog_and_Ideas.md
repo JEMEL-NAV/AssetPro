@@ -98,6 +98,13 @@
 
 ---
 
+### 10. Wozard to setup extension
+**Description:** Create wizard process to make setup to app
+**Status:** Pending
+**Scope:** After Phase 2 complete
+
+---
+
 ## Notes
 
 - Items here are NOT part of Phase 2 implementation plan

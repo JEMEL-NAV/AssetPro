@@ -104,8 +104,7 @@ page 70182332 "JML AP Asset List"
                     if Asset.FindSet() then begin
                         repeat
                             if Asset."Parent Asset No." <> '' then begin
-                                Asset."Parent Asset No." := ''; // Triggers OnValidate which logs detach
-                                Asset.Modify(true);
+                                Asset.DetachFromParent();
                                 DetachedCount += 1;
                             end;
                         until Asset.Next() = 0;

@@ -101,20 +101,10 @@ page 70182353 "JML AP Asset Transfer Orders"
                 Image = ReleaseDoc;
 
                 trigger OnAction()
+                var
+                    ReleaseAssetTransferDoc: Codeunit "JML AP Release Asset Transfer";
                 begin
-                    if Rec.Status = Rec.Status::Released then
-                        Error(AlreadyReleasedErr);
-
-                    Rec.TestField("From Holder Type");
-                    Rec.TestField("From Holder Code");
-                    Rec.TestField("To Holder Type");
-                    Rec.TestField("To Holder Code");
-
-                    if not HasLines() then
-                        Error(NoLinesErr);
-
-                    Rec.Status := Rec.Status::Released;
-                    Rec.Modify(true);
+                    ReleaseAssetTransferDoc.Run(Rec);
                     CurrPage.Update(false);
                 end;
             }
@@ -127,12 +117,10 @@ page 70182353 "JML AP Asset Transfer Orders"
                 Image = ReOpen;
 
                 trigger OnAction()
+                var
+                    ReleaseAssetTransferDoc: Codeunit "JML AP Release Asset Transfer";
                 begin
-                    if Rec.Status = Rec.Status::Open then
-                        Error(AlreadyOpenErr);
-
-                    Rec.Status := Rec.Status::Open;
-                    Rec.Modify(true);
+                    ReleaseAssetTransferDoc.Reopen(Rec);
                     CurrPage.Update(false);
                 end;
             }
@@ -199,17 +187,6 @@ page 70182353 "JML AP Asset Transfer Orders"
         }
     }
 
-    local procedure HasLines(): Boolean
     var
-        TransferLine: Record "JML AP Asset Transfer Line";
-    begin
-        TransferLine.SetRange("Document No.", Rec."No.");
-        exit(not TransferLine.IsEmpty);
-    end;
-
-    var
-        AlreadyReleasedErr: Label 'The transfer order is already released.';
-        AlreadyOpenErr: Label 'The transfer order is already open.';
         NotReleasedErr: Label 'The transfer order must be released before posting.';
-        NoLinesErr: Label 'There are no lines to release.';
 }

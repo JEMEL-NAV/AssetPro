@@ -321,4 +321,26 @@ table 70182313 "JML AP Asset Transfer Header"
             SetupRead := true;
         end;
     end;
+
+    /// <summary>
+    /// Checks if the transfer order has any lines.
+    /// </summary>
+    procedure HasLines(): Boolean
+    var
+        TransferLine: Record "JML AP Asset Transfer Line";
+    begin
+        TransferLine.SetRange("Document No.", "No.");
+        exit(not TransferLine.IsEmpty);
+    end;
+
+    /// <summary>
+    /// Counts the number of lines in the transfer order.
+    /// </summary>
+    procedure CountLines(): Integer
+    var
+        TransferLine: Record "JML AP Asset Transfer Line";
+    begin
+        TransferLine.SetRange("Document No.", "No.");
+        exit(TransferLine.Count);
+    end;
 }

@@ -604,6 +604,18 @@ table 70182301 "JML AP Asset"
         // Note: If no classification, no hierarchy filtering applied (flexible physical hierarchy)
     end;
 
+    /// <summary>
+    /// Detaches the asset from its parent asset and logs the detach event.
+    /// </summary>
+    procedure DetachFromParent()
+    begin
+        if "Parent Asset No." = '' then
+            Error(NoParentToDetachErr);
+
+        Validate("Parent Asset No.", ''); // Triggers OnValidate which logs detach
+        Modify(true);
+    end;
+
     local procedure ValidateClassification()
     var
         ClassValue: Record "JML AP Classification Val";
@@ -959,6 +971,7 @@ table 70182301 "JML AP Asset"
         ClassificationNotFoundErr: Label 'Classification %1 does not exist in industry %2.', Comment = '%1 = Classification Code, %2 = Industry Code';
         ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
         DifferentHolderErr: Label 'Cannot assign asset %1 to parent %2. Parent is at %3 %4, but child is at different holder. Both assets must be at same location to create parent-child relationship.', Comment = '%1 = Child Asset No., %2 = Parent Asset No., %3 = Parent Holder Type, %4 = Parent Holder Code';
+        NoParentToDetachErr: Label 'This asset is not attached to a parent.';
 
     local procedure GetMaxParentChainDepth(): Integer
     begin

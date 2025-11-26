@@ -339,11 +339,7 @@ page 70182333 "JML AP Asset Card"
 
                 trigger OnAction()
                 begin
-                    if Rec."Parent Asset No." = '' then
-                        Error('This asset is not attached to a parent.');
-
-                    Rec."Parent Asset No." := ''; // Triggers OnValidate which logs detach
-                    Rec.Modify(true);
+                    Rec.DetachFromParent();
                     CurrPage.Update(false);
                     Message('Asset detached from parent.');
                 end;

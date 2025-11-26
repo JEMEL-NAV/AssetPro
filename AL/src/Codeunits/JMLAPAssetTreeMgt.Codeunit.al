@@ -54,17 +54,16 @@ codeunit 70182394 "JML AP Asset Tree Mgt"
         end;
 
         // Depth-first traversal using stack
-        while PopAssetFromStack(TempStack, CurrentAssetNo) do begin
+        while PopAssetFromStack(TempStack, CurrentAssetNo) do
             if TempAsset.Get(CurrentAssetNo) then begin
                 PresentationOrder += 10000;
 
                 // Update the real asset record
-                if Asset.Get(CurrentAssetNo) then begin
+                if Asset.Get(CurrentAssetNo) then
                     if Asset."Presentation Order" <> PresentationOrder then begin
                         Asset."Presentation Order" := PresentationOrder;
                         Asset.Modify();
                     end;
-                end;
 
                 // Push children onto stack (in reverse order for correct tree display)
                 TempAsset.Reset();
@@ -76,7 +75,6 @@ codeunit 70182394 "JML AP Asset Tree Mgt"
                         PushAssetToStack(TempStack, TempAsset."No.");
                     until TempAsset.Next() = 0;
             end;
-        end;
     end;
 
     local procedure PushAssetToStack(var TempStack: Record "Name/Value Buffer" temporary; AssetNo: Code[20])
