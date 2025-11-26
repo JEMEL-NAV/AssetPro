@@ -31,7 +31,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
 | 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
-| 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | (pending) |
+| 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | bf98411 |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | Pending | - |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
@@ -441,7 +441,7 @@ Component Entry (Ledger) ← Component Jnl.-Post ← Component Journal Line
 - ✅ Manual UI testing ready (pages created and compile)
 - ⚠️ No automated tests (page-only stage, testing in Stage 4.3)
 
-**Git Commit:** (pending) "Phase 2 Stage 4.2 - Component Ledger pages"
+**Git Commit:** `bf98411` "Phase 2 Stage 4.2 - Component Ledger pages"
 
 ---
 
@@ -722,7 +722,7 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [x] **Stage 3.1** - Manual holder change control (Git: b17de0f)
 - [x] **Stage 3.3** - Component removal (Git: c467645)
 - [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
-- [x] **Stage 4.2** - Component Ledger pages (Git: pending)
+- [x] **Stage 4.2** - Component Ledger pages (Git: bf98411)
 - [ ] Stage 4.2 - Sales asset line pages
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables
