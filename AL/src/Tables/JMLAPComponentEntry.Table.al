@@ -2,8 +2,8 @@ table 70182329 "JML AP Component Entry"
 {
     Caption = 'Component Entry';
     DataClassification = CustomerContent;
-    // DrillDownPageId = "JML AP Component Entries"; // Will be enabled in Stage 4.2
-    // LookupPageId = "JML AP Component Entries"; // Will be enabled in Stage 4.2
+    DrillDownPageId = "JML AP Component Entries";
+    LookupPageId = "JML AP Component Entries";
 
     fields
     {

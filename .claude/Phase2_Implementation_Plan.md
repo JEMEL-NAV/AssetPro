@@ -31,7 +31,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
 | 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
-| 4.2 | Component Ledger - Pages | 2 pages | Pending | - |
+| 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | (pending) |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | Pending | - |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
@@ -42,7 +42,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 7.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
 | 8.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
 
-**Progress: 11/21 stages complete (52%)**
+**Progress: 12/21 stages complete (57%)**
 
 ---
 
@@ -410,26 +410,38 @@ Component Entry (Ledger) ← Component Jnl.-Post ← Component Journal Line
 
 ---
 
-### Stage 4.2: Component Ledger - Pages ⏸️ PENDING
+### Stage 4.2: Component Ledger - Pages ✅ COMPLETE
 
 **Objective:** Create UI for viewing and posting components
 
-**Objects to Create:**
-- Page 70182373 "JML AP Component Entries" (read-only ledger view)
-- Page 70182374 "JML AP Component Journal" (manual posting worksheet)
+**Objects Created:**
+- ✅ Page 70182375 "JML AP Component Entries" (read-only ledger view)
+- ✅ Page 70182376 "JML AP Component Journal" (manual posting worksheet)
 
-**Key Features:**
-- ✅ Component Entries page: Full history view (immutable)
-- ✅ Component Journal page: Manual entry with Post action
-- ✅ Filtering by Asset No., Item No., Entry Type, Posting Date
-- ✅ Transaction No. linking for grouped entries
+**Objects Enhanced:**
+- ✅ Table 70182329 "JML AP Component Entry" - Enabled DrillDownPageId and LookupPageId
+- ✅ Permissionset 70182300 "JMLAssetPro" - Added Component pages
+
+**Key Features Implemented:**
+- ✅ Component Entries page: Full history view (immutable, read-only)
+- ✅ Component Journal page: Manual entry worksheet with validation
+- ✅ All fields display with Caption and ToolTip
+- ✅ ShowMandatory on required fields (Asset No., Item No., Entry Type, Quantity, Posting Date)
+- ✅ Post and Post & Print actions (placeholders for Stage 4.3)
+- ✅ FlowFields for Asset Description and Item Description
+- ✅ Complete field set: identification, quantities, physical details, document tracking, audit fields
+- ✅ UsageCategory set for navigation (ReportsAndAnalysis for entries, Tasks for journal)
+
+**Build Status:**
+- ✅ Main App: 0 errors, 0 warnings
+- ✅ Clean compilation achieved
+- ✅ Page IDs corrected to avoid conflicts (70182375-70182376)
 
 **Testing:**
-- Manual: Open Component Entries page (empty)
-- Manual: Open Component Journal page, add line
-- Build: 0 errors, 0 warnings
+- ✅ Manual UI testing ready (pages created and compile)
+- ⚠️ No automated tests (page-only stage, testing in Stage 4.3)
 
-**Git Commit:** "Phase 2 Stage 4.2 - Component Ledger pages"
+**Git Commit:** (pending) "Phase 2 Stage 4.2 - Component Ledger pages"
 
 ---
 
@@ -710,7 +722,7 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [x] **Stage 3.1** - Manual holder change control (Git: b17de0f)
 - [x] **Stage 3.3** - Component removal (Git: c467645)
 - [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
-- [ ] Stage 4.2 - Component Ledger pages
+- [x] **Stage 4.2** - Component Ledger pages (Git: pending)
 - [ ] Stage 4.2 - Sales asset line pages
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables
@@ -720,13 +732,13 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [ ] Stage 7.1 - Role Center implementation
 
 ### Current Stage
-**Stage 4.2** - Component Ledger Pages (Next to implement)
+**Stage 4.3** - Component Ledger Posting Logic (Next to implement)
 
 ### Progress Summary
-- **Completed:** 11/21 stages (52%)
+- **Completed:** 12/21 stages (57%)
 - **Current Phase:** Stage 4 - Component Ledger (In Progress)
 - **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645)
-- **Objects Created:** 28 (4 enums, 9 tables, 9 pages, 4 codeunits, 2 table enhancements)
+- **Objects Created:** 30 (4 enums, 9 tables, 11 pages, 4 codeunits, 2 table enhancements)
 - **Tests Created:** 27 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110)
 
 ---
@@ -754,14 +766,18 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - 70182328: Component Journal Line ✅ CREATED
 - 70182329: Component Entry ✅ CREATED
 
-### Pages (70182351-70182372)
+### Pages (70182351-70182376)
 - 70182351: Asset Journal Batches ✅ CREATED
 - 70182352: Asset Journal ✅ CREATED
-- 70182353-70182358: Transfer Order pages (6)
+- 70182353-70182358: Transfer Order pages (6) ✅ CREATED
 - 70182359-70182364: Document integration subpages (6)
 - 70182365: Relationship Entries ✅ CREATED
 - 70182366-70182369: Posted shipment/receipt subpages (4)
 - 70182370-70182372: Role Center pages (3)
+- 70182373: Change Holder Dialog ✅ CREATED
+- 70182374: (reserved)
+- 70182375: Component Entries ✅ CREATED
+- 70182376: Component Journal ✅ CREATED
 
 ### Codeunits (70182390-70182393)
 - 70182390: Asset Jnl.-Post ✅ CREATED

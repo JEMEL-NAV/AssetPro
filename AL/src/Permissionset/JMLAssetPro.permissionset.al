@@ -72,6 +72,8 @@ permissionset 70182300 JMLAssetPro
         page "JML AP Change Holder Dialog"=X,
         page "JML AP Classification Lvls"=X,
         page "JML AP Classification Vals"=X,
+        page "JML AP Component Entries"=X,
+        page "JML AP Component Journal"=X,
         page "JML AP Holder Entries"=X,
         page "JML AP Industries"=X,
         page "JML AP Relationship Entries"=X,
