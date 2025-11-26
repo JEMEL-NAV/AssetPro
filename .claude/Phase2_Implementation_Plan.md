@@ -29,16 +29,20 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 2.2 | Asset Card Enhancements | Page modifications, table trigger, tests | ✅ **COMPLETE** | 3f01ce6 |
 | 3.1 | Manual Holder Change Control | Table enhancements, tests | ✅ **COMPLETE** | b17de0f |
 | 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
-| 4.1 | Sales Asset Line Tables | 4 tables | Pending | - |
-| 4.2 | Sales Asset Line Pages | 4 pages | Pending | - |
-| 4.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
-| 5.1 | Purchase Asset Line Tables | 4 tables | Pending | - |
-| 5.2 | Purchase Integration Logic | 5 pages, 2 extensions, tests | Pending | - |
-| 6.1 | Transfer Asset Line Tables | 2 tables, 2 pages | Pending | - |
-| 6.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
-| 7.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
+| 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
+| 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | Pending | - |
+| 4.2 | Component Ledger - Pages | 2 pages | Pending | - |
+| 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | Pending | - |
+| 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
+| 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
+| 5.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
+| 6.1 | Purchase Asset Line Tables | 4 tables | Pending | - |
+| 6.2 | Purchase Integration Logic | 5 pages, 2 extensions, tests | Pending | - |
+| 7.1 | Transfer Asset Line Tables | 2 tables, 2 pages | Pending | - |
+| 7.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
+| 8.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
 
-**Progress: 9/18 stages complete (50%)**
+**Progress: 10/21 stages complete (48%)**
 
 ---
 
@@ -335,9 +339,133 @@ Refactored from direct holder entry creation to journal-based pattern for unifie
 
 ---
 
-## Stage 4: BC Document Integration - Sales
+### Stage 3.3: Component Removal ✅ COMPLETE
 
-### Stage 4.1: Sales Asset Line Tables ⏸️ PENDING
+**Objective:** Remove unused Component table and prepare for proper implementation
+
+**Objects Removed:**
+- ✅ Table 70182307 "JML AP Component" (confused architecture - master/ledger hybrid)
+- ✅ Page 70182340 "JML AP Components" (read-only, no actual usage)
+- ✅ Enum 70182406 "JML AP Component Entry Type"
+
+**Objects Modified:**
+- ✅ Page 70182333 "JML AP Asset Card" - Removed ComponentsList part
+- ✅ Table 70182301 "JML AP Asset" - Removed Component cleanup code
+- ✅ Codeunit 70182380 "JML AP Asset Management" - Removed CopyAssetComponents
+- ✅ Permissionset 70182300 - Removed Component references
+
+**Reasoning:**
+- Table had confused structure (master table with ledger fields)
+- Page was read-only with no data entry functionality
+- No actual usage or business value
+- Will implement proper Component Ledger in Stage 4
+
+**Build Status:**
+- ✅ Main App: 0 errors, 0 warnings
+- ✅ No Component references remaining in codebase
+
+**Git Commit:** `c467645` "Remove unused Component table, page, and enum"
+
+---
+
+## Stage 4: Component Ledger
+
+### Stage 4.1: Component Ledger - Tables & Enum ⏸️ PENDING
+
+**Objective:** Create ledger-based component tracking (following Holder Entry pattern)
+
+**Design Document:** `.claude/Component_Ledger_Design.md`
+
+**Objects to Create:**
+- Table 70182329 "JML AP Component Entry" (ledger table, auto-increment Entry No.)
+- Table 70182308 "JML AP Component Journal Line" (reuse available ID)
+- Enum 70182406 "JML AP Component Entry Type" (recreate: Install, Remove, Replace, Adjustment)
+
+**Key Features:**
+- ✅ Ledger-based architecture (immutable entries)
+- ✅ Entry Type: Install (+qty), Remove (-qty), Replace, Adjustment
+- ✅ Complete audit trail (Asset No., Item No., Posting Date, User, Transaction No.)
+- ✅ Document tracking (Document Type, Document No., External Doc No.)
+- ✅ Physical details (Position, Serial No., Lot No.)
+- ✅ Auto-increment Entry No. (no manual assignment)
+
+**Architecture:**
+```
+Component Entry (Ledger) ← Component Jnl.-Post ← Component Journal Line
+                         ← Sales/Purchase Integration
+```
+
+**Testing:**
+- Manual: Create Component Entry and Component Journal Line records
+- Build: 0 errors, 0 warnings
+
+**Git Commit:** "Phase 2 Stage 4.1 - Component Ledger tables and enum"
+
+---
+
+### Stage 4.2: Component Ledger - Pages ⏸️ PENDING
+
+**Objective:** Create UI for viewing and posting components
+
+**Objects to Create:**
+- Page 70182373 "JML AP Component Entries" (read-only ledger view)
+- Page 70182374 "JML AP Component Journal" (manual posting worksheet)
+
+**Key Features:**
+- ✅ Component Entries page: Full history view (immutable)
+- ✅ Component Journal page: Manual entry with Post action
+- ✅ Filtering by Asset No., Item No., Entry Type, Posting Date
+- ✅ Transaction No. linking for grouped entries
+
+**Testing:**
+- Manual: Open Component Entries page (empty)
+- Manual: Open Component Journal page, add line
+- Build: 0 errors, 0 warnings
+
+**Git Commit:** "Phase 2 Stage 4.2 - Component Ledger pages"
+
+---
+
+### Stage 4.3: Component Ledger - Posting Logic ⏸️ PENDING
+
+**Objective:** Implement component posting with validation
+
+**Objects to Create:**
+- Codeunit 70182394 "JML AP Component Jnl.-Post"
+- Test Codeunit 50111 "JML AP Component Tests" (6+ test procedures)
+
+**Key Features Implemented:**
+- ✅ Validate required fields (Asset No., Item No., Entry Type, Posting Date, Quantity)
+- ✅ Validate Asset and Item exist
+- ✅ Validate quantity signs:
+  - Install/Adjustment: Positive quantity
+  - Remove: Negative quantity
+- ✅ Transaction No. assignment (groups related entries)
+- ✅ Create Component Entry from Journal Line
+- ✅ Delete journal lines after successful posting
+
+**Validation Logic:**
+```al
+Install/Adjustment → Quantity must be > 0
+Remove → Quantity must be < 0
+Replace → Two entries (Remove + Install) with same Transaction No.
+```
+
+**Testing:**
+- Unit: Post component journal (happy path)
+- Error: Missing required fields
+- Error: Invalid quantity sign
+- Error: Nonexistent Asset/Item
+- Integration: Transaction No. linking
+- Build-Publish-Test: All tests pass
+
+**Git Commit:** "Phase 2 Stage 4.3 - Component Ledger posting logic"
+
+---
+
+## Stage 5: BC Document Integration - Sales
+
+### Stage 5.1: Sales Asset Line Tables ⏸️ PENDING
 
 **Objective:** Create tables for asset lines on Sales documents (R3)
 
