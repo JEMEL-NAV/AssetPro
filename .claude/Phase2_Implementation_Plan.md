@@ -30,7 +30,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 3.1 | Manual Holder Change Control | Table enhancements, tests | ✅ **COMPLETE** | b17de0f |
 | 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
-| 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | (pending) |
+| 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
 | 4.2 | Component Ledger - Pages | 2 pages | Pending | - |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | Pending | - |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
@@ -406,7 +406,7 @@ Component Entry (Ledger) ← Component Jnl.-Post ← Component Journal Line
 - ✅ Permissionset updated with new objects
 - ✅ Page references commented out (will be enabled in Stage 4.2)
 
-**Git Commit:** (pending) "Phase 2 Stage 4.1 - Component Ledger tables and enum"
+**Git Commit:** `f70fa6d` "Phase 2 Stage 4.1 - Component Ledger tables and enum"
 
 ---
 
@@ -709,7 +709,7 @@ Replace → Two entries (Remove + Install) with same Transaction No.
 - [x] **Stage 2.2** - Asset Card relationship enhancements (Git: 3f01ce6)
 - [x] **Stage 3.1** - Manual holder change control (Git: b17de0f)
 - [x] **Stage 3.3** - Component removal (Git: c467645)
-- [x] **Stage 4.1** - Component Ledger tables and enum (Git: pending)
+- [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
 - [ ] Stage 4.2 - Component Ledger pages
 - [ ] Stage 4.2 - Sales asset line pages
 - [ ] Stage 4.3 - Sales integration logic
