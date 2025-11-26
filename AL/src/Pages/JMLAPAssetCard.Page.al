@@ -256,17 +256,6 @@ page 70182333 "JML AP Asset Card"
                     ToolTip = 'Specifies the year of manufacture.';
                 }
             }
-            group(Components)
-            {
-                Caption = 'Components';
-
-                part(ComponentsList; "JML AP Components")
-                {
-                    ApplicationArea = All;
-                    SubPageLink = "Asset No." = field("No.");
-                    Editable = false;
-                }
-            }
         }
         area(FactBoxes)
         {

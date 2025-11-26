@@ -1,13 +1,12 @@
 codeunit 70182380 "JML AP Asset Management"
 {
     /// <summary>
-    /// Copies an asset with optional children and components.
+    /// Copies an asset with optional children.
     /// </summary>
     procedure CopyAsset(
         SourceAsset: Record "JML AP Asset";
         NewAssetNo: Code[20];
-        CopyChildren: Boolean;
-        CopyComponents: Boolean): Code[20]
+        CopyChildren: Boolean): Code[20]
     var
         NewAsset: Record "JML AP Asset";
     begin
@@ -20,10 +19,6 @@ codeunit 70182380 "JML AP Asset Management"
 
         // Copy attributes
         CopyAssetAttributes(SourceAsset."No.", NewAsset."No.");
-
-        // Copy components if requested
-        if CopyComponents then
-            CopyAssetComponents(SourceAsset."No.", NewAsset."No.");
 
         // Copy children if requested
         if CopyChildren then
@@ -47,21 +42,6 @@ codeunit 70182380 "JML AP Asset Management"
             until SourceAttr.Next() = 0;
     end;
 
-    local procedure CopyAssetComponents(SourceAssetNo: Code[20]; NewAssetNo: Code[20])
-    var
-        SourceComp: Record "JML AP Component";
-        NewComp: Record "JML AP Component";
-    begin
-        SourceComp.SetRange("Asset No.", SourceAssetNo);
-        if SourceComp.FindSet() then
-            repeat
-                NewComp.Init();
-                NewComp.TransferFields(SourceComp, false);
-                NewComp."Asset No." := NewAssetNo;
-                NewComp.Insert(true);
-            until SourceComp.Next() = 0;
-    end;
-
     local procedure CopyChildAssets(SourceParentNo: Code[20]; NewParentNo: Code[20])
     var
         ChildAsset: Record "JML AP Asset";
@@ -72,7 +52,7 @@ codeunit 70182380 "JML AP Asset Management"
         if ChildAsset.FindSet() then
             repeat
                 NewChildNo := GetNextChildAssetNo();
-                CopyAsset(ChildAsset, NewChildNo, true, true); // Recursive copy
+                CopyAsset(ChildAsset, NewChildNo, true); // Recursive copy
 
                 // Link copied child to new parent
                 NewChildAsset.Get(NewChildNo);

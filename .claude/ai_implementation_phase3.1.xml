@@ -1,0 +1,119 @@
+<!--
+    BC AL Development Task Template (New Approach - Skills + Hooks)
+
+    Purpose: Define project-specific context and task requirements
+
+    What this template does:
+    ✓ Provides project paths and configuration
+    ✓ References external resources (API docs, research)
+    ✓ Defines task requirements and acceptance criteria
+    ✓ Provides context for Claude to understand the work
+
+    What this template does NOT do:
+    ✗ Activate skills (handled by hooks/src/userPromptSubmit.js)
+    ✗ Define workflow phases (defined in skills/al-development-core/SKILL.md)
+    ✗ Define quality gates (defined in SKILL.md)
+
+    Usage:
+    1. Copy this template for each major feature/task
+    2. Fill in project_info, external_references, and task sections
+    3. Paste into Claude Code when starting work
+    4. Hook system will auto-activate appropriate skills
+-->
+
+// usage claude --permission-mode bypassPermissions "$(Get-Content .\.claude\ai_implementation_phase3.1.xml -Raw)"
+
+<task type="bc_al_development">
+   <project_info>
+		<name>Asset Pro</name>
+		<full_name>Asset Pro - Multi-Industry Asset Management</full_name>
+		<repository_root>C:\GIT\JEMEL\JML_AssetPro</repository_root>
+		<al_project_folder>C:\GIT\JEMEL\JML_AssetPro\AL</al_project_folder>
+		<test_project_folder>C:\GIT\JEMEL\JML_AssetPro\Test</test_project_folder>
+		<claude_folder>C:\GIT\JEMEL\JML_AssetPro\.claude</claude_folder>
+		<description>Multi-industry asset management platform for Microsoft Business Central that adapts to any industry</description>
+		<tagline>Track any asset, any industry, your way</tagline>
+        <documentation_folder>C:\GIT\JEMEL\jemel_web_2025\docusaurus\docs\asset-pro</documentation_folder>
+        <test_info>
+            <container>bc27w1</container>
+            <user>admin</user>
+            <password>test</password>
+        </test_info>
+	</project_info>
+
+    <!-- ========================================
+         EXTERNAL REFERENCES
+         Link to resources Claude should reference
+         ======================================== -->
+    <external_references>
+        <research>
+            <document>
+                <title>Analysis document for implementation</title>
+                <location>.\.claude\Analysis_and_Planning_Asset_Pro_Phase2_v2.md</location>
+            </document>            
+        </research>
+        <previous_phase>
+            <document>
+                <title>Implementation phase 2 details</title>
+                <location>.\.claude\ai_implementation_phase2.xml</location>
+            </document>
+        </previous_phase>
+        <implementation_plan>
+            <document>
+                <title>Implementation Plan for Asset Pro Phase 2</title>
+                <location>.\.claude\Phase2_Implementation_Plan.md</location>
+            </document>
+        </implementation_plan>
+    </external_references>
+
+
+    <!-- ========================================
+         TASK CONTEXT
+         Background information for this work
+         ======================================== -->
+    <context>
+        <overall_project>
+            <goal>
+                Build complete universal Asset Management solution.
+            </goal>
+            <current_status>
+                Analysis if phase 1 ready, start to implement Phase 2.
+                Phase 2 partly ready, check status and continue implementation.
+            </current_status>
+        </overall_project>
+    </context>
+
+
+    <!-- ========================================
+         CURRENT TASK
+         What needs to be done RIGHT NOW
+         ======================================== -->
+    <current_task>
+        <title>Implementation</title>
+
+        <description>
+            We need to implement Asset Management module for Business Central according to analysis document.
+            Follow the requirements and specifications outlined in the analysis document closely.
+            Use full cycle of AL Development skill to deliver high-quality code. 
+            You need to create application objects, write code, and create test cases.
+            Follow best practices for AL development, including naming conventions, code structure, and documentation.
+            Ensure code is well-tested with automated tests.
+            After all is done, prepare prepare documentation for the new module.
+        </description>        
+    </current_task>
+
+
+    <!-- ========================================
+         NOTES & SPECIAL INSTRUCTIONS
+         Anything else Claude should know
+         ======================================== -->
+    <notes>     
+        <note type="reminder">
+            Always verify BC objects structure from Symbols/ before proposing changes.
+            Do NOT assume field numbers or names.
+        </note>                   
+        <note type="critical">
+            use relevant skills for BC AL development, including AL Development Core skill            
+        </note>                 
+    </notes>
+</task>

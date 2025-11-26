@@ -800,14 +800,8 @@ table 70182301 "JML AP Asset"
 
     local procedure DeleteRelatedRecords()
     var
-        Component: Record "JML AP Component";
         AttributeValue: Record "JML AP Attribute Value";
     begin
-        // Delete component BOM entries
-        Component.SetRange("Asset No.", "No.");
-        if not Component.IsEmpty then
-            Component.DeleteAll(true);
-
         // Delete attribute values
         AttributeValue.SetRange("Asset No.", "No.");
         if not AttributeValue.IsEmpty then
