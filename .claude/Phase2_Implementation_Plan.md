@@ -920,20 +920,20 @@ Posted document lines updated with Asset No.
 - [ ] Stage 7.1 - Role Center implementation
 
 ### Current Stage
-**Stage 5.1** - Sales Asset Line Tables (Next to implement)
+**Stage 5.7** - Transfer Order Integration (Next to implement)
 
 ### Progress Summary
-- **Completed:** 15/23 stages (65%)
-- **Current Phase:** Stage 4 - Component Ledger (Complete)
-- **Git Commits:** 10 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c408fe1, f4c6aa9)
-- **Objects Created:** 50 (4 enums, 9 tables, 7 table extensions, 11 pages, 10 page extensions, 8 codeunits, 1 test codeunit)
-- **Tests Created:** 48 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112, 5 in 50113)
+- **Completed:** 21/23 stages (91%)
+- **Current Phase:** Stage 5 - BC Document Integration (Sales + Purchase Complete)
+- **Git Commits:** 12 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c408fe1, f4c6aa9, db965f3, 0f41a55)
+- **Objects Created:** 83 (4 enums, 15 tables, 9 table extensions, 17 pages, 25 page extensions, 10 codeunits, 3 test codeunits)
+- **Tests Created:** 64 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112, 5 in 50113, 8 in 50114, 8 in 50115)
 
 ---
 
 ## Object ID Usage Summary
 
-### Tables (70182311-70182328)
+### Tables (70182311-70182330)
 - 70182311: Asset Journal Batch ✅ CREATED
 - 70182312: Asset Journal Line ✅ CREATED
 - 70182313: Asset Transfer Header ✅ CREATED
@@ -941,42 +941,49 @@ Posted document lines updated with Asset No.
 - 70182315: Posted Asset Transfer ✅ CREATED
 - 70182316: Pstd. Asset Trans. Line ✅ CREATED
 - 70182317: Asset Relation Entry ✅ CREATED
-- 70182318: Sales Asset Line
-- 70182319: Posted Sales Asset Line
-- 70182320: Purch. Asset Line
-- 70182321: Posted Purch. Asset Line
+- 70182318: Sales Asset Line ✅ CREATED (Stage 5.1)
+- 70182319: (reserved)
+- 70182320: Purch. Asset Line ✅ CREATED (Stage 5.4)
+- 70182321: (reserved)
 - 70182322: Transfer Asset Line
-- 70182323: Posted Transfer Asset Line
-- 70182324: Posted Sales Shpt. Asset Line
-- 70182325: Posted Purch. Rcpt. Asset Line
-- 70182326: Posted Ret. Shpt. Asset Line
-- 70182327: Posted Ret. Rcpt. Asset Line
+- 70182323: (reserved)
+- 70182324: Pstd Sales Shpt Ast Ln ✅ CREATED (Stage 5.1)
+- 70182325: Pstd Purch Rcpt Ast Ln ✅ CREATED (Stage 5.4)
+- 70182326: Pstd Ret Rcpt Ast Ln (Sales) ✅ CREATED (Stage 5.1)
+- 70182327: Pstd Ret Shpt Ast Ln (Purch) ✅ CREATED (Stage 5.4)
 - 70182328: Component Journal Line ✅ CREATED
 - 70182329: Component Entry ✅ CREATED
+- 70182330: Component Jnl. Batch ✅ CREATED
 
 ### Pages (70182351-70182376)
 - 70182351: Asset Journal Batches ✅ CREATED
 - 70182352: Asset Journal ✅ CREATED
 - 70182353-70182358: Transfer Order pages (6) ✅ CREATED
-- 70182359-70182364: Document integration subpages (6)
+- 70182359: Sales Asset Subpage ✅ CREATED (Stage 5.2)
+- 70182360: Purch. Asset Subpage ✅ CREATED (Stage 5.5)
+- 70182361-70182364: Transfer Asset subpages (4)
 - 70182365: Relationship Entries ✅ CREATED
-- 70182366-70182369: Posted shipment/receipt subpages (4)
+- 70182366: Pstd Sales Shpt Ast Sub ✅ CREATED (Stage 5.2)
+- 70182367: Pstd Purch Rcpt Ast Sub ✅ CREATED (Stage 5.5)
+- 70182368: Pstd Ret Rcpt Ast Sub (Sales) ✅ CREATED (Stage 5.2)
+- 70182369: Pstd Ret Shpt Ast Sub (Purch) ✅ CREATED (Stage 5.5)
 - 70182370-70182372: Role Center pages (3)
 - 70182373: Change Holder Dialog ✅ CREATED
 - 70182374: (reserved)
 - 70182375: Component Entries ✅ CREATED
 - 70182376: Component Journal ✅ CREATED
 
-### Codeunits (70182390-70182398)
+### Codeunits (70182390-70182399)
 - 70182390: Asset Jnl.-Post ✅ CREATED
 - 70182391: Asset Transfer-Post ✅ CREATED
-- 70182392: Document Integration
+- 70182392: (reserved - Document Integration consolidated)
 - 70182393: Relationship Mgt ✅ CREATED
 - 70182394: Asset Tree Mgt ✅ CREATED
 - 70182395: Asset Validation ✅ CREATED
 - 70182396: Component Jnl.-Post ✅ CREATED
 - 70182397: Item Jnl. Integration ✅ CREATED
-- 70182398: Sales Integration ✅ CREATED
+- 70182398: Sales Integration ✅ ENHANCED (Stage 5.3)
+- 70182399: Purch. Integration ✅ CREATED (Stage 5.6)
 
 ### Enums (70182406-70182409)
 - 70182406: Component Entry Type ✅ CREATED
@@ -989,8 +996,10 @@ Posted document lines updated with Asset No.
 - ✅ Page 70182330: JML AP Asset Setup (added Numbering group)
 
 ### Table Extensions (70182420-70182431)
-- 70182420-70182422: Document Header extensions (3)
-- 70182423-70182425: Posted Header extensions (3)
+- 70182420: Sales Header Ext ✅ CREATED (Stage 5.3)
+- 70182421: Purch. Header Ext ✅ CREATED (Stage 5.6)
+- 70182422: Transfer Header Ext
+- 70182423-70182425: (reserved for future use)
 - 70182426: Item Journal Line Ext ✅ CREATED
 - 70182427: Sales Line Ext ✅ CREATED
 - 70182428: Sales Shipment Line Ext ✅ CREATED
@@ -998,7 +1007,12 @@ Posted document lines updated with Asset No.
 - 70182430: Sales Cr.Memo Line Ext ✅ CREATED
 - 70182431: Return Receipt Line Ext ✅ CREATED
 
-### Page Extensions (70182435-70182447)
+### Page Extensions (70182430-70182449)
+- 70182430: Purch. Order Ext ✅ CREATED (Stage 5.6)
+- 70182431: Purch. Invoice Ext ✅ CREATED (Stage 5.6)
+- 70182432: Purch. Credit Memo Ext ✅ CREATED (Stage 5.6)
+- 70182433: Purch. Return Order Ext ✅ CREATED (Stage 5.6)
+- 70182434: Pstd Purch. Rcpt Ext ✅ CREATED (Stage 5.6)
 - 70182435: Sales Order Subform Ext ✅ CREATED
 - 70182436: Sales Cr. Memo Sub Ext ✅ CREATED
 - 70182437: Sales Invoice Sub Ext ✅ CREATED
@@ -1007,10 +1021,16 @@ Posted document lines updated with Asset No.
 - 70182440: Pstd Sales Inv Sub Ext ✅ CREATED
 - 70182441: Pstd Cr.Memo Sub Ext ✅ CREATED
 - 70182442: Pstd Ret Rcpt Sub Ext ✅ CREATED
-- 70182443-70182446: (reserved for future)
+- 70182443: Sales Order Ext ✅ CREATED (Stage 5.3)
+- 70182444: Pstd Sales Shpt Ext ✅ CREATED (Stage 5.3)
+- 70182445: Pstd Ret Rcpt Ext ✅ CREATED (Stage 5.3)
+- 70182446: Sales Credit Memo Ext ✅ CREATED (Stage 5.3)
 - 70182447: Item Journal Ext ✅ CREATED
+- 70182448: Sales Return Order Ext ✅ CREATED (Stage 5.3)
+- 70182449: Sales Invoice Ext ✅ CREATED (Stage 5.3)
+- 70182422: Pstd Ret Shpt Ext ✅ CREATED (Stage 5.6)
 
-### Test Codeunits (50107-50113)
+### Test Codeunits (50107-50115)
 - 50107: Journal Tests ✅ CREATED (6 test procedures)
 - 50108: Transfer Order Tests ✅ CREATED (10 test procedures)
 - 50109: Relationship Tests ✅ CREATED (5 test procedures)
@@ -1018,6 +1038,8 @@ Posted document lines updated with Asset No.
 - 50111: Component Tests ✅ CREATED (8 test procedures)
 - 50112: Item Journal Int. Tests ✅ CREATED (8 test procedures)
 - 50113: Sales Integration Tests ✅ CREATED (5 test procedures)
+- 50114: Sales Asset Line Tests ✅ CREATED (8 test procedures - Stage 5.3)
+- 50115: Purch Asset Line Tests ✅ CREATED (8 test procedures - Stage 5.6)
 
 ---
 
