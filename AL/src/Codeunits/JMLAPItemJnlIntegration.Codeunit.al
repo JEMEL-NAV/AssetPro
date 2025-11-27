@@ -49,7 +49,7 @@ codeunit 70182397 "JML AP Item Jnl. Integration"
         ComponentJnlLine: Record "JML AP Component Journal Line";
         AssetJnlBatch: Record "JML AP Asset Journal Batch";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
-        BatchName: Code[20];
+        BatchName: Code[10];
     begin
         // Get or create system batch for posting
         // Note: Component Journal uses Asset Journal Batch infrastructure
@@ -68,7 +68,7 @@ codeunit 70182397 "JML AP Item Jnl. Integration"
         ComponentJnlLine."Asset No." := ItemJnlLine."JML AP Asset No.";
         ComponentJnlLine."Item No." := ItemJnlLine."Item No.";
         ComponentJnlLine."Variant Code" := ItemJnlLine."Variant Code";
-        ComponentJnlLine."Entry Type" := MapItemEntryTypeToComponentType(ItemLedgerEntry."Entry Type", ItemLedgerEntry.Quantity);
+        ComponentJnlLine."Entry Type" := MapItemEntryTypeToComponentType(ItemLedgerEntry."Entry Type");
         ComponentJnlLine.Quantity := MapQuantitySign(ItemLedgerEntry."Entry Type", ItemLedgerEntry.Quantity);
         ComponentJnlLine."Unit of Measure Code" := ItemJnlLine."Unit of Measure Code";
         ComponentJnlLine."Serial No." := ItemJnlLine."Serial No.";
@@ -87,7 +87,7 @@ codeunit 70182397 "JML AP Item Jnl. Integration"
         ComponentJnlPost.Run(ComponentJnlLine);
     end;
 
-    local procedure MapItemEntryTypeToComponentType(ItemEntryType: Enum "Item Ledger Entry Type"; Quantity: Decimal) ComponentEntryType: Enum "JML AP Component Entry Type"
+    local procedure MapItemEntryTypeToComponentType(ItemEntryType: Enum "Item Ledger Entry Type"): Enum "JML AP Component Entry Type"
     var
         ItemLedgerEntryType: Enum "Item Ledger Entry Type";
         ComponentType: Enum "JML AP Component Entry Type";
