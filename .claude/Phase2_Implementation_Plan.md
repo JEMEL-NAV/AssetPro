@@ -664,7 +664,7 @@ Posted document lines updated with Asset No.
   - TestReturnReceiptLine_AssetNoFieldExists
 - ✅ Published to container bc27w1
 
-**Git Commit:** TBD
+**Git Commit:** `f4c6aa9` "Phase 2 Stage 4.5 - Sales Document Integration with Component Ledger"
 
 ---
 
@@ -925,7 +925,7 @@ Posted document lines updated with Asset No.
 ### Progress Summary
 - **Completed:** 15/23 stages (65%)
 - **Current Phase:** Stage 4 - Component Ledger (Complete)
-- **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645, c408fe1)
+- **Git Commits:** 10 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c408fe1, f4c6aa9)
 - **Objects Created:** 50 (4 enums, 9 tables, 7 table extensions, 11 pages, 10 page extensions, 8 codeunits, 1 test codeunit)
 - **Tests Created:** 48 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112, 5 in 50113)
 
