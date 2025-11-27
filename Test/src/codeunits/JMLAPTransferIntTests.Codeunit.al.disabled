@@ -1,0 +1,363 @@
+codeunit 50116 "JML AP Transfer Int. Tests"
+{
+    Subtype = Test;
+    TestPermissions = Disabled;
+
+    var
+        LibraryRandom: Codeunit "Library - Random";
+        LibraryWarehouse: Codeunit "Library - Warehouse";
+        IsInitialized: Boolean;
+
+    [Test]
+    procedure TestTransferAssetLine_AssetValidation_Success()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+    begin
+        // [SCENARIO] User can add asset to transfer order when asset is at From-Location
+
+        // [GIVEN] A location and an asset held by that location
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        CreateAssetAtLocation(Asset, LocationFrom.Code);
+
+        // [GIVEN] A transfer order with From-Location set
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, CreateLocation());
+
+        // [WHEN] User adds asset to transfer order
+        CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+
+        // [THEN] Asset line is created successfully with asset details
+        TransferAssetLine.TestField("Asset No.", Asset."No.");
+        TransferAssetLine.TestField("Asset Description", Asset.Description);
+        TransferAssetLine.TestField("Current Holder Type", Asset."Current Holder Type"::Location);
+        TransferAssetLine.TestField("Current Holder Code", LocationFrom.Code);
+    end;
+
+    [Test]
+    procedure TestTransferAssetLine_AssetNotAtFromLocation_Error()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+        LocationOther: Record Location;
+    begin
+        // [SCENARIO] Error when adding asset not at From-Location
+
+        // [GIVEN] Asset at LocationOther, Transfer Order from LocationFrom
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        LibraryWarehouse.CreateLocation(LocationOther);
+        CreateAssetAtLocation(Asset, LocationOther.Code);
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, CreateLocation());
+
+        // [WHEN] User tries to add asset to transfer order
+        // [THEN] Error is thrown
+        asserterror CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+        Assert.ExpectedError('is not at location');
+    end;
+
+    [Test]
+    procedure TestTransferAssetLine_BlockedAsset_Error()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+    begin
+        // [SCENARIO] Error when adding blocked asset
+
+        // [GIVEN] A blocked asset
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        CreateAssetAtLocation(Asset, LocationFrom.Code);
+        Asset.Blocked := true;
+        Asset.Modify();
+
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, CreateLocation());
+
+        // [WHEN] User tries to add blocked asset
+        // [THEN] Error is thrown
+        asserterror CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+        Assert.ExpectedError('is blocked');
+    end;
+
+    [Test]
+    procedure TestTransferAssetLine_Subasset_Error()
+    var
+        ParentAsset: Record "JML AP Asset";
+        ChildAsset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+    begin
+        // [SCENARIO] Error when trying to transfer subasset
+
+        // [GIVEN] A subasset (attached to parent)
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        CreateAssetAtLocation(ParentAsset, LocationFrom.Code);
+        CreateAssetAtLocation(ChildAsset, LocationFrom.Code);
+
+        ChildAsset."Parent Asset No." := ParentAsset."No.";
+        ChildAsset.Modify();
+
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, CreateLocation());
+
+        // [WHEN] User tries to add subasset
+        // [THEN] Error is thrown
+        asserterror CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", ChildAsset."No.");
+        Assert.ExpectedError('Cannot transfer subasset');
+    end;
+
+    [Test]
+    procedure TestTransferShipment_PostAssets_Success()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        HolderEntry: Record "JML AP Holder Entry";
+        PostedAssetLine: Record "JML AP Pstd Trans Shpt Ast Ln";
+        LocationFrom: Record Location;
+        LocationTo: Record Location;
+        TransShptNo: Code[20];
+    begin
+        // [SCENARIO] Posting transfer shipment transfers assets to destination
+
+        // [GIVEN] Transfer order with asset at From-Location
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        LibraryWarehouse.CreateLocation(LocationTo);
+        CreateAssetAtLocation(Asset, LocationFrom.Code);
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, LocationTo.Code);
+        CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+
+        // [WHEN] Transfer is shipped
+        TransShptNo := PostTransferShipment(TransferHeader);
+
+        // [THEN] Asset holder changes to To-Location
+        Asset.Find();
+        Asset.TestField("Current Holder Type", Asset."Current Holder Type"::Location);
+        Asset.TestField("Current Holder Code", LocationTo.Code);
+
+        // [THEN] Holder entry created
+        HolderEntry.SetRange("Asset No.", Asset."No.");
+        HolderEntry.SetRange("New Holder Type", HolderEntry."New Holder Type"::Location);
+        HolderEntry.SetRange("New Holder Code", LocationTo.Code);
+        Assert.RecordIsNotEmpty(HolderEntry);
+
+        // [THEN] Posted asset line created
+        PostedAssetLine.SetRange("Document No.", TransShptNo);
+        PostedAssetLine.SetRange("Asset No.", Asset."No.");
+        Assert.RecordIsNotEmpty(PostedAssetLine);
+
+        // [THEN] Source line updated
+        TransferAssetLine.Find();
+        TransferAssetLine.TestField("Quantity Shipped", 1);
+        TransferAssetLine.TestField("Quantity to Ship", 0);
+    end;
+
+    [Test]
+    procedure TestTransferReceipt_NoAssetMovement_Success()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+        LocationTo: Record Location;
+        InitialHolderEntryCount: Integer;
+    begin
+        // [SCENARIO] Receipt posting doesn't create additional asset movements
+
+        // [GIVEN] Transfer order shipped with assets
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        LibraryWarehouse.CreateLocation(LocationTo);
+        CreateAssetAtLocation(Asset, LocationFrom.Code);
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, LocationTo.Code);
+        CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+        PostTransferShipment(TransferHeader);
+
+        // [GIVEN] Count holder entries after shipment
+        InitialHolderEntryCount := CountHolderEntriesForAsset(Asset."No.");
+
+        // [WHEN] Transfer is received
+        PostTransferReceipt(TransferHeader);
+
+        // [THEN] No new holder entries created
+        Assert.AreEqual(InitialHolderEntryCount, CountHolderEntriesForAsset(Asset."No."),
+            'Receipt should not create new holder entries');
+
+        // [THEN] Asset still at To-Location
+        Asset.Find();
+        Asset.TestField("Current Holder Code", LocationTo.Code);
+
+        // [THEN] Source line updated
+        TransferAssetLine.Find();
+        TransferAssetLine.TestField("Quantity Received", 1);
+        TransferAssetLine.TestField("Quantity to Receive", 0);
+    end;
+
+    [Test]
+    procedure TestTransferShipment_WithChildren_AutoTransferred()
+    var
+        ParentAsset: Record "JML AP Asset";
+        ChildAsset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        LocationFrom: Record Location;
+        LocationTo: Record Location;
+    begin
+        // [SCENARIO] Shipping parent asset automatically transfers children
+
+        // [GIVEN] Parent asset with child, both at From-Location
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        LibraryWarehouse.CreateLocation(LocationTo);
+        CreateAssetAtLocation(ParentAsset, LocationFrom.Code);
+        CreateAssetAtLocation(ChildAsset, LocationFrom.Code);
+        ChildAsset."Parent Asset No." := ParentAsset."No.";
+        ChildAsset.Modify();
+
+        // [GIVEN] Transfer order with only parent asset
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, LocationTo.Code);
+        CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", ParentAsset."No.");
+
+        // [WHEN] Transfer is shipped
+        PostTransferShipment(TransferHeader);
+
+        // [THEN] Both parent and child at To-Location
+        ParentAsset.Find();
+        ParentAsset.TestField("Current Holder Code", LocationTo.Code);
+        ChildAsset.Find();
+        ChildAsset.TestField("Current Holder Code", LocationTo.Code);
+    end;
+
+    [Test]
+    procedure TestTransferShipment_TransactionNoLinking_Success()
+    var
+        Asset: Record "JML AP Asset";
+        TransferHeader: Record "Transfer Header";
+        TransferAssetLine: Record "JML AP Transfer Asset Line";
+        HolderEntry: Record "JML AP Holder Entry";
+        PostedAssetLine: Record "JML AP Pstd Trans Shpt Ast Ln";
+        LocationFrom: Record Location;
+        LocationTo: Record Location;
+        TransShptNo: Code[20];
+        TransactionNo: Integer;
+    begin
+        // [SCENARIO] Posted asset line and holder entries share Transaction No.
+
+        // [GIVEN] Transfer order with asset
+        Initialize();
+        LibraryWarehouse.CreateLocation(LocationFrom);
+        LibraryWarehouse.CreateLocation(LocationTo);
+        CreateAssetAtLocation(Asset, LocationFrom.Code);
+        CreateTransferOrder(TransferHeader, LocationFrom.Code, LocationTo.Code);
+        CreateTransferAssetLine(TransferAssetLine, TransferHeader."No.", Asset."No.");
+
+        // [WHEN] Transfer is shipped
+        TransShptNo := PostTransferShipment(TransferHeader);
+
+        // [THEN] Posted line has Transaction No.
+        PostedAssetLine.SetRange("Document No.", TransShptNo);
+        PostedAssetLine.FindFirst();
+        TransactionNo := PostedAssetLine."Transaction No.";
+        Assert.AreNotEqual(0, TransactionNo, 'Transaction No. should be assigned');
+
+        // [THEN] Holder entry has same Transaction No.
+        HolderEntry.SetRange("Asset No.", Asset."No.");
+        HolderEntry.SetRange("Transaction No.", TransactionNo);
+        Assert.RecordIsNotEmpty(HolderEntry);
+    end;
+
+    // ========================================
+    // Helper Procedures
+    // ========================================
+
+    local procedure Initialize()
+    begin
+        if IsInitialized then
+            exit;
+
+        IsInitialized := true;
+        Commit();
+    end;
+
+    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
+    begin
+        Asset.Init();
+        Asset."No." := CopyStr('ASSET-' + Format(LibraryRandom.RandInt(100000)), 1, MaxStrLen(Asset."No."));
+        Asset.Description := 'Test Asset ' + Asset."No.";
+        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
+        Asset."Current Holder Code" := LocationCode;
+        Asset.Insert(true);
+    end;
+
+    local procedure CreateLocation(): Code[10]
+    var
+        Location: Record Location;
+    begin
+        LibraryWarehouse.CreateLocation(Location);
+        exit(Location.Code);
+    end;
+
+    local procedure CreateTransferOrder(var TransferHeader: Record "Transfer Header"; FromLocationCode: Code[10]; ToLocationCode: Code[10])
+    begin
+        TransferHeader.Init();
+        TransferHeader."No." := '';
+        TransferHeader.Insert(true);
+        TransferHeader.Validate("Transfer-from Code", FromLocationCode);
+        TransferHeader.Validate("Transfer-to Code", ToLocationCode);
+        TransferHeader.Modify(true);
+    end;
+
+    local procedure CreateTransferAssetLine(var TransferAssetLine: Record "JML AP Transfer Asset Line"; DocumentNo: Code[20]; AssetNo: Code[20])
+    var
+        LineNo: Integer;
+    begin
+        TransferAssetLine.SetRange("Document No.", DocumentNo);
+        if TransferAssetLine.FindLast() then
+            LineNo := TransferAssetLine."Line No." + 10000
+        else
+            LineNo := 10000;
+
+        TransferAssetLine.Init();
+        TransferAssetLine."Document No." := DocumentNo;
+        TransferAssetLine."Line No." := LineNo;
+        TransferAssetLine.Insert(true);
+        TransferAssetLine.Validate("Asset No.", AssetNo);
+        TransferAssetLine.Modify(true);
+    end;
+
+    local procedure PostTransferShipment(var TransferHeader: Record "Transfer Header"): Code[20]
+    var
+        TransferPostShipment: Codeunit "TransferOrder-Post Shipment";
+        TransShptHeader: Record "Transfer Shipment Header";
+    begin
+        TransferPostShipment.Run(TransferHeader);
+
+        TransShptHeader.SetCurrentKey("Transfer Order No.");
+        TransShptHeader.SetRange("Transfer Order No.", TransferHeader."No.");
+        TransShptHeader.FindLast();
+        exit(TransShptHeader."No.");
+    end;
+
+    local procedure PostTransferReceipt(var TransferHeader: Record "Transfer Header")
+    var
+        TransferPostReceipt: Codeunit "TransferOrder-Post Receipt";
+    begin
+        TransferPostReceipt.Run(TransferHeader);
+    end;
+
+    local procedure CountHolderEntriesForAsset(AssetNo: Code[20]): Integer
+    var
+        HolderEntry: Record "JML AP Holder Entry";
+    begin
+        HolderEntry.SetRange("Asset No.", AssetNo);
+        exit(HolderEntry.Count);
+    end;
+}
