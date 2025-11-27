@@ -34,6 +34,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | bf98411 |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | ✅ **COMPLETE** | 7e9b104 |
 | 4.4 | Item Journal Integration | 2 extensions, 1 codeunit, tests | ✅ **COMPLETE** | c408fe1 |
+| 4.5 | Sales Document Integration | 3 extensions, 1 codeunit, tests | ⏳ **IN PROGRESS** | - |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
 | 5.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
@@ -43,7 +44,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 7.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
 | 8.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
 
-**Progress: 14/22 stages complete (64%)**
+**Progress: 14/23 stages complete (61%)**
 
 ---
 
@@ -598,6 +599,75 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 
 ---
 
+### Stage 4.5: Sales Document Integration ✅ COMPLETE
+
+**Objective:** Integrate Sales documents with Component Ledger by extending Sales Line with Asset No. field
+
+**Business Logic:** When Sales documents are posted, the Asset No. from Sales Line flows to Item Journal, which automatically triggers Stage 4.4 integration to create component entries.
+
+**Objects Created:**
+- ✅ Table Extension 70182427 "JML AP Sales Line Ext"
+- ✅ Table Extension 70182428-70182431 "Posted Sales Line Extensions" (4)
+- ✅ Page Extension 70182435 "JML AP Sales Order Subform Ext"
+- ✅ Page Extension 70182436 "JML AP Sales Cr. Memo Sub Ext"
+- ✅ Page Extension 70182437 "JML AP Sales Invoice Sub Ext"
+- ✅ Page Extension 70182438 "JML AP Sales Ret Order Sub Ext"
+- ✅ Page Extension 70182439-70182442 "Posted Sales Document Extensions" (4)
+- ✅ Codeunit 70182398 "JML AP Sales Integration"
+- ✅ Test Codeunit 50113 "JML AP Sales Integration Tests" (5 test procedures)
+
+**Key Features Implemented:**
+- ✅ Asset No. field added to Sales Line (Table 37) with blocking validation
+- ✅ Asset No. displayed on ALL Sales document types:
+  - Sales Order Subform (Page 46)
+  - Sales Invoice Subform (Page 43)
+  - Sales Credit Memo Subform (Page 515)
+  - Sales Return Order Subform (Page 6631)
+- ✅ Asset No. visible on ALL posted documents:
+  - Posted Sales Shipment Lines (Page 5747)
+  - Posted Sales Invoice Subform (Page 132)
+  - Posted Sales Cr. Memo Subform (Page 524)
+  - Posted Return Receipt Subform (Page 6661)
+- ✅ Event subscriber on `SalesPost.OnPostItemJnlLineOnAfterCopyTrackingFromSpec`
+- ✅ Event subscribers to transfer Asset No. to all posted document lines
+- ✅ Asset No. transferred from Sales Line to Item Journal Line during posting
+- ✅ Automatic component posting through Stage 4.4 integration
+
+**Integration Flow:**
+```
+Sales Document Posting (Order/Invoice/Credit Memo/Return Order)
+        ↓
+Sales Line with Asset No.
+        ↓
+SalesPost.OnPostItemJnlLineOnAfterCopyTrackingFromSpec (Event)
+        ↓
+JML AP Sales Integration (Subscriber)
+        ↓
+Transfer Asset No. to Item Journal Line
+        ↓
+Item Journal Line posted (with Asset No.)
+        ↓
+Stage 4.4 Integration triggers
+        ↓
+Component Ledger Entry Created
+        ↓
+Posted document lines updated with Asset No.
+```
+
+**Testing:**
+- ✅ Build: 0 errors, 0 warnings (both production and test apps)
+- ✅ Test App: 5 test procedures passed
+  - TestSalesLine_AssetNoFieldExists
+  - TestPostedSalesShipmentLine_AssetNoFieldExists
+  - TestPostedSalesInvoiceLine_AssetNoFieldExists
+  - TestPostedSalesCrMemoLine_AssetNoFieldExists
+  - TestReturnReceiptLine_AssetNoFieldExists
+- ✅ Published to container bc27w1
+
+**Git Commit:** TBD
+
+---
+
 ## Stage 5: BC Document Integration - Sales
 
 ### Stage 5.1: Sales Asset Line Tables ⏸️ PENDING
@@ -853,11 +923,11 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 **Stage 5.1** - Sales Asset Line Tables (Next to implement)
 
 ### Progress Summary
-- **Completed:** 14/22 stages (64%)
+- **Completed:** 15/23 stages (65%)
 - **Current Phase:** Stage 4 - Component Ledger (Complete)
-- **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645)
-- **Objects Created:** 36 (4 enums, 9 tables, 2 table extensions, 11 pages, 2 page extensions, 7 codeunits)
-- **Tests Created:** 43 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112)
+- **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645, c408fe1)
+- **Objects Created:** 50 (4 enums, 9 tables, 7 table extensions, 11 pages, 10 page extensions, 8 codeunits, 1 test codeunit)
+- **Tests Created:** 48 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112, 5 in 50113)
 
 ---
 
@@ -897,7 +967,7 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - 70182375: Component Entries ✅ CREATED
 - 70182376: Component Journal ✅ CREATED
 
-### Codeunits (70182390-70182397)
+### Codeunits (70182390-70182398)
 - 70182390: Asset Jnl.-Post ✅ CREATED
 - 70182391: Asset Transfer-Post ✅ CREATED
 - 70182392: Document Integration
@@ -906,6 +976,7 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - 70182395: Asset Validation ✅ CREATED
 - 70182396: Component Jnl.-Post ✅ CREATED
 - 70182397: Item Jnl. Integration ✅ CREATED
+- 70182398: Sales Integration ✅ CREATED
 
 ### Enums (70182406-70182409)
 - 70182406: Component Entry Type ✅ CREATED
@@ -917,15 +988,26 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - ✅ Table 70182300: JML AP Asset Setup (added Transfer Order Nos., Posted Transfer Nos.)
 - ✅ Page 70182330: JML AP Asset Setup (added Numbering group)
 
-### Table Extensions (70182420-70182426)
+### Table Extensions (70182420-70182431)
 - 70182420-70182422: Document Header extensions (3)
 - 70182423-70182425: Posted Header extensions (3)
 - 70182426: Item Journal Line Ext ✅ CREATED
+- 70182427: Sales Line Ext ✅ CREATED
+- 70182428: Sales Shipment Line Ext ✅ CREATED
+- 70182429: Sales Invoice Line Ext ✅ CREATED
+- 70182430: Sales Cr.Memo Line Ext ✅ CREATED
+- 70182431: Return Receipt Line Ext ✅ CREATED
 
 ### Page Extensions (70182435-70182447)
-- 70182435-70182440: Main document extensions (6)
-- 70182441-70182442: Asset Card/List extensions (2)
-- 70182443-70182446: Posted shipment/receipt extensions (4)
+- 70182435: Sales Order Subform Ext ✅ CREATED
+- 70182436: Sales Cr. Memo Sub Ext ✅ CREATED
+- 70182437: Sales Invoice Sub Ext ✅ CREATED
+- 70182438: Sales Ret Order Sub Ext ✅ CREATED
+- 70182439: Sales Shpt. Lines Ext ✅ CREATED
+- 70182440: Pstd Sales Inv Sub Ext ✅ CREATED
+- 70182441: Pstd Cr.Memo Sub Ext ✅ CREATED
+- 70182442: Pstd Ret Rcpt Sub Ext ✅ CREATED
+- 70182443-70182446: (reserved for future)
 - 70182447: Item Journal Ext ✅ CREATED
 
 ### Test Codeunits (50107-50113)
@@ -935,10 +1017,7 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - 50110: Manual Holder Tests ✅ CREATED (6 test procedures)
 - 50111: Component Tests ✅ CREATED (8 test procedures)
 - 50112: Item Journal Int. Tests ✅ CREATED (8 test procedures)
-- 50113: Sales Integration Tests
-- 50111: Purchase Integration Tests
-- 50112: Transfer Integration Tests
-- 50113: Role Center Tests
+- 50113: Sales Integration Tests ✅ CREATED (5 test procedures)
 
 ---
 
