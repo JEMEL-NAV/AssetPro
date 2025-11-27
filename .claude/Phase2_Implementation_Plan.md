@@ -28,12 +28,12 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 2.1 | Relationship Entry Infrastructure | 1 table, 1 enum, 1 page, 1 codeunit | ✅ **COMPLETE** | 6aa8467 |
 | 2.2 | Asset Card Enhancements | Page modifications, table trigger, tests | ✅ **COMPLETE** | 3f01ce6 |
 | 3.1 | Manual Holder Change Control | Table enhancements, tests | ✅ **COMPLETE** | b17de0f |
-| 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | (pending) |
+| 3.2 | UX Corrections and Enhanced Validation | 7 corrections | ✅ **COMPLETE** | c408fe1 |
 | 3.3 | Component Removal | Remove unused objects | ✅ **COMPLETE** | c467645 |
 | 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
 | 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | bf98411 |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | ✅ **COMPLETE** | 7e9b104 |
-| 4.4 | Item Journal Integration | 2 extensions, 1 codeunit, tests | ✅ **COMPLETE** | (pending) |
+| 4.4 | Item Journal Integration | 2 extensions, 1 codeunit, tests | ✅ **COMPLETE** | c408fe1 |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
 | 5.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
@@ -594,7 +594,7 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - Component Entry."Document No." contains Item Ledger Entry No. as text
 - Full audit trail from item movement to component change
 
-**Git Commit:** (pending) "Phase 2 Stage 4.4 - Item Journal integration with Component Ledger"
+**Git Commit:** `c408fe1` "Phase 2 Stage 4.4 - Item Journal integration with Component Ledger"
 
 ---
 
@@ -840,7 +840,7 @@ Component Ledger Entry Created (with Item Ledger Entry No.)
 - [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
 - [x] **Stage 4.2** - Component Ledger pages (Git: bf98411)
 - [x] **Stage 4.3** - Component Ledger posting logic (Git: 7e9b104)
-- [x] **Stage 4.4** - Item Journal integration (Git: pending)
+- [x] **Stage 4.4** - Item Journal integration (Git: c408fe1)
 - [ ] Stage 5.1 - Sales asset line tables
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables

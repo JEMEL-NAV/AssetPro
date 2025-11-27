@@ -47,17 +47,18 @@ codeunit 70182397 "JML AP Item Jnl. Integration"
     local procedure CreateAndPostComponentEntry(ItemJnlLine: Record "Item Journal Line"; ItemLedgerEntry: Record "Item Ledger Entry")
     var
         ComponentJnlLine: Record "JML AP Component Journal Line";
-        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
+        AssetJnlBatch: Record "JML AP Asset Journal Batch";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
         BatchName: Code[20];
     begin
         // Get or create system batch for posting
+        // Note: Component Journal uses Asset Journal Batch infrastructure
         BatchName := 'ITEM-JNL';
-        if not ComponentJnlBatch.Get(BatchName) then begin
-            ComponentJnlBatch.Init();
-            ComponentJnlBatch.Name := BatchName;
-            ComponentJnlBatch.Description := 'Item Journal Integration';
-            ComponentJnlBatch.Insert(true);
+        if not AssetJnlBatch.Get(BatchName) then begin
+            AssetJnlBatch.Init();
+            AssetJnlBatch.Name := BatchName;
+            AssetJnlBatch.Description := 'Item Journal Integration';
+            AssetJnlBatch.Insert(true);
         end;
 
         // Create component journal line
