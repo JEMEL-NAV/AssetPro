@@ -143,6 +143,7 @@ codeunit 70182396 "JML AP Component Jnl.-Post"
         ComponentEntry."Document No." := JnlLine."Document No.";
         ComponentEntry."External Document No." := JnlLine."External Document No.";
         ComponentEntry."Transaction No." := TransactionNo;
+        ComponentEntry."Item Ledger Entry No." := JnlLine."Item Ledger Entry No.";
         ComponentEntry.Insert(true);
     end;
 

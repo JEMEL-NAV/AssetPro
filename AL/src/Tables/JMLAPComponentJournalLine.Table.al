@@ -143,6 +143,7 @@ table 70182328 "JML AP Component Journal Line"
             Caption = 'External Document No.';
             ToolTip = 'Specifies the external document number.';
         }
+field(64; "Item Ledger Entry No."; Integer)        {            Caption = 'Item Ledger Entry No.';            ToolTip = 'Specifies the related item ledger entry number (for item journal integration).';            TableRelation = "Item Ledger Entry";        }
     }
 
     keys

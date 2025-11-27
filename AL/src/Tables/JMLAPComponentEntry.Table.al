@@ -129,6 +129,13 @@ table 70182329 "JML AP Component Entry"
             ToolTip = 'Specifies the transaction number grouping related entries.';
         }
 
+        field(65; "Item Ledger Entry No."; Integer)
+        {
+            Caption = 'Item Ledger Entry No.';
+            ToolTip = 'Specifies the related item ledger entry number (for item journal integration).';
+            TableRelation = "Item Ledger Entry";
+        }
+
         // === POSTING INFO ===
         field(70; "Posting Date"; Date)
         {
@@ -174,6 +181,9 @@ table 70182329 "JML AP Component Entry"
         {
         }
         key(Transaction; "Transaction No.")
+        {
+        }
+        key(ItemLedgerEntry; "Item Ledger Entry No.")
         {
         }
     }

@@ -33,6 +33,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 4.1 | Component Ledger - Tables & Enum | 2 tables, 1 enum | ✅ **COMPLETE** | f70fa6d |
 | 4.2 | Component Ledger - Pages | 2 pages | ✅ **COMPLETE** | bf98411 |
 | 4.3 | Component Ledger - Posting Logic | 1 codeunit, tests | ✅ **COMPLETE** | 7e9b104 |
+| 4.4 | Item Journal Integration | 2 extensions, 1 codeunit, tests | ✅ **COMPLETE** | (pending) |
 | 5.1 | Sales Asset Line Tables | 4 tables | Pending | - |
 | 5.2 | Sales Asset Line Pages | 4 pages | Pending | - |
 | 5.3 | Sales Integration Logic | 3 extensions, 1 codeunit, tests | Pending | - |
@@ -42,7 +43,7 @@ This plan implements Phase 2 in 7 major stages, with each stage being a complete
 | 7.2 | Transfer Integration Logic | 2 extensions, tests | Pending | - |
 | 8.1 | Role Center Implementation | 1 table, 3 pages, 1 profile | Pending | - |
 
-**Progress: 13/21 stages complete (62%)**
+**Progress: 14/22 stages complete (64%)**
 
 ---
 
@@ -505,6 +506,98 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 
 ---
 
+### Stage 4.4: Item Journal Integration ✅ COMPLETE
+
+**Objective:** Integrate Component Ledger with Item Journal for automatic component posting
+
+**Business Logic:** When Item Journal is posted with Asset No. populated, automatically create component entries:
+- **Inventory-centric view**: Stock decrease = Component goes INTO asset
+- Sale (negative qty) → Install component in asset
+- Negative Adjmt. (negative qty) → Install component in asset
+- Consumption (negative qty) → Install component in asset
+- Positive Adjmt. (positive qty) → Remove component from asset
+
+**Objects Created:**
+- ✅ Table Extension 70182426 "JML AP Item Journal Line Ext"
+- ✅ Page Extension 70182447 "JML AP Item Journal Ext"
+- ✅ Codeunit 70182397 "JML AP Item Jnl. Integration"
+- ✅ Test Codeunit 50112 "JML AP Item Journal Int. Tests" (8 test procedures)
+
+**Objects Modified:**
+- ✅ Table 70182329 "JML AP Component Entry" - Added field 65 "Item Ledger Entry No."
+- ✅ Table 70182328 "JML AP Component Journal Line" - Added field 64 "Item Ledger Entry No."
+- ✅ Codeunit 70182396 "JML AP Component Jnl.-Post" - Copy Item Ledger Entry No. to Component Entry
+- ✅ Page 70182375 "JML AP Component Entries" - Display Item Ledger Entry No. field
+
+**Key Features Implemented:**
+- ✅ Event subscriber on `ItemJnlPostLine.OnAfterInsertItemLedgEntry`
+- ✅ Asset No. field added to Item Journal Line with validation
+- ✅ Asset No. field displayed in Item Journal page
+- ✅ Automatic entry type mapping (Item Entry Type → Component Entry Type)
+- ✅ Automatic quantity sign mapping (ensure correct +/- for Install/Remove)
+- ✅ Item Ledger Entry No. linking for full traceability
+- ✅ Automatic Component Journal batch creation ("ITEM-JNL")
+- ✅ Suppressed UI dialogs during automatic posting
+- ✅ Entry types supported: Sale, Positive Adjmt., Negative Adjmt., Consumption
+- ✅ Entry types skipped: Purchase, Transfer, Output (no component impact)
+
+**Integration Architecture:**
+```
+Item Journal Posting (Standard BC)
+        ↓
+ItemJnlPostLine.OnAfterInsertItemLedgEntry (Event)
+        ↓
+JML AP Item Jnl. Integration (Subscriber)
+        ↓ (if Asset No. populated & qualifying entry type)
+Create Component Journal Line
+        ↓
+Call Component Jnl.-Post (Codeunit 70182396)
+        ↓
+Component Ledger Entry Created (with Item Ledger Entry No.)
+```
+
+**Entry Type Mapping:**
+| Item Entry Type | Qty Sign | Component Entry Type | Component Qty |
+|----------------|----------|---------------------|---------------|
+| Sale | Negative | Install | Positive |
+| Negative Adjmt. | Negative | Install | Positive |
+| Consumption | Negative | Install | Positive |
+| Positive Adjmt. | Positive | Remove | Negative |
+| Purchase | Any | (skipped) | N/A |
+| Transfer | Any | (skipped) | N/A |
+
+**Testing:**
+- ✅ 8 test procedures created:
+  1. TestItemJnlSale_WithAsset_CreatesInstallEntry - Happy path (Sale → Install)
+  2. TestItemJnlPositiveAdjmt_WithAsset_CreatesRemoveEntry - Happy path (Positive → Remove)
+  3. TestItemJnlNegativeAdjmt_WithAsset_CreatesInstallEntry - Happy path (Negative → Install)
+  4. TestItemJnlPurchase_WithAsset_NoComponentEntry - Edge case (Purchase skipped)
+  5. TestItemJnlSale_WithoutAsset_NoComponentEntry - Edge case (No Asset No.)
+  6. TestItemJnl_DocumentNoLinking - Integration (Traceability verification)
+  7. TestItemJnl_MultipleLines_BatchPosting - Integration (Multiple assets)
+  8. TestItemJnlConsumption_WithAsset_CreatesInstallEntry - Happy path (Consumption → Install)
+- ⚠️ Tests require BC container with test libraries to execute
+
+**Build Status:**
+- ✅ Production App: 0 errors, 0 warnings (74 files)
+- ✅ Test App: 0 errors, 0 warnings (13 files)
+- ✅ Clean compilation achieved
+- ⚠️ Test execution: Requires BC container configuration
+
+**Error Handling:**
+- Asset No. validation on Item Journal Line (Asset must exist)
+- Item No. required when Asset No. is populated
+- Transaction isolation (component posting failure doesn't block item posting)
+
+**Traceability:**
+- Component Entry."Item Ledger Entry No." links directly to Item Ledger Entry
+- Component Entry."Document No." contains Item Ledger Entry No. as text
+- Full audit trail from item movement to component change
+
+**Git Commit:** (pending) "Phase 2 Stage 4.4 - Item Journal integration with Component Ledger"
+
+---
+
 ## Stage 5: BC Document Integration - Sales
 
 ### Stage 5.1: Sales Asset Line Tables ⏸️ PENDING
@@ -747,6 +840,7 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - [x] **Stage 4.1** - Component Ledger tables and enum (Git: f70fa6d)
 - [x] **Stage 4.2** - Component Ledger pages (Git: bf98411)
 - [x] **Stage 4.3** - Component Ledger posting logic (Git: 7e9b104)
+- [x] **Stage 4.4** - Item Journal integration (Git: pending)
 - [ ] Stage 5.1 - Sales asset line tables
 - [ ] Stage 4.3 - Sales integration logic
 - [ ] Stage 5.1 - Purchase asset line tables
@@ -759,11 +853,11 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 **Stage 5.1** - Sales Asset Line Tables (Next to implement)
 
 ### Progress Summary
-- **Completed:** 13/21 stages (62%)
+- **Completed:** 14/22 stages (64%)
 - **Current Phase:** Stage 4 - Component Ledger (Complete)
 - **Git Commits:** 9 (62c805b, e2f7016, 41f2340, 279974f, 2e0eabf, 6aa8467, 3f01ce6, b17de0f, c467645)
-- **Objects Created:** 32 (4 enums, 9 tables, 11 pages, 6 codeunits, 2 table enhancements)
-- **Tests Created:** 35 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111)
+- **Objects Created:** 36 (4 enums, 9 tables, 2 table extensions, 11 pages, 2 page extensions, 7 codeunits)
+- **Tests Created:** 43 test procedures (6 in 50107, 10 in 50108, 5 in 50109, 6 in 50110, 8 in 50111, 8 in 50112)
 
 ---
 
@@ -803,7 +897,7 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - 70182375: Component Entries ✅ CREATED
 - 70182376: Component Journal ✅ CREATED
 
-### Codeunits (70182390-70182396)
+### Codeunits (70182390-70182397)
 - 70182390: Asset Jnl.-Post ✅ CREATED
 - 70182391: Asset Transfer-Post ✅ CREATED
 - 70182392: Document Integration
@@ -811,6 +905,7 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - 70182394: Asset Tree Mgt ✅ CREATED
 - 70182395: Asset Validation ✅ CREATED
 - 70182396: Component Jnl.-Post ✅ CREATED
+- 70182397: Item Jnl. Integration ✅ CREATED
 
 ### Enums (70182406-70182409)
 - 70182406: Component Entry Type ✅ CREATED
@@ -822,14 +917,16 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - ✅ Table 70182300: JML AP Asset Setup (added Transfer Order Nos., Posted Transfer Nos.)
 - ✅ Page 70182330: JML AP Asset Setup (added Numbering group)
 
-### Table Extensions (70182420-70182425)
+### Table Extensions (70182420-70182426)
 - 70182420-70182422: Document Header extensions (3)
 - 70182423-70182425: Posted Header extensions (3)
+- 70182426: Item Journal Line Ext ✅ CREATED
 
-### Page Extensions (70182435-70182446)
+### Page Extensions (70182435-70182447)
 - 70182435-70182440: Main document extensions (6)
 - 70182441-70182442: Asset Card/List extensions (2)
 - 70182443-70182446: Posted shipment/receipt extensions (4)
+- 70182447: Item Journal Ext ✅ CREATED
 
 ### Test Codeunits (50107-50113)
 - 50107: Journal Tests ✅ CREATED (6 test procedures)
@@ -837,7 +934,8 @@ Transaction No. → Auto-assigned via GetNextTransactionNo()
 - 50109: Relationship Tests ✅ CREATED (5 test procedures)
 - 50110: Manual Holder Tests ✅ CREATED (6 test procedures)
 - 50111: Component Tests ✅ CREATED (8 test procedures)
-- 50112: Sales Integration Tests
+- 50112: Item Journal Int. Tests ✅ CREATED (8 test procedures)
+- 50113: Sales Integration Tests
 - 50111: Purchase Integration Tests
 - 50112: Transfer Integration Tests
 - 50113: Role Center Tests

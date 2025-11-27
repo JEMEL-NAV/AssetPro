@@ -93,6 +93,7 @@ page 70182375 "JML AP Component Entries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the transaction number grouping related entries.';
                 }
+field("Item Ledger Entry No."; Rec."Item Ledger Entry No.")                {                    ApplicationArea = All;                    ToolTip = 'Specifies the related item ledger entry number (for item journal integration).';                }
                 field("User ID"; Rec."User ID")
                 {
                     ApplicationArea = All;
