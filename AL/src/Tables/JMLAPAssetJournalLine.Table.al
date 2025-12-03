@@ -21,7 +21,7 @@ table 70182312 "JML AP Asset Journal Line"
         field(10; "Asset No."; Code[20])
         {
             Caption = 'Asset No.';
-            TableRelation = "JML AP Asset";
+            TableRelation = "JML AP Asset" where(Blocked = const(false), "Parent Asset No." = const(''));
             DataClassification = CustomerContent;
 
             trigger OnValidate()
@@ -229,4 +229,24 @@ table 70182312 "JML AP Asset Journal Line"
     var
         SubassetErr: Label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.';
         SameHolderAddressErr: Label 'New holder and address must be different from current holder and address for asset %1. Specify a different address for same-holder transfers.';
+
+    procedure SwitchLinesWithErrorsFilter(var ShowAllLinesEnabled: Boolean)
+    var
+        TempErrorMessage: Record "Error Message" temporary;
+        JournalErrorsMgt: Codeunit "Journal Errors Mgt.";
+    begin
+        if ShowAllLinesEnabled then begin
+            MarkedOnly(false);
+            ShowAllLinesEnabled := false;
+        end else begin
+            JournalErrorsMgt.GetErrorMessages(TempErrorMessage);
+            if TempErrorMessage.FindSet() then
+                repeat
+                    if Rec.Get(TempErrorMessage."Context Record ID") then
+                        Rec.Mark(true)
+                until TempErrorMessage.Next() = 0;
+            MarkedOnly(true);
+            ShowAllLinesEnabled := true;
+        end;
+    end;
 }

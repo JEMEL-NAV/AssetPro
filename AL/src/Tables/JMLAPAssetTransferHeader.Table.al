@@ -343,4 +343,12 @@ table 70182313 "JML AP Asset Transfer Header"
         TransferLine.SetRange("Document No.", "No.");
         exit(TransferLine.Count);
     end;
+
+    internal procedure PerformManualRelease()
+    begin
+        if Rec.Status <> Rec.Status::Released then begin
+            CODEUNIT.Run(CODEUNIT::"JML AP Release Asset Transfer", Rec);
+            Commit();
+        end;
+    end;
 }

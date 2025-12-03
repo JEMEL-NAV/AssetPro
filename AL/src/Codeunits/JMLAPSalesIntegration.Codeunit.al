@@ -1,8 +1,5 @@
 codeunit 70182398 "JML AP Sales Integration"
 {
-    // Event subscribers for Sales posting integration with both:
-    // 1. Component Ledger (Stage 4.5) - Asset No. on Sales Line
-    // 2. Asset Holder Transfer (Stage 5) - Separate Sales Asset Lines
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnPostItemJnlLineOnAfterCopyTrackingFromSpec', '', false, false)]
     local procedure OnPostItemJnlLineOnAfterCopyTrackingFromSpec(var ItemJnlLine: Record "Item Journal Line"; SalesLine: Record "Sales Line"; QtyToBeShipped: Decimal; IsATO: Boolean)
@@ -75,6 +72,36 @@ codeunit 70182398 "JML AP Sales Integration"
     // Asset Holder Transfer Integration (Stage 5)
     // ========================================
 
+    // Event subscribers for Sales posting integration with both:
+    // 1. Component Ledger (Stage 4.5) - Asset No. on Sales Line
+    // 2. Asset Holder Transfer (Stage 5) - Separate Sales Asset Lines
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Release Sales Document", OnBeforeSalesLineFind, '', false, false)]
+    local procedure ReleaseSalesDocumentOnBeforeSalesLineFind(var SalesLine: Record "Sales Line"; var SalesHeader: Record "Sales Header"; var LinesWereModified: Boolean; var IsHandled: Boolean)
+    var
+        SalesAssetLine: Record "JML AP Sales Asset Line";
+    begin
+        SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
+        SalesAssetLine.SetRange("Document No.", SalesHeader."No.");
+        if not SalesAssetLine.IsEmpty() then
+            // Prevent standard shipment/invoice release if there are asset lines to process
+            IsHandled := true;
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", OnAfterCheckTrackingAndWarehouseForShip, '', false, false)]
+    local procedure SalesPostOnAfterCheckTrackingAndWarehouseForShip(var SalesHeader: Record "Sales Header"; var Ship: Boolean; CommitIsSuppressed: Boolean; var TempWhseShptHeader: Record "Warehouse Shipment Header" temporary; var TempWhseRcptHeader: Record "Warehouse Receipt Header" temporary; var TempSalesLine: Record "Sales Line" temporary)
+    var
+        SalesAssetLine: Record "JML AP Sales Asset Line";
+    begin
+        SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
+        SalesAssetLine.SetRange("Document No.", SalesHeader."No.");
+        SalesAssetLine.SetFilter("Quantity to Ship", '>%1', 0);
+        if not SalesAssetLine.IsEmpty() then
+            // Force shipment processing if there are asset lines to ship
+            Ship := true;
+    end;
+
+
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnAfterSalesShptHeaderInsert', '', false, false)]
     local procedure OnAfterSalesShptHeaderInsert(var SalesShipmentHeader: Record "Sales Shipment Header"; SalesHeader: Record "Sales Header")
     begin
@@ -82,15 +109,15 @@ codeunit 70182398 "JML AP Sales Integration"
         PostSalesShipmentAssets(SalesHeader, SalesShipmentHeader);
     end;
 
-    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnAfterSalesInvHeaderInsert', '', false, false)]
-    local procedure OnAfterSalesInvHeaderInsertAssetTransfer(var SalesInvHeader: Record "Sales Invoice Header"; SalesHeader: Record "Sales Header"; CommitIsSuppressed: Boolean; WhseShip: Boolean; WhseReceive: Boolean; var TempWhseShptHeader: Record "Warehouse Shipment Header" temporary; var TempWhseRcptHeader: Record "Warehouse Receipt Header" temporary)
-    var
-        TempSalesShipmentHeader: Record "Sales Shipment Header" temporary;
-    begin
-        // Post asset holder transfers for invoice (if no prior shipment)
-        // This supports invoice-only scenarios (Q2 clarification)
-        PostSalesInvoiceAssets(SalesHeader, SalesInvHeader, TempSalesShipmentHeader);
-    end;
+    // [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnAfterSalesInvHeaderInsert', '', false, false)]
+    // local procedure OnAfterSalesInvHeaderInsertAssetTransfer(var SalesInvHeader: Record "Sales Invoice Header"; SalesHeader: Record "Sales Header"; CommitIsSuppressed: Boolean; WhseShip: Boolean; WhseReceive: Boolean; var TempWhseShptHeader: Record "Warehouse Shipment Header" temporary; var TempWhseRcptHeader: Record "Warehouse Receipt Header" temporary)
+    // var
+    //     TempSalesShipmentHeader: Record "Sales Shipment Header" temporary;
+    // begin
+    //     // Post asset holder transfers for invoice (if no prior shipment)
+    //     // This supports invoice-only scenarios (Q2 clarification)
+    //     PostSalesInvoiceAssets(SalesHeader, SalesInvHeader, TempSalesShipmentHeader);
+    // end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Sales-Post", 'OnAfterReturnRcptHeaderInsert', '', false, false)]
     local procedure OnAfterReturnRcptHeaderInsert(var ReturnReceiptHeader: Record "Return Receipt Header"; SalesHeader: Record "Sales Header")
@@ -103,7 +130,6 @@ codeunit 70182398 "JML AP Sales Integration"
     var
         SalesAssetLine: Record "JML AP Sales Asset Line";
         Asset: Record "JML AP Asset";
-        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
         TransactionNo: Integer;
     begin
         // Get asset lines to ship
@@ -113,9 +139,6 @@ codeunit 70182398 "JML AP Sales Integration"
 
         if SalesAssetLine.IsEmpty() then
             exit;
-
-        // Get next transaction number for this shipment
-        TransactionNo := GetNextTransactionNo();
 
         // Post each asset transfer via Asset Journal
         if SalesAssetLine.FindSet(true) then
@@ -142,42 +165,40 @@ codeunit 70182398 "JML AP Sales Integration"
             until SalesAssetLine.Next() = 0;
     end;
 
-    local procedure PostSalesInvoiceAssets(SalesHeader: Record "Sales Header"; SalesInvHeader: Record "Sales Invoice Header"; var TempSalesShptHeader: Record "Sales Shipment Header" temporary)
-    var
-        SalesAssetLine: Record "JML AP Sales Asset Line";
-        Asset: Record "JML AP Asset";
-        TransactionNo: Integer;
-    begin
-        // Only post if no prior shipment exists (invoice-only scenario)
-        SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
-        SalesAssetLine.SetRange("Document No.", SalesHeader."No.");
-        SalesAssetLine.SetFilter("Quantity Shipped", '=0'); // Not yet shipped
+    // local procedure PostSalesInvoiceAssets(SalesHeader: Record "Sales Header"; SalesInvHeader: Record "Sales Invoice Header"; var TempSalesShptHeader: Record "Sales Shipment Header" temporary)
+    // var
+    //     SalesAssetLine: Record "JML AP Sales Asset Line";
+    //     Asset: Record "JML AP Asset";
+    //     TransactionNo: Integer;
+    // begin
+    //     // Only post if no prior shipment exists (invoice-only scenario)
+    //     SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
+    //     SalesAssetLine.SetRange("Document No.", SalesHeader."No.");
+    //     SalesAssetLine.SetFilter("Quantity Shipped", '=0'); // Not yet shipped
 
-        if SalesAssetLine.IsEmpty() then
-            exit;
+    //     if SalesAssetLine.IsEmpty() then
+    //         exit;
 
-        TransactionNo := GetNextTransactionNo();
+    //     if SalesAssetLine.FindSet(true) then
+    //         repeat
+    //             Asset.Get(SalesAssetLine."Asset No.");
 
-        if SalesAssetLine.FindSet(true) then
-            repeat
-                Asset.Get(SalesAssetLine."Asset No.");
+    //             // Transfer asset to customer
+    //             PostAssetTransferViaJournal(
+    //                 Asset,
+    //                 "JML AP Holder Type"::Customer,
+    //                 SalesHeader."Sell-to Customer No.",
+    //                 SalesInvHeader."No.",
+    //                 SalesAssetLine."Reason Code",
+    //                 SalesInvHeader."Posting Date",
+    //                 TransactionNo);
 
-                // Transfer asset to customer
-                PostAssetTransferViaJournal(
-                    Asset,
-                    "JML AP Holder Type"::Customer,
-                    SalesHeader."Sell-to Customer No.",
-                    SalesInvHeader."No.",
-                    SalesAssetLine."Reason Code",
-                    SalesInvHeader."Posting Date",
-                    TransactionNo);
-
-                // Mark as shipped
-                SalesAssetLine."Quantity Shipped" := 1;
-                SalesAssetLine."Quantity to Ship" := 0;
-                SalesAssetLine.Modify();
-            until SalesAssetLine.Next() = 0;
-    end;
+    //             // Mark as shipped
+    //             SalesAssetLine."Quantity Shipped" := 1;
+    //             SalesAssetLine."Quantity to Ship" := 0;
+    //             SalesAssetLine.Modify();
+    //         until SalesAssetLine.Next() = 0;
+    // end;
 
     local procedure PostReturnReceiptAssets(SalesHeader: Record "Sales Header"; ReturnRcptHeader: Record "Return Receipt Header")
     var
@@ -196,8 +217,6 @@ codeunit 70182398 "JML AP Sales Integration"
 
         // Determine return location (default to header location, or blank if not specified)
         LocationCode := SalesHeader."Location Code";
-
-        TransactionNo := GetNextTransactionNo();
 
         // Post each asset return
         if SalesAssetLine.FindSet(true) then
@@ -224,38 +243,24 @@ codeunit 70182398 "JML AP Sales Integration"
             until SalesAssetLine.Next() = 0;
     end;
 
-    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; TransactionNo: Integer)
+    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; var TransactionNo: Integer)
     var
-        AssetJournalBatch: Record "JML AP Asset Journal Batch";
-        AssetJournalLine: Record "JML AP Asset Journal Line";
-        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+        TempAssetJournalLine: Record "JML AP Asset Journal Line" temporary;
+        AssetJnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
     begin
-        // Get or create system journal batch
-        if not AssetJournalBatch.Get('SALES-POST') then begin
-            AssetJournalBatch.Init();
-            AssetJournalBatch.Name := 'SALES-POST';
-            AssetJournalBatch.Description := 'System batch for sales document posting';
-            AssetJournalBatch.Insert();
-        end;
-
-        // Delete any existing lines
-        AssetJournalLine.SetRange("Journal Batch Name", AssetJournalBatch.Name);
-        AssetJournalLine.DeleteAll();
-
         // Create journal line
-        AssetJournalLine.Init();
-        AssetJournalLine."Journal Batch Name" := AssetJournalBatch.Name;
-        AssetJournalLine."Line No." := 10000;
-        AssetJournalLine."Posting Date" := PostingDate;
-        AssetJournalLine."Document No." := DocumentNo;
-        AssetJournalLine."Asset No." := Asset."No.";
-        AssetJournalLine."New Holder Type" := NewHolderType;
-        AssetJournalLine."New Holder Code" := NewHolderCode;
-        AssetJournalLine."Reason Code" := ReasonCode;
-        AssetJournalLine.Insert(true);
+        TempAssetJournalLine.Init();
+        TempAssetJournalLine."Line No." := 10000;
+        TempAssetJournalLine."Posting Date" := PostingDate;
+        TempAssetJournalLine."Document No." := DocumentNo;
+        TempAssetJournalLine."Asset No." := Asset."No.";
+        TempAssetJournalLine."New Holder Type" := NewHolderType;
+        TempAssetJournalLine."New Holder Code" := NewHolderCode;
+        TempAssetJournalLine."Reason Code" := ReasonCode;
 
         // Post journal
-        AssetJnlPost.Run(AssetJournalLine);
+        AssetJnlPostLine.Run(TempAssetJournalLine);
+        TransactionNo := AssetJnlPostLine.GetTransactionNo();
     end;
 
     local procedure CreatePostedShipmentAssetLine(SalesAssetLine: Record "JML AP Sales Asset Line"; SalesShptHeader: Record "Sales Shipment Header"; SalesHeader: Record "Sales Header"; TransactionNo: Integer)
@@ -319,16 +324,5 @@ codeunit 70182398 "JML AP Sales Integration"
         PostedAssetLine."Posting Date" := ReturnRcptHeader."Posting Date";
         PostedAssetLine."Transaction No." := TransactionNo;
         PostedAssetLine.Insert(true);
-    end;
-
-    local procedure GetNextTransactionNo(): Integer
-    var
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.LockTable();
-        if HolderEntry.FindLast() then
-            exit(HolderEntry."Transaction No." + 1)
-        else
-            exit(1);
     end;
 }

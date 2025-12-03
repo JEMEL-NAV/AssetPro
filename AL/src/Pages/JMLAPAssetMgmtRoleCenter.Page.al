@@ -33,14 +33,6 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     RunObject = Page "JML AP Asset List";
                     ToolTip = 'View and manage all assets.';
                 }
-                action("Asset Card")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Asset Card';
-                    RunObject = Page "JML AP Asset Card";
-                    RunPageMode = Create;
-                    ToolTip = 'Create a new asset or view asset details.';
-                }
                 action("Asset Tree")
                 {
                     ApplicationArea = All;
@@ -74,14 +66,7 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     RunObject = Page "JML AP Asset Transfer Orders";
                     ToolTip = 'View and manage asset transfer orders.';
                 }
-                action("New Transfer Order")
-                {
-                    ApplicationArea = All;
-                    Caption = 'New Transfer Order';
-                    RunObject = Page "JML AP Asset Transfer Order";
-                    RunPageMode = Create;
-                    ToolTip = 'Create a new asset transfer order.';
-                }
+
                 action("Posted Transfers")
                 {
                     ApplicationArea = All;
@@ -95,13 +80,6 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     Caption = 'Asset Journal';
                     RunObject = Page "JML AP Asset Journal";
                     ToolTip = 'Post asset transfers using journal batches.';
-                }
-                action("Asset Journal Batches")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Asset Journal Batches';
-                    RunObject = Page "JML AP Asset Journal Batches";
-                    ToolTip = 'Manage asset journal batches.';
                 }
             }
             group(Components)
@@ -121,13 +99,6 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     Caption = 'Component Journal';
                     RunObject = Page "JML AP Component Journal";
                     ToolTip = 'Record component installations and removals.';
-                }
-                action("Component Journal Batches")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Component Journal Batches';
-                    RunObject = Page "JML AP Component Jnl. Batches";
-                    ToolTip = 'Manage component journal batches.';
                 }
             }
             group(Documents)
@@ -184,20 +155,6 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     RunObject = Page "JML AP Asset Setup";
                     ToolTip = 'Configure Asset Pro settings and number series.';
                 }
-                action("Classification Levels")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Classification Levels';
-                    RunObject = Page "JML AP Classification Lvls";
-                    ToolTip = 'Define asset classification levels.';
-                }
-                action("Classification Values")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Classification Values';
-                    RunObject = Page "JML AP Classification Vals";
-                    ToolTip = 'Define values for asset classification.';
-                }
                 action("Asset Industries")
                 {
                     ApplicationArea = All;
@@ -205,12 +162,26 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     RunObject = Page "JML AP Industries";
                     ToolTip = 'Define asset industry categories.';
                 }
-                action("Attribute Definitions")
+                action("Asset Journal Batches")
                 {
                     ApplicationArea = All;
-                    Caption = 'Attribute Definitions';
-                    RunObject = Page "JML AP Attribute Defns";
-                    ToolTip = 'Define custom attributes for assets.';
+                    Caption = 'Asset Journal Batches';
+                    RunObject = Page "JML AP Asset Journal Batches";
+                    ToolTip = 'Manage asset journal batches.';
+                }
+                action("Component Journal Batches")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Component Journal Batches';
+                    RunObject = Page "JML AP Component Jnl. Batches";
+                    ToolTip = 'Manage component journal batches.';
+                }
+                action(ConfigPackages)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Configuration Packages';
+                    ToolTip = 'Configuration Packages';
+                    RunObject = report "JML AP Config Packages";
                 }
             }
         }

@@ -1,4 +1,4 @@
-codeunit 70182391 "JML AP Asset Transfer-Post"
+codeunit 70182392 "JML AP Asset Transfer-Post"
 {
     TableNo = "JML AP Asset Transfer Header";
 

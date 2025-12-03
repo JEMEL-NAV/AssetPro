@@ -2,6 +2,8 @@ table 70182303 "JML AP Classification Lvl"
 {
     Caption = 'Classification Level';
     DataClassification = CustomerContent;
+    LookupPageId = "JML AP Classification Lvls";
+    DrillDownPageId = "JML AP Classification Lvls";
 
     fields
     {
@@ -36,14 +38,7 @@ table 70182303 "JML AP Classification Lvl"
             Editable = false;
         }
 
-        field(30; "Use in Lists"; Boolean)
-        {
-            Caption = 'Use in Lists';
-            ToolTip = 'Specifies whether this level should be shown in list filters.';
-            InitValue = true;
-        }
-
-        field(40; "Value Count"; Integer)
+        field(30; "Value Count"; Integer)
         {
             Caption = 'Value Count';
             ToolTip = 'Specifies the number of values defined for this level.';
@@ -85,6 +80,14 @@ table 70182303 "JML AP Classification Lvl"
     begin
         ValidateLevelCanBeDeleted();
     end;
+
+    trigger OnRename()
+    begin
+        Error(RenameErr, TableCaption);
+    end;
+
+    var
+        RenameErr: Label 'You cannot rename a %1.', Comment = '%1 = Table caption';
 
     local procedure ValidateLevelNumberSequence()
     var

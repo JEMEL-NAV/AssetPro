@@ -12,6 +12,17 @@ page 70182330 "JML AP Asset Setup"
     {
         area(Content)
         {
+
+            group(General)
+            {
+                Caption = 'General';
+
+                field("Default Industry Code"; Rec."Default Industry Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the default industry code for new assets.';
+                }
+            }
             group(Numbering)
             {
                 Caption = 'Numbering';
@@ -33,17 +44,6 @@ page 70182330 "JML AP Asset Setup"
                 }
             }
 
-            group(General)
-            {
-                Caption = 'General';
-
-                field("Default Industry Code"; Rec."Default Industry Code")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the default industry code for new assets.';
-                }
-            }
-
             group(Features)
             {
                 Caption = 'Features';
@@ -52,11 +52,6 @@ page 70182330 "JML AP Asset Setup"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies whether custom attributes are enabled.';
-                }
-                field("Enable Holder History"; Rec."Enable Holder History")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies whether holder history tracking is enabled.';
                 }
                 field("Block Manual Holder Change"; Rec."Block Manual Holder Change")
                 {
@@ -69,6 +64,11 @@ page 70182330 "JML AP Asset Setup"
 
     trigger OnOpenPage()
     begin
-        Rec.GetRecordOnce();
+        Rec.Reset();
+        if not Rec.Get() then begin
+            Rec.Init();
+            Rec.Insert();
+        end;
     end;
+
 }

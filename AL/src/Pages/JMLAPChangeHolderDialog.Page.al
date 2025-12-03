@@ -179,7 +179,7 @@ page 70182373 "JML AP Change Holder Dialog"
 
         // Get asset record
         if not Asset.Get(AssetNo) then
-            Error('Asset %1 not found.', AssetNo);
+            Error(AssetNotFoundErr, AssetNo);
 
         // Post holder change via journal (R8)
         AssetJnlPost.CreateAndPostManualChange(
@@ -191,7 +191,6 @@ page 70182373 "JML AP Change Holder Dialog"
             NewHolderCode,
             NewHolderAddrCode);
 
-        Message('Holder changed successfully.');
         exit(true);
     end;
 
@@ -209,6 +208,7 @@ page 70182373 "JML AP Change Holder Dialog"
         AssetNo: Code[20];
         SameHolderErr: Label 'The new holder must be different from the current holder.';
         NewHolderNotSpecifiedErr: Label 'You must specify the new holder type and code.';
+        AssetNotFoundErr: Label 'Asset %1 not found.', Comment = '%1 = Asset No.';
 
     /// <summary>
     /// Sets the current holder values to display in the dialog.

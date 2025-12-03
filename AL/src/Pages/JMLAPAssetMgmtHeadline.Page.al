@@ -26,7 +26,7 @@ page 70182372 "JML AP Asset Mgmt. Headline"
                 ShowCaption = false;
                 Visible = DefaultFieldsVisible;
 
-                field(DocumentationText; RCHeadlinesPageCommon.GetDocumentationText())
+                field(DocumentationText; DocumentationTxt)
                 {
                     ApplicationArea = All;
                     Caption = 'Documentation headline';
@@ -36,7 +36,7 @@ page 70182372 "JML AP Asset Mgmt. Headline"
 
                     trigger OnDrillDown()
                     begin
-                        HyperLink(RCHeadlinesPageCommon.DocumentationUrlTxt());
+                        HyperLink(DocumentationUrlTxt);
                     end;
                 }
             }
@@ -52,6 +52,8 @@ page 70182372 "JML AP Asset Mgmt. Headline"
 
     var
         RCHeadlinesPageCommon: Codeunit "RC Headlines Page Common";
+        DocumentationTxt: Label 'Want to learn more about Asset Pro?';
+        DocumentationUrlTxt: Label 'https://jemel.lv/docs/asset-pro';
         DefaultFieldsVisible: Boolean;
         UserGreetingVisible: Boolean;
 }

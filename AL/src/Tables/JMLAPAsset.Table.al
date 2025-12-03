@@ -60,7 +60,7 @@ table 70182301 "JML AP Asset"
             trigger OnValidate()
             begin
                 if "Industry Code" <> xRec."Industry Code" then
-                    "Classification Code" := '';
+                    validate("Classification Code", '');
             end;
         }
 
@@ -72,7 +72,7 @@ table 70182301 "JML AP Asset"
 
             trigger OnValidate()
             begin
-                if "Classification Code" <> '' then
+                if ("Classification Code" <> xRec."Classification Code") then
                     ValidateClassification();
             end;
         }
@@ -435,6 +435,11 @@ table 70182301 "JML AP Asset"
             ToolTip = 'Specifies who last modified the asset.';
             Editable = false;
         }
+        field(912; Indentation; Integer)
+        {
+            Caption = 'Indentation';
+            MinValue = 0;
+        }
     }
 
     keys
@@ -473,13 +478,14 @@ table 70182301 "JML AP Asset"
     trigger OnInsert()
     begin
         InitializeAsset();
+        UpdateIndentation();
         "Last Date Modified" := Today;
         "Last Modified By" := CopyStr(UserId, 1, MaxStrLen("Last Modified By"));
     end;
 
     trigger OnModify()
     begin
-        RegisterManualHolderChange();
+        UpdateIndentation();
         "Last Date Modified" := Today;
         "Last Modified By" := CopyStr(UserId, 1, MaxStrLen("Last Modified By"));
     end;
@@ -493,6 +499,8 @@ table 70182301 "JML AP Asset"
     var
         AssetSetup: Record "JML AP Asset Setup";
         NoSeries: Codeunit "No. Series";
+        ChangeClassErr: label 'Cannot change classification of an asset that has a parent. Detach from parent first.';
+        ChangeClassChildErr: label 'Cannot change classification of an asset that has children. Detach children first.';
 
     // === VALIDATION PROCEDURES ===
     local procedure ValidateNumberSeries()
@@ -545,6 +553,10 @@ table 70182301 "JML AP Asset"
     var
         ChangeHolderDialog: Page "JML AP Change Holder Dialog";
     begin
+        AssetSetup.GetRecordOnce();
+        if AssetSetup."Block Manual Holder Change" then
+            Error(ManualHolderChangeBlockedErr);
+
         ChangeHolderDialog.SetOldHolder(
             "Current Holder Type",
             "Current Holder Code",
@@ -618,12 +630,20 @@ table 70182301 "JML AP Asset"
 
     local procedure ValidateClassification()
     var
+        ChildAsset: Record "JML AP Asset";
         ClassValue: Record "JML AP Classification Val";
     begin
+        if "Parent Asset No." <> '' then
+            Error(ChangeClassErr);
+        ChildAsset.SetRange("Parent Asset No.", "No.");
+        if not ChildAsset.IsEmpty() then
+            Error(ChangeClassChildErr);
+
         CalcFields("Classification Level No.");
 
         if not ClassValue.Get("Industry Code", "Classification Level No.", "Classification Code") then
             Error(ClassificationNotFoundErr, "Classification Code", "Industry Code");
+        ClassValue.TestField(Blocked, false);
     end;
 
     local procedure ValidateParentAsset()
@@ -647,17 +667,15 @@ table 70182301 "JML AP Asset"
         end;
 
         // Validate same holder if both assets have holders
-        if ParentAsset.Get("Parent Asset No.") then begin
+        if ParentAsset.Get("Parent Asset No.") then
             if ("Current Holder Type" <> "Current Holder Type"::" ") and
                (ParentAsset."Current Holder Type" <> "Current Holder Type"::" ")
-            then begin
+            then
                 if ("Current Holder Type" <> ParentAsset."Current Holder Type") or
                    ("Current Holder Code" <> ParentAsset."Current Holder Code")
                 then
                     Error(DifferentHolderErr, "No.", "Parent Asset No.",
                           ParentAsset."Current Holder Type", ParentAsset."Current Holder Code");
-            end;
-        end;
 
         AssetValidator.ValidateParentAssignment(Rec);
         CalculateHierarchyLevel();
@@ -786,6 +804,7 @@ table 70182301 "JML AP Asset"
     var
         ChildAsset: Record "JML AP Asset";
         HolderEntry: Record "JML AP Holder Entry";
+        ComponentEntry: Record "JML AP Component Entry";
     begin
         // Cannot delete if has children
         ChildAsset.SetRange("Parent Asset No.", "No.");
@@ -796,6 +815,11 @@ table 70182301 "JML AP Asset"
         HolderEntry.SetRange("Asset No.", "No.");
         if not HolderEntry.IsEmpty then
             Error(CannotDeleteWithHolderHistoryErr, "No.");
+
+        // Cannot delete if comment lines exist
+        ComponentEntry.SetRange("Asset No.", "No.");
+        if not ComponentEntry.IsEmpty then
+            Error(CannotDeleteWithComponentsErr, "No.");
     end;
 
     local procedure DeleteRelatedRecords()
@@ -923,45 +947,11 @@ table 70182301 "JML AP Asset"
         exit(false);
     end;
 
-    local procedure RegisterManualHolderChange()
-    var
-        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
-    begin
-        // Check if holder fields changed
-        if (xRec."Current Holder Type" = "Current Holder Type") and
-           (xRec."Current Holder Code" = "Current Holder Code")
-        then
-            exit; // No holder change
-
-        // Skip if new holder code is empty (incomplete user input - user is still configuring)
-        // This prevents premature journal posting when only Type is changed but Code not yet set
-        if "Current Holder Code" = '' then
-            exit;
-
-        // Get setup
-        AssetSetup.GetRecordOnce();
-
-        // R7: Block manual holder change if enabled
-        if AssetSetup."Block Manual Holder Change" then
-            Error(ManualHolderChangeBlockedErr);
-
-        // R8: Auto-register manual holder change via journal
-        // This includes initial holder assignment
-        // Pass OLD holder values (xRec) and NEW holder values (Rec)
-        AssetJnlPost.CreateAndPostManualChange(
-            Rec,
-            xRec."Current Holder Type",
-            xRec."Current Holder Code",
-            xRec."Current Holder Addr Code",
-            "Current Holder Type",
-            "Current Holder Code",
-            "Current Holder Addr Code");
-    end;
-
     // === CONSTANTS ===
     var
         CannotDeleteWithChildrenErr: Label 'Cannot delete asset %1 because it has child assets.', Comment = '%1 = Asset No.';
         CannotDeleteWithHolderHistoryErr: Label 'Cannot delete asset %1 because it has holder history entries.', Comment = '%1 = Asset No.';
+        CannotDeleteWithComponentsErr: Label 'Cannot delete asset %1 because it has component entries.', Comment = '%1 = Asset No.';
         ClassificationNotFoundErr: Label 'Classification %1 does not exist in industry %2.', Comment = '%1 = Classification Code, %2 = Industry Code';
         ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
         DifferentHolderErr: Label 'Cannot assign asset %1 to parent %2. Parent is at %3 %4, but child is at different holder. Both assets must be at same location to create parent-child relationship.', Comment = '%1 = Child Asset No., %2 = Parent Asset No., %3 = Parent Holder Type, %4 = Parent Holder Code';
@@ -970,5 +960,41 @@ table 70182301 "JML AP Asset"
     local procedure GetMaxParentChainDepth(): Integer
     begin
         exit(100);
+    end;
+
+    local procedure UpdateIndentation()
+    var
+        ParentAsset: Record "JML AP Asset";
+    begin
+        if ParentAsset.Get("Parent Asset No.") then
+            UpdateIndentationTree(ParentAsset.Indentation + 1)
+        else
+            UpdateIndentationTree(0);
+    end;
+
+    procedure UpdateIndentationTree(Level: Integer)
+    var
+        ChildAsset: Record "JML AP Asset";
+    begin
+        Indentation := Level;
+
+        ChildAsset.SetRange("Parent Asset No.", Rec."No.");
+        if ChildAsset.FindSet() then
+            repeat
+                ChildAsset.UpdateIndentationTree(Level + 1);
+                ChildAsset.Modify();
+            until ChildAsset.Next() = 0;
+    end;
+
+    procedure GetStyleText(): Text
+    begin
+        if Indentation = 0 then
+            exit('Strong');
+
+        CalcFields("Has Children");
+        if "Has Children" then
+            exit('Strong');
+
+        exit('');
     end;
 }

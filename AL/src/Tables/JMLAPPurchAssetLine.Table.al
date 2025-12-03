@@ -37,7 +37,6 @@ table 70182320 "JML AP Purch. Asset Line"
             trigger OnValidate()
             var
                 Asset: Record "JML AP Asset";
-                PurchHeader: Record "Purchase Header";
             begin
                 if "Asset No." = '' then begin
                     ClearAssetInfo();
@@ -46,16 +45,15 @@ table 70182320 "JML AP Purch. Asset Line"
 
                 // Validate asset exists
                 if not Asset.Get("Asset No.") then
-                    Error('Asset %1 does not exist.', "Asset No.");
+                    Error(AssetNotExistErr, "Asset No.");
 
                 // Validate asset not blocked
                 if Asset.Blocked then
-                    Error('Asset %1 is blocked and cannot be transferred.', "Asset No.");
+                    Error(AssetBlockedErr, "Asset No.");
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
-                    Error('Cannot transfer subasset %1. It is attached to parent %2. Detach first.',
-                        Asset."No.", Asset."Parent Asset No.");
+                    Error(SubassetTransferErr, Asset."No.", Asset."Parent Asset No.");
 
                 // Get asset information
                 "Asset Description" := Asset.Description;
@@ -63,8 +61,7 @@ table 70182320 "JML AP Purch. Asset Line"
                 "Current Holder Code" := Asset."Current Holder Code";
 
                 // Validate holder based on document type
-                if PurchHeader.Get("Document Type", "Document No.") then
-                    ValidateAssetHolder(Asset, PurchHeader);
+                ValidateAssetHolder(Asset);
             end;
         }
         field(11; "Asset Description"; Text[100])
@@ -149,7 +146,7 @@ table 70182320 "JML AP Purch. Asset Line"
             DataClassification = CustomerContent;
             TableRelation = "Reason Code";
         }
-        field(31; "Description"; Text[100])
+        field(31; Description; Text[100])
         {
             Caption = 'Description';
             ToolTip = 'Specifies a description for this asset line.';
@@ -177,13 +174,28 @@ table 70182320 "JML AP Purch. Asset Line"
     }
 
     trigger OnInsert()
-    var
-        PurchHeader: Record "Purchase Header";
     begin
-        // Get vendor from header
+        GetPurchHeader();
         if PurchHeader.Get("Document Type", "Document No.") then
             "Buy-from Vendor No." := PurchHeader."Buy-from Vendor No.";
     end;
+
+    trigger OnDelete()
+    begin
+        TestStatusOpen();
+        TestField("Quantity Shipped", 0);
+        TestField("Quantity Received", 0);
+    end;
+
+    var
+        PurchHeader: Record "Purchase Header";
+        StatusCheckSuspended: Boolean;
+        AssetNotExistErr: label 'Asset %1 does not exist.', Comment = '%1: Asset No.';
+        AssetBlockedErr: label 'Asset %1 is blocked and cannot be transferred.', Comment = '%1: Asset No.';
+        SubassetTransferErr: label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.', Comment = '%1: Asset No., %2: Parent Asset No.';
+        LocationErr: label 'Location Code must be specified on the purchase header before adding assets.';
+        AssetLocationErr: label 'Asset %1 is not held by a location. Current holder: %2 %3.', Comment = '%1: Asset No., %2: Holder Type, %3: Holder Code';
+        AssetVendorErr: label 'Asset %1 is not held by a vendor. Current holder: %2 %3.', Comment = '%1: Asset No., %2: Holder Type, %3: Holder Code';
 
     local procedure ClearAssetInfo()
     begin
@@ -192,38 +204,69 @@ table 70182320 "JML AP Purch. Asset Line"
         "Current Holder Code" := '';
     end;
 
-    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset"; PurchHeader: Record "Purchase Header")
+    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset")
     var
         IsReceipt: Boolean;
         IsReturn: Boolean;
     begin
+        GetPurchHeader();
+
         // Determine if this is a receipt or return document
         IsReceipt := PurchHeader."Document Type" in [PurchHeader."Document Type"::Order, PurchHeader."Document Type"::Invoice];
         IsReturn := PurchHeader."Document Type" in [PurchHeader."Document Type"::"Credit Memo", PurchHeader."Document Type"::"Return Order"];
 
-        if IsReceipt then begin
-            // Receipt: Asset must be held by vendor (Buy-from Vendor No.)
-            if Asset."Current Holder Type" <> Asset."Current Holder Type"::Vendor then
-                Error('Asset %1 is not held by a vendor. Current holder: %2 %3.',
-                    Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
-
+        if IsReceipt then
             if Asset."Current Holder Code" <> PurchHeader."Buy-from Vendor No." then
-                Error('Asset %1 is not held by vendor %2. Current vendor: %3.',
+                Error(AssetVendorErr,
                     Asset."No.", PurchHeader."Buy-from Vendor No.", Asset."Current Holder Code");
-        end;
 
         if IsReturn then begin
             // Return: Asset must be at location (Location Code on header)
             if PurchHeader."Location Code" = '' then
-                Error('Location Code must be specified on the purchase header before adding assets to return.');
-
-            if Asset."Current Holder Type" <> Asset."Current Holder Type"::Location then
-                Error('Asset %1 is not held by a location. Current holder: %2 %3.',
-                    Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
+                Error(LocationErr);
 
             if Asset."Current Holder Code" <> PurchHeader."Location Code" then
-                Error('Asset %1 is not at location %2. Current location: %3.',
-                    Asset."No.", PurchHeader."Location Code", Asset."Current Holder Code");
+                Error(AssetLocationErr, Asset."No.", PurchHeader."Location Code", Asset."Current Holder Code");
         end;
+    end;
+
+    /// <summary>
+    /// Tests if sales header of the line is open.
+    /// </summary>
+    /// <remarks>
+    /// Check is executed only for non-system created lines, type changes, and lines with non-blank type.
+    /// </remarks>
+    procedure TestStatusOpen()
+    begin
+        if StatusCheckSuspended then
+            exit;
+
+        GetPurchHeader();
+
+        PurchHeader.TestField(Status, PurchHeader.Status::Open);
+    end;
+
+    /// <summary>
+    /// Gets the sales header associated with the sales line.
+    /// Ensures the global PurchHeader variable is correctly set.
+    /// </summary>
+    /// <returns>The sales header of the current line.</returns>
+    procedure GetPurchHeader(): Record "Purchase Header"
+    begin
+        if ("Document Type" <> PurchHeader."Document Type") or ("Document No." <> PurchHeader."No.") then
+            PurchHeader.Get("Document Type", "Document No.");
+        exit(PurchHeader);
+    end;
+
+    /// <summary>
+    /// Sets the value of the global variable StatusCheckSuspended.
+    /// </summary>
+    /// <remarks>
+    /// Suspends several checks like testing for status open on sales header, sales line check on shipment date validate, and amount updates on delete.
+    /// </remarks>
+    /// <param name="Suspend">The new value to set.</param>
+    procedure SuspendStatusCheck(Suspend: Boolean)
+    begin
+        StatusCheckSuspended := Suspend;
     end;
 }

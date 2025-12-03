@@ -50,24 +50,12 @@ table 70182300 "JML AP Asset Setup"
             InitValue = true;
         }
 
-        field(32; "Enable Holder History"; Boolean)
-        {
-            Caption = 'Enable Holder History';
-            ToolTip = 'Specifies whether holder history tracking is enabled. Disable if holder tracking is managed externally.';
-            InitValue = true;
-        }
-
-        field(33; "Block Manual Holder Change"; Boolean)
+        field(32; "Block Manual Holder Change"; Boolean)
         {
             Caption = 'Block Manual Holder Change';
             ToolTip = 'Specifies whether manual changes to Current Holder on Asset Card are blocked. When enabled, holders can only be changed via Asset Journal or Transfer Orders.';
             InitValue = false;
         }
-
-        // System
-        // Note: Validation limits (Max Circular Check Depth, Max Classification Levels)
-        // are now constants in JML AP Asset Validation codeunit, not user-configurable
-        // Note: "Current Industry Context" field removed - CaptionClass resolves per-asset using asset's Industry Code
     }
 
     keys

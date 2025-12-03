@@ -259,9 +259,15 @@ page 70182333 "JML AP Asset Card"
         }
         area(FactBoxes)
         {
+            part(PictureFactBox; "JML AP Picture FactBox")
+            {
+                ApplicationArea = All;
+                SubPageLink = "No." = field("No.");
+            }
             part(AttributesFactBox; "JML AP Attributes FB")
             {
                 ApplicationArea = All;
+                Caption = 'Attributes';
                 SubPageLink = "Asset No." = field("No.");
             }
             systempart(LinksFactBox; Links)
@@ -279,6 +285,40 @@ page 70182333 "JML AP Asset Card"
     {
         area(Navigation)
         {
+            action(References)
+            {
+                ApplicationArea = All;
+                Caption = 'References';
+                ToolTip = 'View and manage reference numbers for this asset (barcodes, customer asset numbers, etc.).';
+                Image = ReferenceData;
+                RunObject = page "JML AP Asset References";
+                RunPageLink = "Asset No." = field("No.");
+            }
+            action("Co&mments")
+            {
+                ApplicationArea = Comments;
+                Caption = 'Co&mments';
+                Image = ViewComments;
+                RunObject = Page "Comment Sheet";
+                RunPageLink = "Table Name" = const("JML AP Asset"),
+                                  "No." = field("No.");
+                ToolTip = 'View or add comments for the record.';
+            }
+            action(Attributes)
+            {
+                AccessByPermission = TableData "Item Attribute" = R;
+                ApplicationArea = Basic, Suite;
+                Caption = 'Attributes';
+                Image = Category;
+                ToolTip = 'View or edit the item''s attributes, such as color, size, or other characteristics that help to describe the item.';
+
+                trigger OnAction()
+                begin
+                    PAGE.RunModal(PAGE::"JML AP Attr Value Editor", Rec);
+                    CurrPage.SaveRecord();
+                    CurrPage.AttributesFactBox.PAGE.LoadAttributesForAsset(Rec."No.");
+                end;
+            }
             action(HolderHistory)
             {
                 ApplicationArea = All;
@@ -349,23 +389,12 @@ page 70182333 "JML AP Asset Card"
                 ToolTip = 'Change the current holder of this asset (creates holder entry).';
                 Image = ChangeTo;
                 Visible = ManualHolderChangeAllowed;
+                Enabled = ManualHolderChangeAllowed;
 
                 trigger OnAction()
                 begin
                     Rec.OpenChangeHolderDialog();
                     CurrPage.Update(false);
-                end;
-            }
-            action(TransferAsset)
-            {
-                ApplicationArea = All;
-                Caption = 'Transfer Asset';
-                ToolTip = 'Transfer this asset to a new holder.';
-                Image = TransferOrder;
-
-                trigger OnAction()
-                begin
-                    Message('Transfer functionality will be implemented.');
                 end;
             }
         }
@@ -375,7 +404,7 @@ page 70182333 "JML AP Asset Card"
         ClassificationPathText: Text[250];
         ManualHolderChangeAllowed: Boolean;
 
-    trigger OnOpenPage()
+    trigger OnAfterGetRecord()
     var
         AssetSetup: Record "JML AP Asset Setup";
     begin

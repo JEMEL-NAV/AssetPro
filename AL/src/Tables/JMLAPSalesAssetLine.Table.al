@@ -37,7 +37,6 @@ table 70182318 "JML AP Sales Asset Line"
             trigger OnValidate()
             var
                 Asset: Record "JML AP Asset";
-                SalesHeader: Record "Sales Header";
             begin
                 if "Asset No." = '' then begin
                     ClearAssetInfo();
@@ -46,16 +45,15 @@ table 70182318 "JML AP Sales Asset Line"
 
                 // Validate asset exists
                 if not Asset.Get("Asset No.") then
-                    Error('Asset %1 does not exist.', "Asset No.");
+                    Error(AssetNotExistErr, "Asset No.");
 
                 // Validate asset not blocked
                 if Asset.Blocked then
-                    Error('Asset %1 is blocked and cannot be transferred.', "Asset No.");
+                    Error(AssetBlockedErr, "Asset No.");
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
-                    Error('Cannot transfer subasset %1. It is attached to parent %2. Detach first.',
-                        Asset."No.", Asset."Parent Asset No.");
+                    Error(SubassetTransferErr, Asset."No.", Asset."Parent Asset No.");
 
                 // Get asset information
                 "Asset Description" := Asset.Description;
@@ -63,8 +61,7 @@ table 70182318 "JML AP Sales Asset Line"
                 "Current Holder Code" := Asset."Current Holder Code";
 
                 // Validate holder based on document type
-                if SalesHeader.Get("Document Type", "Document No.") then
-                    ValidateAssetHolder(Asset, SalesHeader);
+                ValidateAssetHolder(Asset);
             end;
         }
         field(11; "Asset Description"; Text[100])
@@ -149,7 +146,7 @@ table 70182318 "JML AP Sales Asset Line"
             DataClassification = CustomerContent;
             TableRelation = "Reason Code";
         }
-        field(31; "Description"; Text[100])
+        field(31; Description; Text[100])
         {
             Caption = 'Description';
             ToolTip = 'Specifies a description for this asset line.';
@@ -177,18 +174,28 @@ table 70182318 "JML AP Sales Asset Line"
     }
 
     trigger OnInsert()
-    var
-        SalesHeader: Record "Sales Header";
     begin
-        // Get customer from header
-        if SalesHeader.Get("Document Type", "Document No.") then
-            "Sell-to Customer No." := SalesHeader."Sell-to Customer No.";
+        GetSalesHeader();
+
+        "Sell-to Customer No." := SalesHeader."Sell-to Customer No.";
     end;
 
     trigger OnDelete()
     begin
-        // No special delete logic needed
+        TestStatusOpen();
+        TestField("Quantity Shipped", 0);
+        TestField("Quantity Received", 0);
     end;
+
+    var
+        SalesHeader: Record "Sales Header";
+        StatusCheckSuspended: Boolean;
+        AssetNotExistErr: label 'Asset %1 does not exist.', Comment = '%1: Asset No.';
+        AssetBlockedErr: label 'Asset %1 is blocked and cannot be transferred.', Comment = '%1: Asset No.';
+        SubassetTransferErr: label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.', Comment = '%1: Asset No., %2: Parent Asset No.';
+        LocationErr: label 'Location Code must be specified on the sales header before adding assets.';
+        AssetLocationErr: label 'Asset %1 is not held by a location. Current holder: %2 %3.', Comment = '%1: Asset No., %2: Holder Type, %3: Holder Code';
+        AssetCustomerErr: label 'Asset %1 is not held by a customer. Current holder: %2 %3.', Comment = '%1: Asset No., %2: Holder Type, %3: Holder Code';
 
     local procedure ClearAssetInfo()
     begin
@@ -197,11 +204,13 @@ table 70182318 "JML AP Sales Asset Line"
         "Current Holder Code" := '';
     end;
 
-    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset"; SalesHeader: Record "Sales Header")
+    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset")
     var
         IsDelivery: Boolean;
         IsReturn: Boolean;
     begin
+        GetSalesHeader();
+
         // Determine if this is a delivery or return document
         IsDelivery := SalesHeader."Document Type" in [SalesHeader."Document Type"::Order, SalesHeader."Document Type"::Invoice];
         IsReturn := SalesHeader."Document Type" in [SalesHeader."Document Type"::"Credit Memo", SalesHeader."Document Type"::"Return Order"];
@@ -209,26 +218,54 @@ table 70182318 "JML AP Sales Asset Line"
         if IsDelivery then begin
             // Delivery: Asset must be held by location (from Location Code on header)
             if SalesHeader."Location Code" = '' then
-                Error('Location Code must be specified on the sales header before adding assets.');
+                Error(LocationErr);
 
             if Asset."Current Holder Type" <> Asset."Current Holder Type"::Location then
-                Error('Asset %1 is not held by a location. Current holder: %2 %3.',
-                    Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
-
-            if Asset."Current Holder Code" <> SalesHeader."Location Code" then
-                Error('Asset %1 is not held by location %2. Current location: %3.',
-                    Asset."No.", SalesHeader."Location Code", Asset."Current Holder Code");
+                Error(AssetLocationErr, Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
         end;
 
-        if IsReturn then begin
-            // Return: Asset must be held by customer (Sell-to Customer No.)
-            if Asset."Current Holder Type" <> Asset."Current Holder Type"::Customer then
-                Error('Asset %1 is not held by a customer. Current holder: %2 %3.',
-                    Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
-
+        if IsReturn then
             if Asset."Current Holder Code" <> SalesHeader."Sell-to Customer No." then
-                Error('Asset %1 is not held by customer %2. Current customer: %3.',
-                    Asset."No.", SalesHeader."Sell-to Customer No.", Asset."Current Holder Code");
-        end;
+                Error(AssetCustomerErr, Asset."No.", SalesHeader."Sell-to Customer No.", Asset."Current Holder Code");
+    end;
+
+    /// <summary>
+    /// Tests if sales header of the line is open.
+    /// </summary>
+    /// <remarks>
+    /// Check is executed only for non-system created lines, type changes, and lines with non-blank type.
+    /// </remarks>
+    procedure TestStatusOpen()
+    begin
+        if StatusCheckSuspended then
+            exit;
+
+        GetSalesHeader();
+
+        SalesHeader.TestField(Status, SalesHeader.Status::Open);
+    end;
+
+    /// <summary>
+    /// Gets the sales header associated with the sales line.
+    /// Ensures the global SalesHeader variable is correctly set.
+    /// </summary>
+    /// <returns>The sales header of the current line.</returns>
+    procedure GetSalesHeader(): Record "Sales Header"
+    begin
+        if ("Document Type" <> SalesHeader."Document Type") or ("Document No." <> SalesHeader."No.") then
+            SalesHeader.Get("Document Type", "Document No.");
+        exit(SalesHeader);
+    end;
+
+    /// <summary>
+    /// Sets the value of the global variable StatusCheckSuspended.
+    /// </summary>
+    /// <remarks>
+    /// Suspends several checks like testing for status open on sales header, sales line check on shipment date validate, and amount updates on delete.
+    /// </remarks>
+    /// <param name="Suspend">The new value to set.</param>
+    procedure SuspendStatusCheck(Suspend: Boolean)
+    begin
+        StatusCheckSuspended := Suspend;
     end;
 }

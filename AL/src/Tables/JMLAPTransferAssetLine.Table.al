@@ -31,7 +31,6 @@ table 70182322 "JML AP Transfer Asset Line"
             trigger OnValidate()
             var
                 Asset: Record "JML AP Asset";
-                TransferHeader: Record "Transfer Header";
             begin
                 if "Asset No." = '' then begin
                     ClearAssetInfo();
@@ -40,25 +39,23 @@ table 70182322 "JML AP Transfer Asset Line"
 
                 // Validate asset exists
                 if not Asset.Get("Asset No.") then
-                    Error('Asset %1 does not exist.', "Asset No.");
+                    Error(AssetNotExistErr, "Asset No.");
 
                 // Validate asset not blocked
                 if Asset.Blocked then
-                    Error('Asset %1 is blocked and cannot be transferred.', "Asset No.");
+                    Error(AssetBlockedErr, "Asset No.");
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
-                    Error('Cannot transfer subasset %1. It is attached to parent %2. Detach first.',
-                        Asset."No.", Asset."Parent Asset No.");
+                    Error(SubassetTransferErr, Asset."No.", Asset."Parent Asset No.");
 
                 // Get asset information
                 "Asset Description" := Asset.Description;
                 "Current Holder Type" := Asset."Current Holder Type";
                 "Current Holder Code" := Asset."Current Holder Code";
 
-                // Validate holder - must be at Transfer-from Location
-                if TransferHeader.Get("Document No.") then
-                    ValidateAssetHolder(Asset, TransferHeader);
+                // Validate holder - must be at Transfer-from Location                
+                ValidateAssetHolder(Asset);
             end;
         }
         field(11; "Asset Description"; Text[100])
@@ -142,7 +139,7 @@ table 70182322 "JML AP Transfer Asset Line"
             DataClassification = CustomerContent;
             TableRelation = "Reason Code";
         }
-        field(31; "Description"; Text[100])
+        field(31; Description; Text[100])
         {
             Caption = 'Description';
             ToolTip = 'Specifies a description for this asset line.';
@@ -177,15 +174,30 @@ table 70182322 "JML AP Transfer Asset Line"
     }
 
     trigger OnInsert()
-    var
-        TransferHeader: Record "Transfer Header";
     begin
-        // Get locations from header
+        GetTransferHeader();
+
         if TransferHeader.Get("Document No.") then begin
             "Transfer-from Code" := TransferHeader."Transfer-from Code";
             "Transfer-to Code" := TransferHeader."Transfer-to Code";
         end;
     end;
+
+    trigger OnDelete()
+    begin
+        TestStatusOpen();
+        TestField("Quantity Shipped", 0);
+        TestField("Quantity Received", 0);
+    end;
+
+    var
+        TransferHeader: Record "Transfer Header";
+        StatusCheckSuspended: Boolean;
+        AssetNotExistErr: label 'Asset %1 does not exist.', Comment = '%1: Asset No.';
+        AssetBlockedErr: label 'Asset %1 is blocked and cannot be transferred.', Comment = '%1: Asset No.';
+        SubassetTransferErr: label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.', Comment = '%1: Asset No., %2: Parent Asset No.';
+        TransferFromCodeNotSpecifiedErr: label 'Transfer-from Code must be specified on the transfer header before adding assets.', Comment = '';
+        AssetNotAtLocationErr: label 'Asset %1 is not at location %2. Current location: %3 %4.', Comment = '%1: Asset No., %2: Transfer-from Code, %3: Current Holder Type, %4: Current Holder Code';
 
     local procedure ClearAssetInfo()
     begin
@@ -194,18 +206,53 @@ table 70182322 "JML AP Transfer Asset Line"
         "Current Holder Code" := '';
     end;
 
-    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset"; TransferHeader: Record "Transfer Header")
+    local procedure ValidateAssetHolder(Asset: Record "JML AP Asset")
     begin
+        GetTransferHeader();
+
         // Asset must be held by Transfer-from Location
         if TransferHeader."Transfer-from Code" = '' then
-            Error('Transfer-from Code must be specified on the transfer header before adding assets.');
+            Error(TransferFromCodeNotSpecifiedErr);
 
         if Asset."Current Holder Type" <> Asset."Current Holder Type"::Location then
             Error('Asset %1 is not held by a location. Current holder: %2 %3.',
                 Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
 
         if Asset."Current Holder Code" <> TransferHeader."Transfer-from Code" then
-            Error('Asset %1 is not at location %2. Current location: %3.',
-                Asset."No.", TransferHeader."Transfer-from Code", Asset."Current Holder Code");
+            Error(AssetNotAtLocationErr, Asset."No.", TransferHeader."Transfer-from Code", Asset."Current Holder Type", Asset."Current Holder Code");
+    end;
+
+    /// <summary>
+    /// Test whether the status of a transfer document is set to 'Open'.
+    /// </summary>
+    procedure TestStatusOpen()
+    begin
+        if StatusCheckSuspended then
+            exit;
+
+        GetTransferHeader();
+
+        TransferHeader.TestField(Status, TransferHeader.Status::Open);
+    end;
+
+    /// <summary>
+    /// Gets the transfer header associated with the transfer line.
+    /// Ensures the global TransferHeader variable is correctly set.
+    /// </summary>
+    /// <returns>The transfer header of the current line.</returns>
+    procedure GetTransferHeader(): Record "Transfer Header"
+    begin
+        if ("Document No." <> TransferHeader."No.") then
+            TransferHeader.Get("Document No.");
+        exit(TransferHeader);
+    end;
+
+    /// <summary>
+    /// Sets the status check suspension flag.
+    /// </summary>
+    /// <param name="Suspend">A boolean value indicating whether to suspend the status check.</param>
+    procedure SuspendStatusCheck(Suspend: Boolean)
+    begin
+        StatusCheckSuspended := Suspend;
     end;
 }

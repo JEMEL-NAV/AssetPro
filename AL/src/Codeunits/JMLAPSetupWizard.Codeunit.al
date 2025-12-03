@@ -15,7 +15,6 @@ codeunit 70182381 "JML AP Setup Wizard"
 
         // Initialize default values
         AssetSetup."Enable Attributes" := true;
-        AssetSetup."Enable Holder History" := true;
         AssetSetup.Modify();
     end;
 
@@ -32,7 +31,6 @@ codeunit 70182381 "JML AP Setup Wizard"
         if not Industry.Get('FLEET') then begin
             Industry.Code := 'FLEET';
             Industry.Name := 'Fleet Management';
-            Industry.Description := 'Marine vessel fleet management';
             Industry.Insert();
 
             // Create Level 1

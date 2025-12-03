@@ -22,11 +22,6 @@ page 70182334 "JML AP Industries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the industry name.';
                 }
-                field(Description; Rec.Description)
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the description.';
-                }
                 field(Blocked; Rec.Blocked)
                 {
                     ApplicationArea = All;

@@ -147,41 +147,37 @@ page 70182354 "JML AP Asset Transfer Order"
             group(Release)
             {
                 Caption = 'Release';
-
-                action(ReleaseAction)
+                Image = ReleaseDoc;
+                action("Re&lease")
                 {
-                    ApplicationArea = All;
-                    Caption = 'Release';
-                    ToolTip = 'Release the transfer order to make it ready for posting.';
+                    ApplicationArea = Location;
+                    Caption = 'Re&lease';
+                    Enabled = Rec.Status <> Rec.Status::Released;
                     Image = ReleaseDoc;
-                    ShortcutKey = 'Ctrl+F9';
+                    ShortCutKey = 'Ctrl+F9';
+                    ToolTip = 'Release the document to the next stage of processing. You must reopen the document before you can make changes to it.';
 
                     trigger OnAction()
-                    var
-                        ReleaseAssetTransferDoc: Codeunit "JML AP Release Asset Transfer";
                     begin
-                        ReleaseAssetTransferDoc.Run(Rec);
-                        CurrPage.Update(false);
+                        Rec.PerformManualRelease();
                     end;
                 }
-
-                action(ReopenAction)
+                action("Reo&pen")
                 {
-                    ApplicationArea = All;
-                    Caption = 'Reopen';
-                    ToolTip = 'Reopen the released transfer order for editing.';
+                    ApplicationArea = Location;
+                    Caption = 'Reo&pen';
+                    Enabled = Rec.Status <> Rec.Status::Open;
                     Image = ReOpen;
+                    ToolTip = 'Reopen the released transfer order for editing.';
 
                     trigger OnAction()
                     var
                         ReleaseAssetTransferDoc: Codeunit "JML AP Release Asset Transfer";
                     begin
                         ReleaseAssetTransferDoc.Reopen(Rec);
-                        CurrPage.Update(false);
                     end;
                 }
             }
-
             group(Posting)
             {
                 Caption = 'Posting';
@@ -243,11 +239,17 @@ page 70182354 "JML AP Asset Transfer Order"
             {
                 Caption = 'Process';
 
-                actionref(ReleaseAction_Promoted; ReleaseAction)
+                group(Category_Release)
                 {
-                }
-                actionref(ReopenAction_Promoted; ReopenAction)
-                {
+                    Caption = 'Release';
+                    ShowAs = SplitButton;
+
+                    actionref("Re&lease_Promoted"; "Re&lease")
+                    {
+                    }
+                    actionref("Reo&pen_Promoted"; "Reo&pen")
+                    {
+                    }
                 }
                 actionref(Post_Promoted; Post)
                 {
@@ -273,14 +275,6 @@ page 70182354 "JML AP Asset Transfer Order"
             }
         }
     }
-
-    local procedure CountLines(): Integer
-    var
-        TransferLine: Record "JML AP Asset Transfer Line";
-    begin
-        TransferLine.SetRange("Document No.", Rec."No.");
-        exit(TransferLine.Count);
-    end;
 
     var
         NotReleasedErr: Label 'The transfer order must be released before posting.';

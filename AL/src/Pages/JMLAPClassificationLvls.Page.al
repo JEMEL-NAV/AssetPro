@@ -27,11 +27,16 @@ page 70182335 "JML AP Classification Lvls"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the level name.';
                 }
-                field("Use in Lists"; Rec."Use in Lists")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies whether to use in lists.';
-                }
+            }
+        }
+        area(factboxes)
+        {
+            part(ClassificationValues; "JML AP Classification Vals Fb")
+            {
+                ApplicationArea = All;
+                Caption = 'Classification';
+                SubPageLink = "Industry Code" = field("Industry Code"),
+                              "Level Number" = field("Level Number");
             }
         }
     }
@@ -43,7 +48,7 @@ page 70182335 "JML AP Classification Lvls"
             {
                 ApplicationArea = All;
                 Caption = 'Attributes';
-                ToolTip = 'View classification levels for this industry.';
+                ToolTip = 'View attributes for this industry.';
                 Image = Hierarchy;
                 RunObject = page "JML AP Attribute Defns";
                 RunPageLink = "Industry Code" = field("Industry Code"), "Level Number" = field("Level Number");

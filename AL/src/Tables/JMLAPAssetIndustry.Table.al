@@ -7,7 +7,7 @@ table 70182302 "JML AP Asset Industry"
 
     fields
     {
-        field(1; Code; Code[20])
+        field(1; "Code"; Code[20])
         {
             Caption = 'Code';
             ToolTip = 'Specifies the unique code for this industry.';
@@ -20,36 +20,30 @@ table 70182302 "JML AP Asset Industry"
             ToolTip = 'Specifies the name of the industry.';
         }
 
-        field(20; Description; Text[250])
-        {
-            Caption = 'Description';
-            ToolTip = 'Specifies a description of the industry.';
-        }
-
-        field(30; "Number of Levels"; Integer)
+        field(20; "Number of Levels"; Integer)
         {
             Caption = 'Number of Levels';
             ToolTip = 'Specifies the number of classification levels defined for this industry.';
             FieldClass = FlowField;
-            CalcFormula = Count("JML AP Classification Lvl" where("Industry Code" = field(Code)));
+            CalcFormula = Count("JML AP Classification Lvl" where("Industry Code" = field("Code")));
             Editable = false;
         }
 
-        field(31; "Number of Values"; Integer)
+        field(21; "Number of Values"; Integer)
         {
             Caption = 'Number of Values';
             ToolTip = 'Specifies the number of classification values defined for this industry.';
             FieldClass = FlowField;
-            CalcFormula = Count("JML AP Classification Val" where("Industry Code" = field(Code)));
+            CalcFormula = Count("JML AP Classification Val" where("Industry Code" = field("Code")));
             Editable = false;
         }
 
-        field(32; "Number of Assets"; Integer)
+        field(22; "Number of Assets"; Integer)
         {
             Caption = 'Number of Assets';
             ToolTip = 'Specifies the number of assets using this industry.';
             FieldClass = FlowField;
-            CalcFormula = Count("JML AP Asset" where("Industry Code" = field(Code)));
+            CalcFormula = Count("JML AP Asset" where("Industry Code" = field("Code")));
             Editable = false;
         }
 

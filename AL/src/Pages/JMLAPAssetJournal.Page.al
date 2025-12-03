@@ -122,6 +122,7 @@ page 70182352 "JML AP Asset Journal"
             part(AssetFactBox; "JML AP Asset FactBox")
             {
                 ApplicationArea = All;
+                Caption = 'Asset';
                 SubPageLink = "No." = field("Asset No.");
             }
         }
@@ -183,8 +184,27 @@ page 70182352 "JML AP Asset Journal"
                     end;
                 }
             }
-        }
+            group("Page")
+            {
+                Caption = 'Page';
+                action(EditInExcel)
+                {
+                    ApplicationArea = Basic, Suite;
+                    Caption = 'Edit in Excel';
+                    Image = Excel;
+                    ToolTip = 'Send the data in the journal to an Excel file for analysis or editing.';
+                    Visible = IsSaaSExcelAddinEnabled;
+                    AccessByPermission = System "Allow Action Export To Excel" = X;
 
+                    trigger OnAction()
+                    var
+                        ODataUtility: Codeunit ODataUtility;
+                    begin
+                        ODataUtility.EditJournalWorksheetInExcel(CurrPage.Caption, CurrPage.ObjectId(false), Rec."Journal Batch Name", '');
+                    end;
+                }
+            }
+        }
         area(Navigation)
         {
             action(Asset)
@@ -244,7 +264,10 @@ page 70182352 "JML AP Asset Journal"
     }
 
     trigger OnOpenPage()
+    var
+        ServerSetting: Codeunit "Server Setting";
     begin
+        IsSaaSExcelAddinEnabled := ServerSetting.GetIsSaasExcelAddinEnabled();
         if CurrentBatchName = '' then
             SetDefaultBatch();
         SetBatchFilter();
@@ -282,4 +305,5 @@ page 70182352 "JML AP Asset Journal"
 
     var
         CurrentBatchName: Code[10];
+        IsSaaSExcelAddinEnabled: Boolean;
 }
