@@ -1,6 +1,7 @@
 page 70182363 "JML AP Transfer Asset Subpage"
 {
     Caption = 'Asset Lines';
+    Description = 'Subpage for managing assets linked to inventory transfer lines.';
     PageType = ListPart;
     SourceTable = "JML AP Transfer Asset Line";
     AutoSplitKey = true;

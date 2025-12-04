@@ -1,6 +1,7 @@
 page 70182330 "JML AP Asset Setup"
 {
     Caption = 'Asset Setup';
+    Description = 'Configure asset management settings including number series, holder change options, and integration parameters.';
     PageType = Card;
     SourceTable = "JML AP Asset Setup";
     ApplicationArea = All;

@@ -1,6 +1,7 @@
 page 70182360 "JML AP Purch. Asset Subpage"
 {
     Caption = 'Asset Lines';
+    Description = 'Subpage for managing assets linked to purchase document lines.';
     PageType = ListPart;
     SourceTable = "JML AP Purch. Asset Line";
     AutoSplitKey = true;

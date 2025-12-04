@@ -1,6 +1,7 @@
 page 70182300 "JML AP Config Packages"
 {
     Caption = 'Configuration Packages';
+    Description = 'Import and export asset configuration data using configuration packages.';
     Editable = false;
     PageType = List;
     SourceTable = "Name/Value Buffer";

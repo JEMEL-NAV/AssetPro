@@ -1,6 +1,7 @@
 page 70182355 "JML AP Asset Transfer Subpage"
 {
     Caption = 'Asset Transfer Lines';
+    Description = 'Subpage for entering asset lines in transfer orders.';
     PageType = ListPart;
     SourceTable = "JML AP Asset Transfer Line";
     AutoSplitKey = true;

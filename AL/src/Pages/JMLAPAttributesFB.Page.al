@@ -1,6 +1,7 @@
 page 70182338 "JML AP Attributes FB"
 {
     Caption = 'Attributes';
+    Description = 'Displays asset attribute values in a factbox for quick reference.';
     PageType = ListPart;
     SourceTable = "JML AP Attribute Value";
     ApplicationArea = All;

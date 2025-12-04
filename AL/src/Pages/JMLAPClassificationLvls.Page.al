@@ -1,6 +1,7 @@
 page 70182335 "JML AP Classification Lvls"
 {
     Caption = 'Classification Levels';
+    Description = 'Configure classification hierarchy levels for organizing asset categories.';
     PageType = List;
     SourceTable = "JML AP Classification Lvl";
     UsageCategory = Administration;

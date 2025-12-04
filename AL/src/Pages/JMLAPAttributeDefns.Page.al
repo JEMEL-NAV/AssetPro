@@ -1,6 +1,7 @@
 page 70182337 "JML AP Attribute Defns"
 {
     Caption = 'Attribute Definitions';
+    Description = 'Define custom attribute definitions for tracking additional asset properties and characteristics.';
     PageType = List;
     SourceTable = "JML AP Attribute Defn";
     UsageCategory = Administration;

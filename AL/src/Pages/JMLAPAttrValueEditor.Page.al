@@ -1,6 +1,7 @@
 page 70182345 "JML AP Attr Value Editor"
 {
     Caption = 'Asset Attribute Values';
+    Description = 'Edit asset attribute values using a specialized attribute editor interface.';
     PageType = StandardDialog;
     SourceTable = "JML AP Asset";
 

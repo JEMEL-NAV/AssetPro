@@ -1,6 +1,7 @@
 page 70182384 "JML AP Ship-to Asset FB"
 {
     Caption = 'Ship-to Address Assets';
+    Description = 'Displays assets currently at the selected ship-to address location.';
     PageType = CardPart;
     SourceTable = "Ship-to Address";
 

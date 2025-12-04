@@ -1,6 +1,7 @@
 page 70182382 "JML AP Asset References"
 {
     Caption = 'Asset References';
+    Description = 'Manage multiple reference numbers for assets including barcodes, customer numbers, and vendor numbers.';
     PageType = List;
     SourceTable = "JML AP Asset Reference";
     ApplicationArea = All;

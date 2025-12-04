@@ -1,6 +1,7 @@
 page 70182377 "JML AP Component Jnl. Batches"
 {
     Caption = 'Component Journal Batches';
+    Description = 'Manage component journal batches for organizing component transactions.';
     PageType = List;
     SourceTable = "JML AP Component Jnl. Batch";
     ApplicationArea = All;

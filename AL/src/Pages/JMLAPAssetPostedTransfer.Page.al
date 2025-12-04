@@ -1,6 +1,7 @@
 page 70182357 "JML AP Asset Posted Transfer"
 {
     Caption = 'Posted Asset Transfer';
+    Description = 'View posted asset transfer records showing completed asset movements between holders.';
     PageType = Document;
     SourceTable = "JML AP Posted Asset Transfer";
     ApplicationArea = All;

@@ -1,6 +1,7 @@
 page 70182378 "JML AP Picture FactBox"
 {
     Caption = 'Asset Picture';
+    Description = 'Displays asset images and photos in a factbox.';
     PageType = CardPart;
     SourceTable = "JML AP Asset";
 

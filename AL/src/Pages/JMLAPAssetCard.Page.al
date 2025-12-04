@@ -1,6 +1,7 @@
 page 70182333 "JML AP Asset Card"
 {
     Caption = 'Asset';
+    Description = 'Displays detailed information about fixed assets including physical hierarchy, holder information, financial values, and attributes.';
     PageType = Card;
     SourceTable = "JML AP Asset";
     ApplicationArea = All;

@@ -1,6 +1,7 @@
 page 70182351 "JML AP Asset Journal Batches"
 {
     Caption = 'Asset Journal Batches';
+    Description = 'Manage asset journal batches for organizing and grouping asset transactions.';
     PageType = List;
     SourceTable = "JML AP Asset Journal Batch";
     ApplicationArea = All;

@@ -1,6 +1,7 @@
 page 70182332 "JML AP Asset List"
 {
     Caption = 'Assets';
+    Description = 'List of all fixed assets with their current status, holder information, and classification details.';
     PageType = List;
     SourceTable = "JML AP Asset";
     CardPageId = "JML AP Asset Card";

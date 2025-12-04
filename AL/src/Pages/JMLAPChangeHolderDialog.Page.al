@@ -2,6 +2,7 @@ page 70182373 "JML AP Change Holder Dialog"
 {
     PageType = StandardDialog;
     Caption = 'Change Asset Holder';
+    Description = 'Dialog for changing the current holder of selected assets with transfer date and reason.';
     ApplicationArea = All;
 
     layout

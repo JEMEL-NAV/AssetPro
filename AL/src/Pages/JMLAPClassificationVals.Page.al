@@ -1,6 +1,7 @@
 page 70182336 "JML AP Classification Vals"
 {
     Caption = 'Classification Values';
+    Description = 'Define hierarchical classification values for categorizing assets by type, function, or other criteria.';
     PageType = List;
     SourceTable = "JML AP Classification Val";
     UsageCategory = Administration;

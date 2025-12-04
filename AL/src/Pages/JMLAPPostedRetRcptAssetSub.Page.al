@@ -1,6 +1,7 @@
 page 70182368 "JML AP Pstd Ret Rcpt Ast Sub"
 {
     Caption = 'Posted Return Receipt Asset Lines';
+    Description = 'Subpage showing assets on posted return receipt lines.';
     PageType = ListPart;
     SourceTable = "JML AP Pstd Ret Rcpt Ast Ln";
     Editable = false;

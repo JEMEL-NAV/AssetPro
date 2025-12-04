@@ -1,6 +1,7 @@
 page 70182369 "JML AP Pstd Ret Shpt Ast Sub"
 {
     Caption = 'Posted Return Shipment Asset Lines';
+    Description = 'Subpage showing assets on posted return shipment lines.';
     PageType = ListPart;
     SourceTable = "JML AP Pstd Ret Shpt Ast Ln";
     Editable = false;

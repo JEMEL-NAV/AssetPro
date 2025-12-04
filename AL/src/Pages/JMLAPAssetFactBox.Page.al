@@ -1,6 +1,7 @@
 page 70182342 "JML AP Asset FactBox"
 {
     Caption = 'Asset Details';
+    Description = 'Displays key asset information in a factbox including status and holder details.';
     PageType = CardPart;
     SourceTable = "JML AP Asset";
     ApplicationArea = All;

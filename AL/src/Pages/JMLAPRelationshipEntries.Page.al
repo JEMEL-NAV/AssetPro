@@ -1,6 +1,7 @@
 page 70182365 "JML AP Relationship Entries"
 {
     Caption = 'Asset Relationship Entries';
+    Description = 'View historical records of asset parent-child relationships including attach and detach events.';
     PageType = List;
     SourceTable = "JML AP Asset Relation Entry";
     ApplicationArea = All;

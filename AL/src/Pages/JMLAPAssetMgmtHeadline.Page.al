@@ -1,6 +1,7 @@
 page 70182372 "JML AP Asset Mgmt. Headline"
 {
     Caption = 'Headline';
+    Description = 'Displays headline information and insights for asset management.';
     PageType = HeadlinePart;
     RefreshOnActivate = true;
 

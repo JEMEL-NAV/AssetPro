@@ -1,6 +1,7 @@
 page 70182339 "JML AP Holder Entries"
 {
     Caption = 'Asset Holder Entries';
+    Description = 'View historical records of asset holder changes showing who held which assets and when.';
     PageType = List;
     SourceTable = "JML AP Holder Entry";
     UsageCategory = ReportsAndAnalysis;

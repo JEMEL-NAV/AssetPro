@@ -1,6 +1,7 @@
 page 70182383 "JML AP Asset Reference Entries"
 {
     Caption = 'Asset Reference Entries';
+    Description = 'View historical records of asset reference number assignments and changes.';
     PageType = List;
     SourceTable = "JML AP Asset Reference";
     ApplicationArea = All;

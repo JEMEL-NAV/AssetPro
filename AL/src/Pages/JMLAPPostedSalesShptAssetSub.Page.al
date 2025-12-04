@@ -1,6 +1,7 @@
 page 70182366 "JML AP Pstd Sales Shpt Ast Sub"
 {
     Caption = 'Posted Shipment Asset Lines';
+    Description = 'Subpage showing assets on posted sales shipment lines.';
     PageType = ListPart;
     SourceTable = "JML AP Pstd Sales Shpt Ast Ln";
     Editable = false;

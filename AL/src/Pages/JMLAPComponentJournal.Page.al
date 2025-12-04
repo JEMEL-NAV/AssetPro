@@ -1,6 +1,7 @@
 page 70182376 "JML AP Component Journal"
 {
     Caption = 'Asset Component Journal';
+    Description = 'Record component installations, removals, and replacements for assets.';
     PageType = Worksheet;
     SourceTable = "JML AP Component Journal Line";
     ApplicationArea = All;

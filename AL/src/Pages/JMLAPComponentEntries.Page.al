@@ -1,6 +1,7 @@
 page 70182375 "JML AP Component Entries"
 {
     Caption = 'Component Entries';
+    Description = 'View historical records of component installations, removals, and replacements for assets.';
     PageType = List;
     SourceTable = "JML AP Component Entry";
     UsageCategory = ReportsAndAnalysis;

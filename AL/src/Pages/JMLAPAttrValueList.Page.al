@@ -1,6 +1,7 @@
 page 70182344 "JML AP Attr Value List"
 {
     Caption = 'Asset Attribute Values';
+    Description = 'List of attribute values assigned to assets for filtering and selection.';
     DelayedInsert = true;
     PageType = ListPart;
     SourceTable = "JML AP Asset Attr Val Sel";

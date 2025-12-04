@@ -1,6 +1,7 @@
 page 70182370 "JML AP Asset Mgmt. Role Center"
 {
     Caption = 'Asset Manager Role Center';
+    Description = 'Main role center for asset managers with navigation, activities, and key performance indicators.';
     PageType = RoleCenter;
 
     layout

@@ -1,6 +1,7 @@
 page 70182358 "JML AP Asset Posted Trans. Sub"
 {
     Caption = 'Posted Asset Transfer Lines';
+    Description = 'Subpage showing asset lines in posted transfer documents.';
     PageType = ListPart;
     SourceTable = "JML AP Pstd. Asset Trans. Line";
     Editable = false;

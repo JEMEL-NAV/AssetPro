@@ -2,6 +2,7 @@ page 70182301 "JML AP Classification Vals Fb"
 {
     ApplicationArea = All;
     Caption = 'JML AP Classification Vals Fb';
+    Description = 'Displays classification value details in a factbox.';
     PageType = ListPart;
     SourceTable = "JML AP Classification Val";
 

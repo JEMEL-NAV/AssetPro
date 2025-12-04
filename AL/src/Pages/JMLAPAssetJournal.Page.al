@@ -1,6 +1,7 @@
 page 70182352 "JML AP Asset Journal"
 {
     Caption = 'Asset Journal';
+    Description = 'Record asset transactions and movements including holder changes and status updates.';
     PageType = Worksheet;
     SourceTable = "JML AP Asset Journal Line";
     ApplicationArea = All;

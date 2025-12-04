@@ -1,6 +1,7 @@
 page 70182371 "JML AP Asset Mgmt. Activities"
 {
     Caption = 'Activities';
+    Description = 'Displays activity cues and statistics for asset management tasks.';
     PageType = CardPart;
     RefreshOnActivate = true;
     SourceTable = "JML AP Asset Mgmt. Cue";

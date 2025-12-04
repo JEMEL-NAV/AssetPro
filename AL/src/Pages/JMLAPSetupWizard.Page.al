@@ -1,6 +1,7 @@
 page 70182331 "JML AP Setup Wizard"
 {
     Caption = 'Asset Setup Wizard';
+    Description = 'Guided setup wizard for configuring the asset management system and initial data.';
     PageType = NavigatePage;
     ApplicationArea = All;
     UsageCategory = Administration;

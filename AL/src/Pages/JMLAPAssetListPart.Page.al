@@ -1,6 +1,7 @@
 page 70182341 "JML AP Asset ListPart"
 {
     Caption = 'Assets';
+    Description = 'List part showing assets for embedding in other pages and factboxes.';
     PageType = ListPart;
     SourceTable = "JML AP Asset";
     ApplicationArea = All;

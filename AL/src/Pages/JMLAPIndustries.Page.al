@@ -1,6 +1,7 @@
 page 70182334 "JML AP Industries"
 {
     Caption = 'Asset Industries';
+    Description = 'Define industry codes for categorizing assets by business sector or industry type.';
     PageType = List;
     SourceTable = "JML AP Asset Industry";
     ApplicationArea = All;

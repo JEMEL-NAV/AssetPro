@@ -1,6 +1,7 @@
 page 70182379 "JML AP Customer Asset FB"
 {
     Caption = 'Customer Assets';
+    Description = 'Displays assets currently held by the selected customer.';
     PageType = CardPart;
     SourceTable = Customer;
 

@@ -1,6 +1,7 @@
 page 70182343 "JML AP Asset Tree"
 {
     Caption = 'Children Assets Tree';
+    Description = 'Displays assets in a hierarchical tree structure showing parent-child relationships.';
     PageType = List;
     SourceTable = "JML AP Asset";
     Editable = false;

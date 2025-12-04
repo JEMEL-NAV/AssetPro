@@ -1,6 +1,7 @@
 page 70182356 "JML AP Asset Posted Transfers"
 {
     Caption = 'Posted Asset Transfers';
+    Description = 'List of completed asset transfer records with transfer dates and holder information.';
     PageType = List;
     SourceTable = "JML AP Posted Asset Transfer";
     ApplicationArea = All;

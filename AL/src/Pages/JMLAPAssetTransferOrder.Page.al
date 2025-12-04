@@ -1,6 +1,7 @@
 page 70182354 "JML AP Asset Transfer Order"
 {
     Caption = 'Asset Transfer Order';
+    Description = 'Create and manage asset transfer orders to move assets between holders and locations.';
     PageType = Document;
     SourceTable = "JML AP Asset Transfer Header";
     ApplicationArea = All;

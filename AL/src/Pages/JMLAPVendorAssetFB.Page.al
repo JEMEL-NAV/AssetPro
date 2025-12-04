@@ -1,6 +1,7 @@
 page 70182380 "JML AP Vendor Asset FB"
 {
     Caption = 'Vendor Assets';
+    Description = 'Displays assets currently held by the selected vendor.';
     PageType = CardPart;
     SourceTable = Vendor;
 

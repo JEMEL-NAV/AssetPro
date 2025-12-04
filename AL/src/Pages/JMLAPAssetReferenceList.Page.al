@@ -1,6 +1,7 @@
 page 70182381 "JML AP Asset Reference List"
 {
     Caption = 'Asset References';
+    Description = 'List of reference types available for asset identification such as barcodes and serial numbers.';
     PageType = List;
     SourceTable = "JML AP Asset Reference";
     ApplicationArea = All;
