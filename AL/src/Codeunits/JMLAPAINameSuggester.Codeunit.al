@@ -7,6 +7,15 @@ codeunit 70182401 "JML AP AI Name Suggester"
         NoContextErr: Label 'Please fill in at least the Classification or Manufacturer field to get meaningful name suggestions.';
         AINotAuthorizedErr: Label 'AI service is not available. Please contact JEMEL support.';
         SuggestionFailedErr: Label 'Failed to generate name suggestions. Error: %1', Comment = '%1 = error message';
+        InvalidResponseFormatErr: Label 'Invalid response format from AI service. Response: %1', Comment = '%1 = Response text';
+        PromptHeaderTxt: Label 'Generate professional asset names based on:';
+        ClassificationFieldTxt: Label 'Classification: %1', Comment = '%1 = Classification path or code';
+        IndustryFieldTxt: Label 'Industry: %1', Comment = '%1 = Industry code';
+        ManufacturerFieldTxt: Label 'Manufacturer: %1', Comment = '%1 = Manufacturer code';
+        ModelFieldTxt: Label 'Model: %1', Comment = '%1 = Model number';
+        YearFieldTxt: Label 'Year: %1', Comment = '%1 = Year of manufacture';
+        SerialNoFieldTxt: Label 'Serial No.: %1', Comment = '%1 = Serial number';
+        CurrentDescFieldTxt: Label 'Current Description: %1', Comment = '%1 = Current description';
 
     procedure GetAssetNameSuggestions(var Asset: Record "JML AP Asset"; var SuggestionList: List of [Text]): Boolean
     var
@@ -68,44 +77,46 @@ codeunit 70182401 "JML AP AI Name Suggester"
         ClassificationPath: Text;
         Prompt: Text;
         NL: Text;
+        PromptHeader: Text;
     begin
         NL := AIHelper.NewLine();
-        Prompt := 'Generate professional asset names based on:' + NL;
+        PromptHeader := PromptHeaderTxt + NL;
+        Prompt := PromptHeader;
 
         // Add classification information
         if Asset."Classification Code" <> '' then begin
             ClassificationPath := Asset.GetClassificationPath();
             if ClassificationPath <> '' then
-                Prompt += 'Classification: ' + ClassificationPath + NL
+                Prompt += StrSubstNo(ClassificationFieldTxt, ClassificationPath) + NL
             else
-                Prompt += 'Classification: ' + Asset."Classification Code" + NL;
+                Prompt += StrSubstNo(ClassificationFieldTxt, Asset."Classification Code") + NL;
         end;
 
         // Add industry
         if Asset."Industry Code" <> '' then
-            Prompt += 'Industry: ' + Asset."Industry Code" + NL;
+            Prompt += StrSubstNo(IndustryFieldTxt, Asset."Industry Code") + NL;
 
         // Add manufacturer
         if Asset."Manufacturer Code" <> '' then
-            Prompt += 'Manufacturer: ' + Asset."Manufacturer Code" + NL;
+            Prompt += StrSubstNo(ManufacturerFieldTxt, Asset."Manufacturer Code") + NL;
 
         // Add model
         if Asset."Model No." <> '' then
-            Prompt += 'Model: ' + Asset."Model No." + NL;
+            Prompt += StrSubstNo(ModelFieldTxt, Asset."Model No.") + NL;
 
         // Add year
         if Asset."Year of Manufacture" <> 0 then
-            Prompt += 'Year: ' + Format(Asset."Year of Manufacture") + NL;
+            Prompt += StrSubstNo(YearFieldTxt, Format(Asset."Year of Manufacture")) + NL;
 
         // Add serial number (if available)
         if Asset."Serial No." <> '' then
-            Prompt += 'Serial No.: ' + Asset."Serial No." + NL;
+            Prompt += StrSubstNo(SerialNoFieldTxt, Asset."Serial No.") + NL;
 
         // Add existing description if available
         if Asset.Description <> '' then
-            Prompt += 'Current Description: ' + Asset.Description + NL;
+            Prompt += StrSubstNo(CurrentDescFieldTxt, Asset.Description) + NL;
 
-        if Prompt = 'Generate professional asset names based on:' + NL then
+        if Prompt = PromptHeader then
             exit('');
 
         exit(Prompt);
@@ -125,7 +136,7 @@ codeunit 70182401 "JML AP AI Name Suggester"
 
         // Try to parse JSON array
         if not JsonArray.ReadFrom(CleanJson) then begin
-            Message('Invalid response format from AI service. Response: %1', CopyStr(CleanJson, 1, 250));
+            Message(InvalidResponseFormatErr, CopyStr(CleanJson, 1, 250));
             exit(false);
         end;
 

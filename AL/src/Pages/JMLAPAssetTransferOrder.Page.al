@@ -212,7 +212,7 @@ page 70182354 "JML AP Asset Transfer Order"
 
                     trigger OnAction()
                     begin
-                        Message('Test report will be implemented in a future phase.');
+                        Message(TestReportNotImplementedMsg);
                     end;
                 }
             }
@@ -229,7 +229,7 @@ page 70182354 "JML AP Asset Transfer Order"
 
                 trigger OnAction()
                 begin
-                    Message('Statistics: %1 lines', Rec.CountLines());
+                    Message(StatisticsMsg, Rec.CountLines());
                 end;
             }
         }
@@ -279,4 +279,6 @@ page 70182354 "JML AP Asset Transfer Order"
 
     var
         NotReleasedErr: Label 'The transfer order must be released before posting.';
+        TestReportNotImplementedMsg: Label 'Test report will be implemented in a future phase.';
+        StatisticsMsg: Label 'Statistics: %1 lines', Comment = '%1 = Number of lines';
 }

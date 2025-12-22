@@ -557,39 +557,39 @@ page 70182331 "JML AP Setup Wizard"
             exit(true);
 
         if AssetSeriesCode = '' then begin
-            Message('Please enter an Asset Series Code.');
+            Message(EnterAssetSeriesCodeMsg);
             exit(false);
         end;
 
         if AssetStartingNo = '' then begin
-            Message('Please enter an Asset Starting No.');
+            Message(EnterAssetStartingNoMsg);
             exit(false);
         end;
 
         if TransferOrderSeriesCode = '' then begin
-            Message('Please enter a Transfer Order Series Code.');
+            Message(EnterTransferOrderSeriesCodeMsg);
             exit(false);
         end;
 
         if TransferOrderStartingNo = '' then begin
-            Message('Please enter a Transfer Order Starting No.');
+            Message(EnterTransferOrderStartingNoMsg);
             exit(false);
         end;
 
         if PostedTransferSeriesCode = '' then begin
-            Message('Please enter a Posted Transfer Series Code.');
+            Message(EnterPostedTransferSeriesCodeMsg);
             exit(false);
         end;
 
         if PostedTransferStartingNo = '' then begin
-            Message('Please enter a Posted Transfer Starting No.');
+            Message(EnterPostedTransferStartingNoMsg);
             exit(false);
         end;
 
         if (AssetSeriesCode = TransferOrderSeriesCode) or
            (AssetSeriesCode = PostedTransferSeriesCode) or
            (TransferOrderSeriesCode = PostedTransferSeriesCode) then begin
-            Message('All number series codes must be different.');
+            Message(AllSeriesCodesMustBeDifferentMsg);
             exit(false);
         end;
 
@@ -613,4 +613,13 @@ page 70182331 "JML AP Setup Wizard"
         if CreateJournalBatches then
             CompletionSummary += NL + '- Default journal batches created';
     end;
+
+    var
+        EnterAssetSeriesCodeMsg: Label 'Please enter an Asset Series Code.';
+        EnterAssetStartingNoMsg: Label 'Please enter an Asset Starting No.';
+        EnterTransferOrderSeriesCodeMsg: Label 'Please enter a Transfer Order Series Code.';
+        EnterTransferOrderStartingNoMsg: Label 'Please enter a Transfer Order Starting No.';
+        EnterPostedTransferSeriesCodeMsg: Label 'Please enter a Posted Transfer Series Code.';
+        EnterPostedTransferStartingNoMsg: Label 'Please enter a Posted Transfer Starting No.';
+        AllSeriesCodesMustBeDifferentMsg: Label 'All number series codes must be different.';
 }

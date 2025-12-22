@@ -163,7 +163,7 @@ page 70182352 "JML AP Asset Journal"
 
                     trigger OnAction()
                     begin
-                        Message('Test report not yet implemented. Will be added in future phase.');
+                        Message(TestReportNotImplementedMsg);
                     end;
                 }
             }
@@ -181,7 +181,7 @@ page 70182352 "JML AP Asset Journal"
 
                     trigger OnAction()
                     begin
-                        Message('Suggest lines not yet implemented. Will be added in future phase.');
+                        Message(SuggestLinesNotImplementedMsg);
                     end;
                 }
             }
@@ -307,4 +307,6 @@ page 70182352 "JML AP Asset Journal"
     var
         CurrentBatchName: Code[10];
         IsSaaSExcelAddinEnabled: Boolean;
+        TestReportNotImplementedMsg: Label 'Test report not yet implemented. Will be added in future phase.';
+        SuggestLinesNotImplementedMsg: Label 'Suggest lines not yet implemented. Will be added in future phase.';
 }

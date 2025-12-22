@@ -47,7 +47,7 @@ page 70182333 "JML AP Asset Card"
                                 Rec.Validate(Description, SuggestedName);
                                 Rec.Modify(true);
                                 CurrPage.Update(false);
-                                Message('Asset name updated to: %1', SuggestedName);
+                                Message(AssetNameUpdatedMsg, SuggestedName);
                             end;
                         end;
                     end;
@@ -403,7 +403,7 @@ page 70182333 "JML AP Asset Card"
                 begin
                     Rec.DetachFromParent();
                     CurrPage.Update(false);
-                    Message('Asset detached from parent.');
+                    Message(AssetDetachedMsg);
                 end;
             }
             action(ChangeHolder)
@@ -447,7 +447,7 @@ page 70182333 "JML AP Asset Card"
                             Rec.Validate(Description, SuggestedName);
                             Rec.Modify(true);  // Save the change to database
                             CurrPage.Update(false);
-                            Message('Asset name updated to: %1', SuggestedName);
+                            Message(AssetNameUpdatedMsg, SuggestedName);
                         end;
                     end;
                 end;
@@ -459,6 +459,8 @@ page 70182333 "JML AP Asset Card"
         ClassificationPathText: Text[250];
         ManualHolderChangeAllowed: Boolean;
         HasMinimumContext: Boolean;
+        AssetNameUpdatedMsg: Label 'Asset name updated to: %1', Comment = '%1 = New asset name';
+        AssetDetachedMsg: Label 'Asset detached from parent.';
 
     trigger OnAfterGetRecord()
     var

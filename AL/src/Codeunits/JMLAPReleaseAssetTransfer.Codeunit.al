@@ -15,6 +15,10 @@ codeunit 70182395 "JML AP Release Asset Transfer"
         AssetTransferHeader: Record "JML AP Asset Transfer Header";
         NothingToReleaseErr: Label 'There is nothing to release for transfer order %1.', Comment = '%1 = Document No.';
         SameHolderErr: Label 'The transfer order %1 cannot be released because From Holder and To Holder are the same.', Comment = '%1 = Document No.';
+        AssetNotFoundErr: Label 'Asset %1 does not exist.', Comment = '%1 = Asset No.';
+        AssetBlockedErr: Label 'Asset %1 is blocked and cannot be transferred.', Comment = '%1 = Asset No.';
+        AssetNotAtFromHolderErr: Label 'Asset %1 is not at the From Holder location. Current holder: %2 %3', Comment = '%1 = Asset No., %2 = Holder Type, %3 = Holder Code';
+        CannotTransferSubassetErr: Label 'Cannot transfer subasset %1 directly. Transfer the parent asset instead.', Comment = '%1 = Asset No.';
 
     local procedure Code()
     var
@@ -105,23 +109,23 @@ codeunit 70182395 "JML AP Release Asset Transfer"
 
                 // Validate asset exists and is not blocked
                 if not Asset.Get(TransferLine."Asset No.") then
-                    Error('Asset %1 does not exist.', TransferLine."Asset No.");
+                    Error(AssetNotFoundErr, TransferLine."Asset No.");
 
                 if Asset.Blocked then
-                    Error('Asset %1 is blocked and cannot be transferred.', Asset."No.");
+                    Error(AssetBlockedErr, Asset."No.");
 
                 // Validate asset is at From Holder
                 if (Asset."Current Holder Type" <> TransHeader."From Holder Type") or
                    (Asset."Current Holder Code" <> TransHeader."From Holder Code")
                 then
-                    Error('Asset %1 is not at the From Holder location. Current holder: %2 %3',
+                    Error(AssetNotAtFromHolderErr,
                         Asset."No.",
                         Asset."Current Holder Type",
                         Asset."Current Holder Code");
 
                 // Validate not a subasset
                 if Asset."Parent Asset No." <> '' then
-                    Error('Cannot transfer subasset %1 directly. Transfer the parent asset instead.', Asset."No.");
+                    Error(CannotTransferSubassetErr, Asset."No.");
 
             until TransferLine.Next() = 0;
 

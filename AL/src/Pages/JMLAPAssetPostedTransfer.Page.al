@@ -160,7 +160,7 @@ page 70182357 "JML AP Asset Posted Transfer"
 
                 trigger OnAction()
                 begin
-                    Message('Posted Transfer Statistics: %1 lines', CountLines());
+                    Message(PostedTransferStatisticsMsg, CountLines());
                 end;
             }
 
@@ -191,9 +191,9 @@ page 70182357 "JML AP Asset Posted Transfer"
                             HolderEntry.SetFilter("Transaction No.", TransactionNoFilter);
                             Page.Run(Page::"JML AP Holder Entries", HolderEntry);
                         end else
-                            Message('No holder entries found for this transfer.');
+                            Message(NoHolderEntriesMsg);
                     end else
-                        Message('No lines found for this transfer.');
+                        Message(NoLinesFoundMsg);
                 end;
             }
         }
@@ -221,4 +221,9 @@ page 70182357 "JML AP Asset Posted Transfer"
         PostedLine.SetRange("Document No.", Rec."No.");
         exit(PostedLine.Count);
     end;
+
+    var
+        PostedTransferStatisticsMsg: Label 'Posted Transfer Statistics: %1 lines', Comment = '%1 = Number of lines';
+        NoHolderEntriesMsg: Label 'No holder entries found for this transfer.';
+        NoLinesFoundMsg: Label 'No lines found for this transfer.';
 }

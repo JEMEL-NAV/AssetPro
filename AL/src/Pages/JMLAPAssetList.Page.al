@@ -112,9 +112,9 @@ page 70182332 "JML AP Asset List"
                     end;
 
                     if DetachedCount > 0 then
-                        Message('%1 asset(s) detached from parent.', DetachedCount)
+                        Message(AssetsDetachedMsg, DetachedCount)
                     else
-                        Message('No assets with parent relationships were selected.');
+                        Message(NoAssetsWithParentMsg);
 
                     CurrPage.Update(false);
                 end;
@@ -128,9 +128,14 @@ page 70182332 "JML AP Asset List"
 
                 trigger OnAction()
                 begin
-                    Message('Transfer functionality will be implemented via page extension.');
+                    Message(TransferFunctionalityMsg);
                 end;
             }
         }
     }
+
+    var
+        AssetsDetachedMsg: Label '%1 asset(s) detached from parent.', Comment = '%1 = Number of assets detached';
+        NoAssetsWithParentMsg: Label 'No assets with parent relationships were selected.';
+        TransferFunctionalityMsg: Label 'Transfer functionality will be implemented via page extension.';
 }

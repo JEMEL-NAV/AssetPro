@@ -20,6 +20,10 @@ codeunit 70182404 "JML AP Undo Purch Rcpt Asset"
         AssetBlockedErr: Label 'Asset %1 is blocked.', Comment = '%1 = Asset No.';
         PurchOrderNotFoundErr: Label 'Purchase Order %1 line %2 not found. Cannot undo receipt.', Comment = '%1 = Order No., %2 = Line No.';
         HolderMismatchErr: Label 'Cannot undo receipt. Asset %1 current holder does not match the receipt location.\Expected: Location %2\Actual: %3 %4', Comment = '%1 = Asset No., %2 = Location Code, %3 = Holder Type, %4 = Holder Code';
+        CheckingReceiptLineMsg: Label 'Checking asset receipt line...';
+        UndoingReceiptMsg: Label 'Undoing asset receipt...';
+        ReceiptUndoneSuccessMsg: Label 'Asset receipt undone successfully.';
+        UndoReceiptDescTxt: Label 'Undo Receipt %1', Comment = '%1 = Document No.';
 
     local procedure Code()
     var
@@ -30,16 +34,16 @@ codeunit 70182404 "JML AP Undo Purch Rcpt Asset"
         PostedAssetLine.SetRange("Line No.", PostedAssetLine."Line No.");
         PostedAssetLine.FindFirst();
 
-        WindowDialog.Open('Checking asset receipt line...');
+        WindowDialog.Open(CheckingReceiptLineMsg);
         CheckPostedAssetLine(PostedAssetLine);
         WindowDialog.Close();
 
-        WindowDialog.Open('Undoing asset receipt...');
+        WindowDialog.Open(UndoingReceiptMsg);
         PurchRcptHeader.Get(PostedAssetLine."Document No.");
         UndoAssetReceipt(PostedAssetLine, PurchRcptHeader);
         WindowDialog.Close();
 
-        Message('Asset receipt undone successfully.');
+        Message(ReceiptUndoneSuccessMsg);
     end;
 
     local procedure CheckPostedAssetLine(var PostedAssetLine2: Record "JML AP Pstd Purch Rcpt Ast Ln")
@@ -147,7 +151,7 @@ codeunit 70182404 "JML AP Undo Purch Rcpt Asset"
         TempAssetJournalLine."New Holder Type" := TempAssetJournalLine."New Holder Type"::Vendor;
         TempAssetJournalLine."New Holder Code" := OriginalVendorNo;
         TempAssetJournalLine."Reason Code" := PostedAssetLine2."Reason Code";
-        TempAssetJournalLine.Description := StrSubstNo('Undo Receipt %1', PostedAssetLine2."Document No.");
+        TempAssetJournalLine.Description := StrSubstNo(UndoReceiptDescTxt, PostedAssetLine2."Document No.");
 
         // Post journal to create reverse holder entries
         AssetJnlPostLine.Run(TempAssetJournalLine);

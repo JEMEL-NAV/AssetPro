@@ -8,6 +8,9 @@ codeunit 70182393 "JML AP Relationship Mgt"
     var
         AssetNotFoundErr: Label 'Asset %1 does not exist.', Comment = '%1 = Asset No.';
         ParentAssetNotFoundErr: Label 'Parent asset %1 does not exist.', Comment = '%1 = Parent Asset No.';
+        AttachedToParentTxt: Label 'Attached to parent %1', Comment = '%1 = Parent Asset No.';
+        DetachedFromParentTxt: Label 'Detached from parent %1', Comment = '%1 = Parent Asset No.';
+        DetachedFromParentNoNoTxt: Label 'Detached from parent';
 
     /// <summary>
     /// Logs an Attach event when an asset becomes a child of a parent asset.
@@ -44,7 +47,7 @@ codeunit 70182393 "JML AP Relationship Mgt"
         RelationshipEntry."Holder Type at Entry" := Asset."Current Holder Type";
         RelationshipEntry."Holder Code at Entry" := Asset."Current Holder Code";
         RelationshipEntry."Reason Code" := ReasonCode;
-        RelationshipEntry.Description := StrSubstNo('Attached to parent %1', ParentAssetNo);
+        RelationshipEntry.Description := StrSubstNo(AttachedToParentTxt, ParentAssetNo);
         RelationshipEntry."Transaction No." := TransactionNo;
         RelationshipEntry.Insert(true);
 
@@ -88,9 +91,9 @@ codeunit 70182393 "JML AP Relationship Mgt"
         RelationshipEntry."Holder Code at Entry" := Asset."Current Holder Code";
         RelationshipEntry."Reason Code" := ReasonCode;
         if ParentAssetNo <> '' then
-            RelationshipEntry.Description := StrSubstNo('Detached from parent %1', ParentAssetNo)
+            RelationshipEntry.Description := StrSubstNo(DetachedFromParentTxt, ParentAssetNo)
         else
-            RelationshipEntry.Description := 'Detached from parent';
+            RelationshipEntry.Description := DetachedFromParentNoNoTxt;
         RelationshipEntry."Transaction No." := TransactionNo;
         RelationshipEntry.Insert(true);
 

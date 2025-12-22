@@ -23,6 +23,8 @@ codeunit 70182396 "JML AP Component Jnl.-Post"
         ItemDoesNotExistErr: Label 'Item %1 does not exist.', Comment = '%1 = Item No.';
         MissingFieldErr: Label '%1 must be specified in line %2.', Comment = '%1 = Field Name, %2 = Line No.';
         InvalidQuantitySignErr: Label 'Quantity must be %1 for Entry Type %2 in line %3.', Comment = '%1 = positive/negative, %2 = Entry Type, %3 = Line No.';
+        PositiveTxt: Label 'positive';
+        NegativeTxt: Label 'negative';
 
     local procedure Code()
     var
@@ -116,10 +118,10 @@ codeunit 70182396 "JML AP Component Jnl.-Post"
             EntryTypeEnum::Install,
             EntryTypeEnum::Adjustment:
                 if JnlLine.Quantity < 0 then
-                    Error(InvalidQuantitySignErr, 'positive', JnlLine."Entry Type", JnlLine."Line No.");
+                    Error(InvalidQuantitySignErr, PositiveTxt, JnlLine."Entry Type", JnlLine."Line No.");
             EntryTypeEnum::Remove:
                 if JnlLine.Quantity > 0 then
-                    Error(InvalidQuantitySignErr, 'negative', JnlLine."Entry Type", JnlLine."Line No.");
+                    Error(InvalidQuantitySignErr, NegativeTxt, JnlLine."Entry Type", JnlLine."Line No.");
         end;
     end;
 

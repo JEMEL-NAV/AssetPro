@@ -198,6 +198,7 @@ table 70182322 "JML AP Transfer Asset Line"
         SubassetTransferErr: label 'Cannot transfer subasset %1. It is attached to parent %2. Detach first.', Comment = '%1: Asset No., %2: Parent Asset No.';
         TransferFromCodeNotSpecifiedErr: label 'Transfer-from Code must be specified on the transfer header before adding assets.', Comment = '';
         AssetNotAtLocationErr: label 'Asset %1 is not at location %2. Current location: %3 %4.', Comment = '%1: Asset No., %2: Transfer-from Code, %3: Current Holder Type, %4: Current Holder Code';
+        AssetNotHeldByLocationErr: Label 'Asset %1 is not held by a location. Current holder: %2 %3.', Comment = '%1 = Asset No., %2 = Holder Type, %3 = Holder Code';
 
     local procedure ClearAssetInfo()
     begin
@@ -215,7 +216,7 @@ table 70182322 "JML AP Transfer Asset Line"
             Error(TransferFromCodeNotSpecifiedErr);
 
         if Asset."Current Holder Type" <> Asset."Current Holder Type"::Location then
-            Error('Asset %1 is not held by a location. Current holder: %2 %3.',
+            Error(AssetNotHeldByLocationErr,
                 Asset."No.", Asset."Current Holder Type", Asset."Current Holder Code");
 
         if Asset."Current Holder Code" <> TransferHeader."Transfer-from Code" then

@@ -21,6 +21,10 @@ codeunit 70182403 "JML AP Undo Sales Shpt Asset"
         SalesOrderNotFoundErr: Label 'Sales Order %1 line %2 not found. Cannot undo shipment.', Comment = '%1 = Order No., %2 = Line No.';
         AlreadyInvoicedErr: Label 'Cannot undo shipment. Asset %1 has already been invoiced on this Sales Order.', Comment = '%1 = Asset No.';
         HolderMismatchErr: Label 'Cannot undo shipment. Asset %1 current holder does not match the shipment customer.\Expected: Customer %2\Actual: %3 %4', Comment = '%1 = Asset No., %2 = Customer No., %3 = Holder Type, %4 = Holder Code';
+        CheckingShipmentLineMsg: Label 'Checking asset shipment line...';
+        UndoingShipmentMsg: Label 'Undoing asset shipment...';
+        ShipmentUndoneSuccessMsg: Label 'Asset shipment undone successfully.';
+        UndoShipmentDescTxt: Label 'Undo Shipment %1', Comment = '%1 = Document No.';
 
     local procedure Code()
     var
@@ -31,16 +35,16 @@ codeunit 70182403 "JML AP Undo Sales Shpt Asset"
         PostedAssetLine.SetRange("Line No.", PostedAssetLine."Line No.");
         PostedAssetLine.FindFirst();
 
-        WindowDialog.Open('Checking asset shipment line...');
+        WindowDialog.Open(CheckingShipmentLineMsg);
         CheckPostedAssetLine(PostedAssetLine);
         WindowDialog.Close();
 
-        WindowDialog.Open('Undoing asset shipment...');
+        WindowDialog.Open(UndoingShipmentMsg);
         SalesShptHeader.Get(PostedAssetLine."Document No.");
         UndoAssetShipment(PostedAssetLine, SalesShptHeader);
         WindowDialog.Close();
 
-        Message('Asset shipment undone successfully.');
+        Message(ShipmentUndoneSuccessMsg);
     end;
 
     local procedure CheckPostedAssetLine(var PostedAssetLine2: Record "JML AP Pstd Sales Shpt Ast Ln")
@@ -149,7 +153,7 @@ codeunit 70182403 "JML AP Undo Sales Shpt Asset"
         TempAssetJournalLine."New Holder Type" := TempAssetJournalLine."New Holder Type"::Location;
         TempAssetJournalLine."New Holder Code" := OriginalLocationCode;
         TempAssetJournalLine."Reason Code" := PostedAssetLine2."Reason Code";
-        TempAssetJournalLine.Description := StrSubstNo('Undo Shipment %1', PostedAssetLine2."Document No.");
+        TempAssetJournalLine.Description := StrSubstNo(UndoShipmentDescTxt, PostedAssetLine2."Document No.");
 
         // Post journal to create reverse holder entries
         AssetJnlPostLine.Run(TempAssetJournalLine);

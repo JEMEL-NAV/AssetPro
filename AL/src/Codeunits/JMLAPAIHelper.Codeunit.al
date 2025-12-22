@@ -78,7 +78,7 @@ codeunit 70182402 "JML AP AI Helper"
     /// <returns>Provider information text.</returns>
     procedure GetProviderInfo(): Text
     begin
-        exit('JEMEL Azure OpenAI (jemel-assetpro-openai, Sweden Central, gpt-4o)');
+        exit(ProviderInfoTxt);
     end;
 
     /// <summary>
@@ -98,14 +98,14 @@ codeunit 70182402 "JML AP AI Helper"
     begin
         // Set up authorization
         if not SetJEMELAuthorization(TestAzureOpenAI) then
-            exit('FAILED: Could not set authorization');
+            exit(TestFailedAuthTxt);
 
         // Set capability
         CopilotCapability := CopilotCapability::"JML AP Asset Name Suggestion";
         TestAzureOpenAI.SetCopilotCapability(CopilotCapability);
 
         // Simple test prompt
-        TestPrompt := 'Reply with exactly: "OK"';
+        TestPrompt := TestPromptTxt;
         ChatMessages.AddSystemMessage(TestPrompt);
         ChatParams.SetMaxTokens(10);
 
@@ -114,18 +114,18 @@ codeunit 70182402 "JML AP AI Helper"
 
         // Check success
         if not OperationResponse.IsSuccess() then begin
-            Result := 'FAILED: ' + OperationResponse.GetError();
-            if Result = 'FAILED: ' then
-                Result += 'Operation unsuccessful. Check: 1) API key valid, 2) Deployment "assetpro-chat" exists, 3) Endpoint URL correct';
+            Result := TestFailedPrefix + OperationResponse.GetError();
+            if Result = TestFailedPrefix then
+                Result += TestFailedDetailsTxt;
             exit(Result);
         end;
 
         // Success
         Result := OperationResponse.GetResult();
         if Result = '' then
-            exit('FAILED: Empty response received')
+            exit(TestFailedEmptyResponseTxt)
         else
-            exit('SUCCESS: Connection working. Response: ' + Result);
+            exit(StrSubstNo(TestSuccessResponseTxt, Result));
     end;
 
     /// <summary>
@@ -142,7 +142,7 @@ codeunit 70182402 "JML AP AI Helper"
     procedure MigrateToMicrosoftManaged()
     begin
         // Placeholder for future migration logic
-        Error('Microsoft-managed AI resources not yet available. Expected GA: January 2026.');
+        Error(MigrationNotAvailableErr);
     end;
 
     // ===================================================================
@@ -227,4 +227,14 @@ codeunit 70182402 "JML AP AI Helper"
     begin
         exit('\n');
     end;
+
+    var
+        ProviderInfoTxt: Label 'JEMEL Azure OpenAI (jemel-assetpro-openai, Sweden Central, gpt-4o)';
+        TestFailedAuthTxt: Label 'FAILED: Could not set authorization';
+        TestPromptTxt: Label 'Reply with exactly: "OK"';
+        TestFailedPrefix: Label 'FAILED: ';
+        TestFailedDetailsTxt: Label 'Operation unsuccessful. Check: 1) API key valid, 2) Deployment "assetpro-chat" exists, 3) Endpoint URL correct';
+        TestFailedEmptyResponseTxt: Label 'FAILED: Empty response received';
+        TestSuccessResponseTxt: Label 'SUCCESS: Connection working. Response: %1', Comment = '%1 = Response text';
+        MigrationNotAvailableErr: Label 'Microsoft-managed AI resources not yet available. Expected GA: January 2026.';
 }

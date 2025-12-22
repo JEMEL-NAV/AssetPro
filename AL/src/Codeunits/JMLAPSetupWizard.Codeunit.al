@@ -8,6 +8,15 @@ codeunit 70182381 "JML AP Setup Wizard"
         GenerationFailedErr: Label 'Failed to generate industry configuration. Error: %1', Comment = '%1 = error message';
         InvalidJsonErr: Label 'The AI response was not in the expected format. Please try again.';
         SuccessMsg: Label 'Industry configuration created successfully! Created: %1 levels, %2 values, %3 attributes.', Comment = '%1 = level count, %2 = value count, %3 = attribute count';
+        AzureOpenAIFailedDetailsTxt: Label 'Azure OpenAI call failed. Possible causes: 1) Invalid API key, 2) Deployment "assetpro-chat" not found, 3) Incorrect endpoint URL, 4) Token quota exceeded, 5) Model not deployed. Check Azure Portal for details.';
+        EmptyResponseErr: Label 'AI returned empty response. Try again or check Azure OpenAI logs.';
+        BusinessDescriptionTxt: Label 'Business Description: %1', Comment = '%1 = Business description';
+        GenerateConfigInstructionTxt: Label 'Generate a complete asset management industry configuration with:';
+        IndustryCodeInstructionTxt: Label '- Industry code (4-6 uppercase letters) and descriptive name';
+        ClassificationLevelsInstructionTxt: Label '- 2-4 classification levels (hierarchy from general to specific)';
+        ClassificationValuesInstructionTxt: Label '- 5-15 classification values with proper parent-child relationships';
+        CustomAttributesInstructionTxt: Label '- 5-10 custom attributes relevant to this industry';
+        ReturnJSONOnlyTxt: Label 'Return ONLY the JSON structure specified in the system prompt. No explanations.';
 
     /// <summary>
     /// Runs the guided setup wizard for Asset Pro.
@@ -78,14 +87,14 @@ codeunit 70182381 "JML AP Setup Wizard"
         if not OperationResponse.IsSuccess() then begin
             ErrorMessage := OperationResponse.GetError();
             if ErrorMessage = '' then
-                ErrorMessage := 'Azure OpenAI call failed. Possible causes: 1) Invalid API key, 2) Deployment "assetpro-chat" not found, 3) Incorrect endpoint URL, 4) Token quota exceeded, 5) Model not deployed. Check Azure Portal for details.';
+                ErrorMessage := AzureOpenAIFailedDetailsTxt;
             Error(GenerationFailedErr, ErrorMessage);
         end;
 
         // Get the JSON response
         ConfigJson := OperationResponse.GetResult();
         if ConfigJson = '' then
-            Error('AI returned empty response. Try again or check Azure OpenAI logs.');
+            Error(EmptyResponseErr);
 
         // Clean markdown formatting if present (AI may wrap JSON in ```json blocks)
         ConfigJson := AIHelper.CleanJsonResponse(ConfigJson);
@@ -102,14 +111,14 @@ codeunit 70182381 "JML AP Setup Wizard"
             exit('');
 
         NL := AIHelper.NewLine();
-        Prompt := 'Business Description: ' + BusinessDescription + NL + NL;
-        Prompt += 'Generate a complete asset management industry configuration with:' + NL;
-        Prompt += '- Industry code (4-6 uppercase letters) and descriptive name' + NL;
-        Prompt += '- 2-4 classification levels (hierarchy from general to specific)' + NL;
-        Prompt += '- 5-15 classification values with proper parent-child relationships' + NL;
-        Prompt += '- 5-10 custom attributes relevant to this industry' + NL;
+        Prompt := StrSubstNo(BusinessDescriptionTxt, BusinessDescription) + NL + NL;
+        Prompt += GenerateConfigInstructionTxt + NL;
+        Prompt += IndustryCodeInstructionTxt + NL;
+        Prompt += ClassificationLevelsInstructionTxt + NL;
+        Prompt += ClassificationValuesInstructionTxt + NL;
+        Prompt += CustomAttributesInstructionTxt + NL;
         Prompt += NL;
-        Prompt += 'Return ONLY the JSON structure specified in the system prompt. No explanations.';
+        Prompt += ReturnJSONOnlyTxt;
 
         exit(Prompt);
     end;

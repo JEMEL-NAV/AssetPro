@@ -12,14 +12,16 @@ tableextension 70182426 "JML AP Item Journal Line Ext" extends "Item Journal Lin
             trigger OnValidate()
             var
                 Asset: Record "JML AP Asset";
+                AssetNotExistErr: Label 'Asset %1 does not exist.', Comment = '%1 = Asset No.';
+                ItemNoMustBeSpecifiedErr: Label 'Item No. must be specified when Asset No. is entered.';
             begin
                 if "JML AP Asset No." <> '' then begin
                     if not Asset.Get("JML AP Asset No.") then
-                        Error('Asset %1 does not exist.', "JML AP Asset No.");
+                        Error(AssetNotExistErr, "JML AP Asset No.");
 
                     // Validate that item journal has an item number
                     if "Item No." = '' then
-                        Error('Item No. must be specified when Asset No. is entered.');
+                        Error(ItemNoMustBeSpecifiedErr);
                 end;
             end;
         }
