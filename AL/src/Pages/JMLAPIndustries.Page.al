@@ -28,6 +28,21 @@ page 70182334 "JML AP Industries"
                     ApplicationArea = All;
                     ToolTip = 'Specifies whether the industry is blocked.';
                 }
+                field("Number of Levels"; Rec."Number of Levels")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number of classification levels defined for this industry.';
+                }
+                field("Number of Values"; Rec."Number of Values")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number of classification values defined for this industry.';
+                }
+                field("Number of Assets"; Rec."Number of Assets")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number of assets assigned to this industry.';
+                }
             }
         }
     }

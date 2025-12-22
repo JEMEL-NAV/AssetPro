@@ -6,7 +6,11 @@ codeunit 70182388 "JML AP Install"
     trigger OnInstallAppPerCompany()
     begin
         RegisterAssistedSetup();
+        RegisterCopilotCapabilities();
     end;
+
+    var
+        LearnMoreTxt: label 'https://jemel.lv/docs/asset-pro', Locked = true;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Guided Experience", 'OnRegisterAssistedSetup', '', false, false)]
     local procedure OnRegisterAssistedSetup()
@@ -30,6 +34,22 @@ codeunit 70182388 "JML AP Install"
             ''
         );
         GlobalLanguage(CurrentGlobalLanguage);
+    end;
+
+    local procedure RegisterCopilotCapabilities()
+    var
+        CopilotCapability: Codeunit "Copilot Capability";
+        Capability: Enum "Copilot Capability";
+        CopilotAvailability: Enum "Copilot Availability";
+        CopilotBillingType: Enum "Copilot Billing Type";
+    begin
+        // Register Asset Name Suggestion capability
+        if not CopilotCapability.IsCapabilityRegistered(Capability::"JML AP Asset Name Suggestion") then
+            CopilotCapability.RegisterCapability(
+                Capability::"JML AP Asset Name Suggestion",
+                CopilotAvailability::"Generally Available",
+                CopilotBillingType::"Microsoft Billed",
+                LearnMoreTxt);
     end;
 
     local procedure RegisterAssistedSetup()

@@ -26,12 +26,12 @@ codeunit 70182396 "JML AP Component Jnl.-Post"
 
     local procedure Code()
     var
-        AssetJnlBatch: Record "JML AP Asset Journal Batch";
+        ComponentJnlBatch: Record "JML AP Component Jnl. Batch";
     begin
         if ComponentJnlLine."Journal Batch" = '' then
             exit;
 
-        AssetJnlBatch.Get(ComponentJnlLine."Journal Batch");
+        ComponentJnlBatch.Get(ComponentJnlLine."Journal Batch");
 
         ComponentJnlLine.SetRange("Journal Batch", ComponentJnlLine."Journal Batch");
         if not ComponentJnlLine.FindSet() then

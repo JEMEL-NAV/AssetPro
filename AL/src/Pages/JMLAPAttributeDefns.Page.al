@@ -38,10 +38,25 @@ page 70182337 "JML AP Attribute Defns"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the data type.';
                 }
+                field("Option String"; Rec."Option String")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the option string for option data types.';
+                }
                 field(Mandatory; Rec.Mandatory)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies whether mandatory.';
+                }
+                field("Default Value"; Rec."Default Value")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the default value.';
+                }
+                field("Display Order"; Rec."Display Order")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the display order.';
                 }
             }
         }

@@ -314,6 +314,9 @@ codeunit 50109 "JML AP Relationship Tests"
     begin
         // [SCENARIO] Subasset transfer blocked when attached, allowed when detached
 
+        // Clean up any leftover test data
+        CleanupTestData();
+
         // [GIVEN] Asset with parent (subasset)
         CreateTestAsset(ParentAsset, 'PARENT-008', 'Parent Asset for Transfer Test');
         CreateTestAsset(ChildAsset, 'CHILD-008', 'Child Asset for Transfer Test');
@@ -326,23 +329,28 @@ codeunit 50109 "JML AP Relationship Tests"
         ChildAsset."Current Holder Code" := Location1.Code;
         ChildAsset.Modify(true);
 
-        // [WHEN] Attempt to transfer subasset
-        CreateTestJournalLine(AssetJournalLine, ChildAsset."No.", Location1.Code, Location2.Code);
+        // Commit to ensure assets are persisted before validation
+        Commit();
 
-        // [THEN] Error raised (transfer blocked)
-        asserterror AssetJnlPost.Run(AssetJournalLine);
-        Assert.ExpectedError('Cannot transfer subasset');
+        // [WHEN] Attempting to use subasset in journal line
+        // [THEN] Validation error raised (TableRelation blocks subassets)
+        AssetJournalLine.Init();
+        AssetJournalLine."Journal Batch Name" := 'TEST';
+        AssetJournalLine."Line No." := 10000;
+        asserterror AssetJournalLine.Validate("Asset No.", ChildAsset."No.");
+        Assert.ExpectedError('cannot be found in the related table');
 
         // [WHEN] Detach from parent
         ChildAsset.Get(ChildAsset."No."); // Refresh xRec
         ChildAsset.Validate("Parent Asset No.", '');
         ChildAsset.Modify(true);
 
-        // Recreate journal line after detach
-        AssetJournalLine.DeleteAll();
+        // [THEN] Create journal line after detach (should succeed)
         CreateTestJournalLine(AssetJournalLine, ChildAsset."No.", Location1.Code, Location2.Code);
 
         // [THEN] Transfer succeeds
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlPost.Run(AssetJournalLine);
 
         // Verify asset holder changed
@@ -356,11 +364,20 @@ codeunit 50109 "JML AP Relationship Tests"
     local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; AssetNo: Code[20]; Description: Text[100])
     var
         AssetSetup: Record "JML AP Asset Setup";
+        NoSeriesRec: Record "No. Series";
     begin
         if not AssetSetup.Get() then begin
             AssetSetup.Init();
             AssetSetup.Insert();
         end;
+
+        // Ensure number series allows manual numbers (test independence)
+        if AssetSetup."Asset Nos." <> '' then
+            if NoSeriesRec.Get(AssetSetup."Asset Nos.") then
+                if not NoSeriesRec."Manual Nos." then begin
+                    NoSeriesRec."Manual Nos." := true;
+                    NoSeriesRec.Modify();
+                end;
 
         Asset.Init();
         Asset."No." := AssetNo;
@@ -408,9 +425,9 @@ codeunit 50109 "JML AP Relationship Tests"
         AssetJournalLine."Journal Batch Name" := AssetJournalBatch.Name;
         AssetJournalLine."Line No." := 10000;
         AssetJournalLine."Document No." := 'TEST-001'; // Add required Document No.
-        AssetJournalLine."Asset No." := AssetNo;
-        AssetJournalLine."New Holder Type" := AssetJournalLine."New Holder Type"::Location;
-        AssetJournalLine."New Holder Code" := ToLocationCode;
+        AssetJournalLine.Validate("Asset No.", AssetNo);
+        AssetJournalLine.Validate("New Holder Type", AssetJournalLine."New Holder Type"::Location);
+        AssetJournalLine.Validate("New Holder Code", ToLocationCode);
         AssetJournalLine."Posting Date" := WorkDate();
         AssetJournalLine.Insert(true);
     end;

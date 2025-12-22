@@ -106,7 +106,6 @@ codeunit 50104 "JML AP Attribute Tests"
         AssetSetup.Init();
         AssetSetup."Asset Nos." := NoSeries.Code;
         AssetSetup."Enable Attributes" := true;
-        AssetSetup."Enable Holder History" := true;
         AssetSetup.Insert();
 
         IsInitialized := true;

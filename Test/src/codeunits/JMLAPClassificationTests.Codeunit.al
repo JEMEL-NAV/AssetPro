@@ -115,7 +115,6 @@ codeunit 50101 "JML AP Classification Tests"
         AssetSetup.Init();
         AssetSetup."Asset Nos." := 'ASSET-TEST';
         AssetSetup."Enable Attributes" := true;
-        AssetSetup."Enable Holder History" := true;
         AssetSetup.Insert();
 
         IsInitialized := true;

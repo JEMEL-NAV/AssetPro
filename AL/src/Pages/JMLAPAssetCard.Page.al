@@ -28,7 +28,29 @@ page 70182333 "JML AP Asset Card"
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the description of the asset.';
+                    ToolTip = 'Specifies the description of the asset. Use the assist button (Alt+↓) to get AI-generated name suggestions.';
+
+                    trigger OnAssistEdit()
+                    var
+                        SuggestionsPage: Page "JML AP Asset Name Suggestions";
+                        SuggestedName: Text[100];
+                    begin
+                        // Open AI suggestions dialog
+                        SuggestionsPage.SetAsset(Rec);
+                        SuggestionsPage.LookupMode := true;
+
+                        if SuggestionsPage.RunModal() = Action::LookupOK then begin
+                            SuggestedName := SuggestionsPage.GetSelectedSuggestion();
+
+                            // Apply selected suggestion
+                            if SuggestedName <> '' then begin
+                                Rec.Validate(Description, SuggestedName);
+                                Rec.Modify(true);
+                                CurrPage.Update(false);
+                                Message('Asset name updated to: %1', SuggestedName);
+                            end;
+                        end;
+                    end;
                 }
                 field("Description 2"; Rec."Description 2")
                 {
@@ -79,6 +101,7 @@ page 70182333 "JML AP Asset Card"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the parent asset number.';
+                    Editable = Rec."Parent Asset No." = '';
 
                     trigger OnLookup(var Text: Text): Boolean
                     var
@@ -398,12 +421,44 @@ page 70182333 "JML AP Asset Card"
                     CurrPage.Update(false);
                 end;
             }
+            action(SuggestNameWithAI)
+            {
+                ApplicationArea = All;
+                Caption = 'Suggest Name with AI';
+                ToolTip = 'Use AI to generate professional asset name suggestions based on classification, manufacturer, and other attributes.';
+                Image = Sparkle;
+                Enabled = HasMinimumContext;
+
+                trigger OnAction()
+                var
+                    SuggestionsPage: Page "JML AP Asset Name Suggestions";
+                    SuggestedName: Text[100];
+                begin
+                    // Pass current asset to suggestions page
+                    SuggestionsPage.SetAsset(Rec);
+                    SuggestionsPage.LookupMode := true;
+
+                    // Show suggestions dialog
+                    if SuggestionsPage.RunModal() = Action::LookupOK then begin
+                        SuggestedName := SuggestionsPage.GetSelectedSuggestion();
+
+                        // Apply selected suggestion
+                        if SuggestedName <> '' then begin
+                            Rec.Validate(Description, SuggestedName);
+                            Rec.Modify(true);  // Save the change to database
+                            CurrPage.Update(false);
+                            Message('Asset name updated to: %1', SuggestedName);
+                        end;
+                    end;
+                end;
+            }
         }
     }
 
     var
         ClassificationPathText: Text[250];
         ManualHolderChangeAllowed: Boolean;
+        HasMinimumContext: Boolean;
 
     trigger OnAfterGetRecord()
     var
@@ -416,6 +471,11 @@ page 70182333 "JML AP Asset Card"
     trigger OnAfterGetCurrRecord()
     begin
         UpdateClassificationPath();
+
+        // Enable AI action only when there's enough context
+        HasMinimumContext := (Rec."Classification Code" <> '') or
+                             (Rec."Manufacturer Code" <> '') or
+                             (Rec."Model No." <> '');
     end;
 
     local procedure UpdateClassificationPath()

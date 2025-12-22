@@ -94,6 +94,21 @@ table 70182325 "JML AP Pstd Purch Rcpt Ast Ln"
             TableRelation = "JML AP Holder Entry"."Transaction No.";
             Editable = false;
         }
+
+        field(70; "Correction"; Boolean)
+        {
+            Caption = 'Correction';
+            ToolTip = 'Specifies if this line was undone or is a correction line.';
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
+        field(71; "Appl.-from Asset Line No."; Integer)
+        {
+            Caption = 'Appl.-from Asset Line No.';
+            ToolTip = 'Specifies the line number of the original asset line that this correction line undoes.';
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
     }
 
     keys

@@ -5,6 +5,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        IsInitialized: Boolean;
     // LibraryRandom: Codeunit "Library - Random";  // Temporarily disabled - missing package
 
     // ============================================
@@ -22,6 +23,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         PostedNo: Code[20];
     begin
+        Initialize();
+
         // [GIVEN] An asset at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -33,6 +36,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         ReleaseTransferOrder(TransferHeader);
 
         // [WHEN] Posting the transfer order
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         AssetTransferPost.Run(TransferHeader);
         PostedNo := TransferHeader."Posting No.";
 
@@ -66,6 +71,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         PostedLine: Record "JML AP Pstd. Asset Trans. Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
+        Initialize();
+
         // [GIVEN] Three assets at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -81,6 +88,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         ReleaseTransferOrder(TransferHeader);
 
         // [WHEN] Posting the transfer order
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         AssetTransferPost.Run(TransferHeader);
 
         // [THEN] Posted transfer has 3 lines
@@ -115,6 +124,9 @@ codeunit 50108 "JML AP Transfer Order Tests"
         PostedTransfer: Record "JML AP Posted Asset Transfer";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
+        Initialize();
+
+
         // [GIVEN] A parent asset with one child at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -129,6 +141,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         ReleaseTransferOrder(TransferHeader);
 
         // [WHEN] Posting the transfer order
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         AssetTransferPost.Run(TransferHeader);
 
         // [THEN] Both parent and child transferred to Location 2
@@ -159,6 +173,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
+        Initialize();
+
         // [GIVEN] An open (not released) transfer order
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -168,11 +184,14 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // [WHEN] Attempting to post without releasing
         // [THEN] Error is thrown
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         asserterror AssetTransferPost.Run(TransferHeader);
         Assert.ExpectedError('must be released');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists (posting should have failed)
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupAsset(Asset);
         CleanupLocation(Location1);
         CleanupLocation(Location2);
@@ -193,11 +212,14 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // [WHEN] Attempting to post
         // [THEN] Error is thrown
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         asserterror AssetTransferPost.Run(TransferHeader);
         Assert.ExpectedError('no lines to post');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists (posting should have failed)
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupLocation(Location1);
         CleanupLocation(Location2);
     end;
@@ -219,16 +241,15 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // [GIVEN] A released transfer order from Location 1 to Location 2
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
-        CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
-        ReleaseTransferOrder(TransferHeader);
 
-        // [WHEN] Attempting to post (asset is at Location 3, not Location 1)
-        // [THEN] Error is thrown
-        asserterror AssetTransferPost.Run(TransferHeader);
-        Assert.ExpectedErrorCode('Dialog');
+        // [WHEN] Attempting to add asset to transfer line (asset is at Location 3, not Location 1)
+        // [THEN] Error is thrown during line validation
+        asserterror CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
+        Assert.ExpectedError('is currently at');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupAsset(Asset);
         CleanupLocation(Location1);
         CleanupLocation(Location2);
@@ -244,6 +265,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
+        Initialize();
+
         // [GIVEN] A blocked asset at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -251,18 +274,17 @@ codeunit 50108 "JML AP Transfer Order Tests"
         Asset.Blocked := true;
         Asset.Modify(true);
 
-        // [GIVEN] A released transfer order
+        // [GIVEN] A transfer order
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
-        CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
-        ReleaseTransferOrder(TransferHeader);
 
-        // [WHEN] Attempting to post
-        // [THEN] Error is thrown
-        asserterror AssetTransferPost.Run(TransferHeader);
-        Assert.ExpectedErrorCode('TestField');
+        // [WHEN] Attempting to add blocked asset to transfer line
+        // [THEN] Error is thrown during line validation
+        asserterror CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
+        Assert.ExpectedError('Blocked must be equal to');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupAsset(Asset);
         CleanupLocation(Location1);
         CleanupLocation(Location2);
@@ -277,6 +299,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
+        Initialize();
+
         // [GIVEN] A child asset at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -285,18 +309,17 @@ codeunit 50108 "JML AP Transfer Order Tests"
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
-        // [GIVEN] A released transfer order trying to transfer the child directly
+        // [GIVEN] A transfer order
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
-        CreateTransferLine(TransferLine, TransferHeader."No.", ChildAsset."No.");
-        ReleaseTransferOrder(TransferHeader);
 
-        // [WHEN] Attempting to post
-        // [THEN] Error is thrown
-        asserterror AssetTransferPost.Run(TransferHeader);
+        // [WHEN] Attempting to add subasset to transfer line
+        // [THEN] Error is thrown during line validation
+        asserterror CreateTransferLine(TransferLine, TransferHeader."No.", ChildAsset."No.");
         Assert.ExpectedError('Cannot transfer subasset');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupAsset(ChildAsset);
         CleanupAsset(ParentAsset);
         CleanupLocation(Location1);
@@ -311,20 +334,31 @@ codeunit 50108 "JML AP Transfer Order Tests"
     procedure PostTransferOrder_UsesJournalPattern_ValidatesPostingDate()
     var
         Asset: Record "JML AP Asset";
-        Location1, Location2 : Record Location;
-        TransferHeader: Record "JML AP Asset Transfer Header";
+        Location1, Location2, Location3 : Record Location;
+        TransferHeader, InitialTransfer : Record "JML AP Asset Transfer Header";
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         PastDate: Date;
     begin
+        Initialize();
+
         // [GIVEN] An asset at Location 1 with an entry dated today
         CreateLocation(Location1);
         CreateLocation(Location2);
+        CreateLocation(Location3);
         CreateAssetAtLocation(Asset, Location1.Code);
 
-        // [GIVEN] A released transfer order with past posting date
+        // Create initial holder entry by posting a transfer (Location 1 -> Location 2)
+        CreateTransferOrder(InitialTransfer, Location1.Code, Location2.Code);
+        CreateTransferLine(TransferLine, InitialTransfer."No.", Asset."No.");
+        ReleaseTransferOrder(InitialTransfer);
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
+        AssetTransferPost.Run(InitialTransfer);
+
+        // [GIVEN] A released transfer order with past posting date (Location 2 -> Location 3)
         PastDate := CalcDate('<-1Y>', WorkDate());
-        CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
+        CreateTransferOrder(TransferHeader, Location2.Code, Location3.Code);
         TransferHeader."Posting Date" := PastDate;
         TransferHeader.Modify(true);
         CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
@@ -332,14 +366,18 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // [WHEN] Attempting to post with backdated posting date
         // [THEN] Error is thrown (journal validates posting date)
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         asserterror AssetTransferPost.Run(TransferHeader);
         Assert.ExpectedError('cannot be before last entry date');
 
-        // Cleanup
-        TransferHeader.Delete(true);
+        // Cleanup - only delete if it still exists (posting should have failed)
+        if TransferHeader.Get(TransferHeader."No.") then
+            TransferHeader.Delete(true);
         CleanupAsset(Asset);
         CleanupLocation(Location1);
         CleanupLocation(Location2);
+        CleanupLocation(Location3);
     end;
 
     [Test]
@@ -355,6 +393,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         TransactionNo: Integer;
     begin
+        Initialize();
+
         // [GIVEN] A parent asset with one child at Location 1
         CreateLocation(Location1);
         CreateLocation(Location2);
@@ -369,6 +409,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         ReleaseTransferOrder(TransferHeader);
 
         // [WHEN] Posting the transfer order
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
         AssetTransferPost.Run(TransferHeader);
 
         // [THEN] Posted lines have Transaction No.
@@ -407,7 +449,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
     local procedure CreateLocation(var Location: Record Location)
     begin
         Location.Init();
-        Location.Code := 'LOC-TEST';  // LibraryRandom.RandIntInRange(10000, 99999);
+        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
         Location.Name := 'Test Location ' + Location.Code;
         Location.Insert(true);
     end;
@@ -415,11 +457,64 @@ codeunit 50108 "JML AP Transfer Order Tests"
     local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
     begin
         Asset.Init();
-        Asset."No." := 'ASSET-TEST';  // LibraryRandom.RandIntInRange(10000, 99999);
+        Asset."No." := 'TST-' + Format(CreateGuid()).Substring(1, 15);
         Asset.Description := 'Test Asset ' + Asset."No.";
         Asset.Validate("Current Holder Type", Asset."Current Holder Type"::Location);
         Asset.Validate("Current Holder Code", LocationCode);
         Asset.Insert(true);
+    end;
+
+    local procedure Initialize()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+        NoSeries: Record "No. Series";
+        NoSeriesLine: Record "No. Series Line";
+    begin
+        if IsInitialized then
+            exit;
+
+        // Create Asset Number Series
+        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'ASSET-TEST');
+
+        // Create Transfer Order Number Series
+        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'TRANS-TEST');
+
+        // Create Posted Transfer Number Series
+        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'PSTRANS-TEST');
+
+        // Create Asset Setup
+        if not AssetSetup.Get() then begin
+            AssetSetup.Init();
+            AssetSetup.Insert();
+        end;
+        AssetSetup."Asset Nos." := 'ASSET-TEST';
+        AssetSetup."Transfer Order Nos." := 'TRANS-TEST';
+        AssetSetup."Posted Transfer Nos." := 'PSTRANS-TEST';
+        AssetSetup.Modify();
+
+        IsInitialized := true;
+        Commit();
+    end;
+
+    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line"; SeriesCode: Code[20])
+    begin
+        if not NoSeries.Get(SeriesCode) then begin
+            NoSeries.Init();
+            NoSeries.Code := SeriesCode;
+            NoSeries."Default Nos." := true;
+            NoSeries."Manual Nos." := true;
+            NoSeries.Insert();
+        end;
+
+        NoSeriesLine.SetRange("Series Code", SeriesCode);
+        if not NoSeriesLine.FindFirst() then begin
+            NoSeriesLine.Init();
+            NoSeriesLine."Series Code" := SeriesCode;
+            NoSeriesLine."Line No." := 10000;
+            NoSeriesLine."Starting No." := SeriesCode + '001';
+            NoSeriesLine."Ending No." := SeriesCode + '999';
+            NoSeriesLine.Insert();
+        end;
     end;
 
     local procedure CreateTransferOrder(var TransferHeader: Record "JML AP Asset Transfer Header"; FromLocationCode: Code[10]; ToLocationCode: Code[10])

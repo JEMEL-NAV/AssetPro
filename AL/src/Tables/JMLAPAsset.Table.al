@@ -633,11 +633,19 @@ table 70182301 "JML AP Asset"
         ChildAsset: Record "JML AP Asset";
         ClassValue: Record "JML AP Classification Val";
     begin
+        // Skip validation if classification is being cleared
+        if "Classification Code" = '' then
+            exit;
+
         if "Parent Asset No." <> '' then
             Error(ChangeClassErr);
-        ChildAsset.SetRange("Parent Asset No.", "No.");
-        if not ChildAsset.IsEmpty() then
-            Error(ChangeClassChildErr);
+
+        // Only check for children if record already exists (not during Insert)
+        if xRec."No." <> '' then begin
+            ChildAsset.SetRange("Parent Asset No.", "No.");
+            if not ChildAsset.IsEmpty() then
+                Error(ChangeClassChildErr);
+        end;
 
         CalcFields("Classification Level No.");
 

@@ -5,6 +5,7 @@ codeunit 50140 "JML AP Picture Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        IsInitialized: Boolean;
 
     [Test]
     procedure TestPictureFieldExists()
@@ -14,6 +15,7 @@ codeunit 50140 "JML AP Picture Tests"
         FldRef: FieldRef;
     begin
         // [SCENARIO] Picture field exists on Asset table
+        Initialize();
 
         // [GIVEN] An Asset record
         Asset.Init();
@@ -22,9 +24,9 @@ codeunit 50140 "JML AP Picture Tests"
         RecRef.GetTable(Asset);
         FldRef := RecRef.Field(950); // Picture field number
 
-        // [THEN] Field exists and is of type Media
+        // [THEN] Field exists and is of type MediaSet
         LibraryAssert.AreEqual('Picture', FldRef.Name, 'Picture field should exist');
-        LibraryAssert.AreEqual(FldRef.Type, FieldType::Media, 'Picture field should be Media type');
+        LibraryAssert.AreEqual(Format(FldRef.Type), Format(FieldType::MediaSet), 'Picture field should be MediaSet type');
     end;
 
     [Test]
@@ -36,6 +38,7 @@ codeunit 50140 "JML AP Picture Tests"
         OutStr: OutStream;
     begin
         // [SCENARIO] Picture can be assigned to Asset
+        Initialize();
 
         // [GIVEN] An Asset record
         CreateTestAsset(Asset);
@@ -49,7 +52,7 @@ codeunit 50140 "JML AP Picture Tests"
         Asset.Modify(true);
 
         // [THEN] Picture is stored
-        LibraryAssert.IsTrue(Asset.Picture.HasValue, 'Picture should have value after assignment');
+        LibraryAssert.IsTrue(Asset.Picture.Count() > 0, 'Picture should have value after assignment');
     end;
 
     [Test]
@@ -61,6 +64,7 @@ codeunit 50140 "JML AP Picture Tests"
         OutStr: OutStream;
     begin
         // [SCENARIO] Picture can be removed from Asset
+        Initialize();
 
         // [GIVEN] An Asset with a picture
         CreateTestAsset(Asset);
@@ -75,24 +79,40 @@ codeunit 50140 "JML AP Picture Tests"
         Asset.Modify(true);
 
         // [THEN] Picture is removed
-        LibraryAssert.IsFalse(Asset.Picture.HasValue, 'Picture should not have value after removal');
+        LibraryAssert.IsFalse(Asset.Picture.Count() > 0, 'Picture should not have value after removal');
 
         // Cleanup
         Asset.Delete(true);
     end;
 
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset")
+    local procedure Initialize()
     var
         AssetSetup: Record "JML AP Asset Setup";
+        Asset: Record "JML AP Asset";
     begin
-        // Ensure setup exists
+        // Clean up test data before each test (must run every time)
+        Asset.DeleteAll(true);
+
+        // One-time setup
+        if IsInitialized then
+            exit;
+
+        // Create Asset Setup record if it doesn't exist
         if not AssetSetup.Get() then begin
             AssetSetup.Init();
             AssetSetup.Insert(true);
         end;
 
+        IsInitialized := true;
+    end;
+
+    local procedure CreateTestAsset(var Asset: Record "JML AP Asset")
+    var
+        GuidStr: Text;
+    begin
         Asset.Init();
-        Asset."No." := 'TEST-PICTURE-' + Format(Random(99999));
+        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
+        Asset."No." := CopyStr('PIC-' + CopyStr(GuidStr, 1, 8), 1, 20);
         Asset.Description := 'Test Asset for Picture Tests';
         Asset.Insert(true);
     end;

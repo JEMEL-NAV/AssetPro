@@ -23,7 +23,6 @@ codeunit 50100 "JML AP Setup Tests"
         AssetSetup.GetRecordOnce();
         Assert.AreNotEqual('', AssetSetup."Asset Nos.", 'Asset Nos. should be assigned');
         Assert.IsTrue(AssetSetup."Enable Attributes", 'Attributes should be enabled by default');
-        Assert.IsTrue(AssetSetup."Enable Holder History", 'Holder History should be enabled by default');
     end;
 
     [Test]

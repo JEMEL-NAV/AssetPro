@@ -1,9 +1,11 @@
 codeunit 50111 "JML AP Component Tests"
 {
     Subtype = Test;
+    TestPermissions = Disabled;
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        IsInitialized: Boolean;
 
     [Test]
     procedure TestPostComponentInstall_Success()
@@ -17,6 +19,8 @@ codeunit 50111 "JML AP Component Tests"
     begin
         // [FEATURE] Component Ledger Posting
         // [SCENARIO] Post component journal line with Install entry type
+        Initialize();
+
         // [GIVEN] Asset, Item, and Component Journal Line with Install type and positive quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -53,6 +57,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Post component journal line with Remove entry type
+        Initialize();
+
         // [GIVEN] Asset, Item, and Component Journal Line with Remove type and negative quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -82,6 +88,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Asset does not exist
+        Initialize();
+
         // [GIVEN] Item and Component Journal Line with non-existent Asset
         CreateTestItem(Item);
         CreateTestJournalBatch(ComponentJnlBatch);
@@ -105,6 +113,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Item does not exist
+        Initialize();
+
         // [GIVEN] Asset and Component Journal Line with non-existent Item
         CreateTestAsset(Asset);
         CreateTestJournalBatch(ComponentJnlBatch);
@@ -129,6 +139,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Install has negative quantity
+        Initialize();
+
         // [GIVEN] Component Journal Line with Install type and negative quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -154,6 +166,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Remove has positive quantity
+        Initialize();
+
         // [GIVEN] Component Journal Line with Remove type and positive quantity
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -180,6 +194,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Transaction No. is assigned and increments correctly
+        Initialize();
+
         // [GIVEN] Two component journal lines
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -212,6 +228,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Entry No. is assigned sequentially using BC pattern
+        Initialize();
+
         // [GIVEN] Three component journal lines
         CreateTestAsset(Asset);
         CreateTestItem(Item);
@@ -261,9 +279,13 @@ codeunit 50111 "JML AP Component Tests"
 
     local procedure CreateTestJournalBatch(var ComponentJnlBatch: Record "JML AP Component Jnl. Batch")
     begin
+        // Try to get existing batch first, create if doesn't exist
+        if ComponentJnlBatch.Get('TESTBATCH') then
+            exit;
+
         ComponentJnlBatch.Init();
         ComponentJnlBatch."Name" := 'TESTBATCH';
-        if ComponentJnlBatch.Insert(true) then;
+        ComponentJnlBatch.Insert(true);
     end;
 
     local procedure CreateComponentJournalLine(
@@ -292,5 +314,28 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlLine."Posting Date" := WorkDate();
         ComponentJnlLine."Document No." := 'TEST-DOC';
         ComponentJnlLine.Insert(true);
+    end;
+
+    local procedure Initialize()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+        ComponentEntry: Record "JML AP Component Entry";
+        ComponentJnlLine: Record "JML AP Component Journal Line";
+    begin
+        // Clean up test data before each test (must run every time)
+        ComponentEntry.DeleteAll(true);
+        ComponentJnlLine.DeleteAll(true);
+
+        // One-time setup
+        if IsInitialized then
+            exit;
+
+        // Create Asset Setup record if it doesn't exist
+        if not AssetSetup.Get() then begin
+            AssetSetup.Init();
+            AssetSetup.Insert(true);
+        end;
+
+        IsInitialized := true;
     end;
 }

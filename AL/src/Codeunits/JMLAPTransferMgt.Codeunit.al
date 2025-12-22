@@ -94,6 +94,7 @@ codeunit 70182385 "JML AP Transfer Mgt"
         HolderEntry: Record "JML AP Holder Entry";
     begin
         HolderEntry.Init();
+        HolderEntry."Entry No." := GetNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := Today;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer Out";
@@ -122,6 +123,7 @@ codeunit 70182385 "JML AP Transfer Mgt"
         HolderName := GetHolderName(NewHolderType, NewHolderCode);
 
         HolderEntry.Init();
+        HolderEntry."Entry No." := GetNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := Today;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer In";
@@ -144,6 +146,17 @@ codeunit 70182385 "JML AP Transfer Mgt"
         Asset.Validate("Current Holder Code", NewHolderCode);
         Asset.Validate("Current Holder Since", Today);
         Asset.Modify(true);
+    end;
+
+    local procedure GetNextEntryNo(): Integer
+    var
+        HolderEntry: Record "JML AP Holder Entry";
+    begin
+        HolderEntry.LockTable();
+        if HolderEntry.FindLast() then
+            exit(HolderEntry."Entry No." + 1)
+        else
+            exit(1);
     end;
 
     local procedure GetHolderName(HolderType: Enum "JML AP Holder Type"; HolderCode: Code[20]): Text[100]

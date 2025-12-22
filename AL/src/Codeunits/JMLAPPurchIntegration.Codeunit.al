@@ -157,36 +157,21 @@ codeunit 70182399 "JML AP Purch. Integration"
 
     local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; TransactionNo: Integer)
     var
-        AssetJournalBatch: Record "JML AP Asset Journal Batch";
-        AssetJournalLine: Record "JML AP Asset Journal Line";
-        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+        TempAssetJournalLine: Record "JML AP Asset Journal Line" temporary;
+        AssetJnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
     begin
-        // Get or create system journal batch
-        if not AssetJournalBatch.Get('PURCH-POST') then begin
-            AssetJournalBatch.Init();
-            AssetJournalBatch.Name := 'PURCH-POST';
-            AssetJournalBatch.Description := 'System batch for purchase document posting';
-            AssetJournalBatch.Insert();
-        end;
-
-        // Delete any existing lines
-        AssetJournalLine.SetRange("Journal Batch Name", AssetJournalBatch.Name);
-        AssetJournalLine.DeleteAll();
-
         // Create journal line
-        AssetJournalLine.Init();
-        AssetJournalLine."Journal Batch Name" := AssetJournalBatch.Name;
-        AssetJournalLine."Line No." := 10000;
-        AssetJournalLine."Posting Date" := PostingDate;
-        AssetJournalLine."Document No." := DocumentNo;
-        AssetJournalLine."Asset No." := Asset."No.";
-        AssetJournalLine."New Holder Type" := NewHolderType;
-        AssetJournalLine."New Holder Code" := NewHolderCode;
-        AssetJournalLine."Reason Code" := ReasonCode;
-        AssetJournalLine.Insert(true);
+        TempAssetJournalLine.Init();
+        TempAssetJournalLine."Line No." := 10000;
+        TempAssetJournalLine."Posting Date" := PostingDate;
+        TempAssetJournalLine."Document No." := DocumentNo;
+        TempAssetJournalLine."Asset No." := Asset."No.";
+        TempAssetJournalLine."New Holder Type" := NewHolderType;
+        TempAssetJournalLine."New Holder Code" := NewHolderCode;
+        TempAssetJournalLine."Reason Code" := ReasonCode;
 
-        // Post journal
-        AssetJnlPost.Run(AssetJournalLine);
+        // Post journal        
+        AssetJnlPostLine.Run(TempAssetJournalLine);
     end;
 
     local procedure CreatePostedReceiptAssetLine(PurchAssetLine: Record "JML AP Purch. Asset Line"; PurchRcptHeader: Record "Purch. Rcpt. Header"; PurchHeader: Record "Purchase Header"; LocationCode: Code[10]; TransactionNo: Integer)

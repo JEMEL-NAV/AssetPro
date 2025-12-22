@@ -96,8 +96,15 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
     var
         TempJnlLine: Record "JML AP Asset Journal Line" temporary;
         JnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
+        AssetSetup: Record "JML AP Asset Setup";
         DocumentNo: Code[20];
+        ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
     begin
+        // Validate manual holder changes are not blocked
+        AssetSetup.GetRecordOnce();
+        if AssetSetup."Block Manual Holder Change" then
+            Error(ManualHolderChangeBlockedErr);
+
         // Generate document number with timestamp
         DocumentNo := 'MAN-' + Format(CurrentDateTime, 0, '<Year4><Month,2><Day,2><Hours24,2><Minutes,2><Seconds,2>');
 
@@ -121,7 +128,18 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         // Refresh asset record after posting
         Asset.Get(Asset."No.");
 
-        if GuiAllowed then
+        if GuiAllowed and not SuppressSuccessMessage then
             Message(HolderChangeSuccessMsg, Asset."No.", NewHolderCode);
+    end;
+
+    /// <summary>
+    /// Validates posting date for an asset journal entry.
+    /// Ensures posting date is not before the last entry date for the asset or its children.
+    /// </summary>
+    procedure ValidatePostingDate(AssetNo: Code[20]; PostingDate: Date)
+    var
+        JnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
+    begin
+        JnlPostLine.ValidatePostingDate(AssetNo, PostingDate);
     end;
 }

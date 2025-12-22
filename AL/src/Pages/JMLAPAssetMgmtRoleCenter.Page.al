@@ -177,6 +177,13 @@ page 70182370 "JML AP Asset Mgmt. Role Center"
                     RunObject = Page "JML AP Component Jnl. Batches";
                     ToolTip = 'Manage component journal batches.';
                 }
+                action(Wizard)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Asset Setup Wizard';
+                    RunObject = Page "JML AP Setup Wizard";
+                    ToolTip = 'Launch the Asset Pro setup wizard.';
+                }
                 action(ConfigPackages)
                 {
                     ApplicationArea = All;

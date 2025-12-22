@@ -5,6 +5,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        IsInitialized: Boolean;
 
     [Test]
     procedure TestCreateReferenceWithBarcode()
@@ -13,6 +14,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
         AssetRef: Record "JML AP Asset Reference";
     begin
         // [SCENARIO] Create asset reference with barcode
+        Initialize();
 
         // [GIVEN] An asset
         CreateTestAsset(Asset);
@@ -41,6 +43,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
         AssetRef: Record "JML AP Asset Reference";
     begin
         // [SCENARIO] Create asset reference with customer number
+        Initialize();
 
         // [GIVEN] An asset and a customer
         CreateTestAsset(Asset);
@@ -73,6 +76,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
         FoundRef: Record "JML AP Asset Reference";
     begin
         // [SCENARIO] Lookup asset by reference number
+        Initialize();
 
         // [GIVEN] An asset with a reference
         CreateTestAsset(Asset);
@@ -98,33 +102,26 @@ codeunit 50142 "JML AP Asset Reference Tests"
     var
         Asset: Record "JML AP Asset";
         AssetRef: Record "JML AP Asset Reference";
-        ErrorOccurred: Boolean;
     begin
         // [SCENARIO] Ending date must be after starting date
+        Initialize();
 
         // [GIVEN] An asset
         CreateTestAsset(Asset);
 
-        // [WHEN] Creating reference with ending date before starting date
+        // [WHEN] Creating reference with ending date before starting date using Validate
         AssetRef.Init();
         AssetRef."Asset No." := Asset."No.";
         AssetRef."Reference Type" := AssetRef."Reference Type"::Barcode;
         AssetRef."Reference No." := 'DATE-TEST-123';
-        AssetRef."Starting Date" := Today;
-        AssetRef."Ending Date" := CalcDate('<-1D>', Today); // Yesterday
+        AssetRef.Validate("Starting Date", Today);
 
-        ErrorOccurred := false;
-        asserterror AssetRef.Insert(true);
-        if GetLastErrorText <> '' then
-            ErrorOccurred := true;
+        // [THEN] Error occurs when validating ending date before starting date
+        asserterror AssetRef.Validate("Ending Date", CalcDate('<-1D>', Today));
+        LibraryAssert.ExpectedError('is before');
 
-        // [THEN] Error occurs
-        LibraryAssert.IsTrue(ErrorOccurred, 'Should error when ending date is before starting date');
-
-        // Cleanup (if needed)
-        ClearLastError();
-        if Asset.Get(Asset."No.") then
-            CleanupTestData(Asset."No.");
+        // Cleanup
+        CleanupTestData(Asset."No.");
     end;
 
     [Test]
@@ -134,6 +131,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
         AssetRef: Record "JML AP Asset Reference";
     begin
         // [SCENARIO] Delete asset reference
+        Initialize();
 
         // [GIVEN] An asset with a reference
         CreateTestAsset(Asset);
@@ -158,6 +156,7 @@ codeunit 50142 "JML AP Asset Reference Tests"
     local procedure CreateTestAsset(var Asset: Record "JML AP Asset")
     var
         AssetSetup: Record "JML AP Asset Setup";
+        GuidStr: Text;
     begin
         // Ensure setup exists
         if not AssetSetup.Get() then begin
@@ -166,15 +165,19 @@ codeunit 50142 "JML AP Asset Reference Tests"
         end;
 
         Asset.Init();
-        Asset."No." := 'TEST-REF-' + Format(Random(99999));
+        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
+        Asset."No." := CopyStr('REF-' + CopyStr(GuidStr, 1, 8), 1, 20);
         Asset.Description := 'Test Asset for Reference Tests';
         Asset.Insert(true);
     end;
 
     local procedure CreateTestCustomer(var Customer: Record Customer)
+    var
+        GuidStr: Text;
     begin
         Customer.Init();
-        Customer."No." := 'TEST-CUST-' + Format(Random(99999));
+        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
+        Customer."No." := CopyStr('CUST-' + CopyStr(GuidStr, 1, 8), 1, 20);
         Customer.Name := 'Test Customer';
         Customer.Insert(true);
     end;
@@ -192,5 +195,28 @@ codeunit 50142 "JML AP Asset Reference Tests"
         // Delete asset
         if Asset.Get(AssetNo) then
             Asset.Delete(true);
+    end;
+
+    local procedure Initialize()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+        Asset: Record "JML AP Asset";
+        AssetRef: Record "JML AP Asset Reference";
+    begin
+        // Clean up test data before each test (must run every time)
+        AssetRef.DeleteAll(true);
+        Asset.DeleteAll(true);
+
+        // One-time setup
+        if IsInitialized then
+            exit;
+
+        // Create Asset Setup record if it doesn't exist
+        if not AssetSetup.Get() then begin
+            AssetSetup.Init();
+            AssetSetup.Insert(true);
+        end;
+
+        IsInitialized := true;
     end;
 }

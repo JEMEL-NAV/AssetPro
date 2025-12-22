@@ -259,6 +259,7 @@ codeunit 70182398 "JML AP Sales Integration"
         TempAssetJournalLine."Reason Code" := ReasonCode;
 
         // Post journal
+
         AssetJnlPostLine.Run(TempAssetJournalLine);
         TransactionNo := AssetJnlPostLine.GetTransactionNo();
     end;

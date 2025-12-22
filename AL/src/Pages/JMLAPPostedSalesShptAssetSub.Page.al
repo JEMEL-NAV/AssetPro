@@ -63,6 +63,22 @@ page 70182366 "JML AP Pstd Sales Shpt Ast Sub"
     {
         area(processing)
         {
+            action(UndoShipment)
+            {
+                ApplicationArea = All;
+                Caption = 'Undo Shipment';
+                ToolTip = 'Reverse the asset transfer to allow changes to the Sales Order before invoicing.';
+                Image = Undo;
+                Enabled = not Rec.Correction;
+
+                trigger OnAction()
+                var
+                    UndoSalesShptAsset: Codeunit "JML AP Undo Sales Shpt Asset";
+                begin
+                    UndoSalesShptAsset.Run(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
             action(AssetCard)
             {
                 ApplicationArea = All;

@@ -13,6 +13,8 @@ codeunit 70182392 "JML AP Asset Transfer-Post"
         TransferHeader: Record "JML AP Asset Transfer Header";
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
         Window: Dialog;
+        SuppressConfirmation: Boolean;
+        SuppressMessage: Boolean;
         NotReleasedErr: Label 'Transfer Order %1 must be released before posting.', Comment = '%1 = Document No.';
         NoLinesErr: Label 'There are no lines to post in Transfer Order %1.', Comment = '%1 = Document No.';
         PostingMsg: Label 'Posting Transfer Order #1########## @2@@@@@@@@@@@@@';
@@ -27,16 +29,21 @@ codeunit 70182392 "JML AP Asset Transfer-Post"
         CheckTransferOrder(TransferHeader);
 
         // Confirm posting
-        if not Confirm(ConfirmPostQst, true, TransferHeader."No.") then
-            exit;
+        if not SuppressConfirmation then
+            if not Confirm(ConfirmPostQst, true, TransferHeader."No.") then
+                exit;
 
-        Window.Open(PostingMsg);
-        Window.Update(1, TransferHeader."No.");
+        if not SuppressMessage then begin
+            Window.Open(PostingMsg);
+            Window.Update(1, TransferHeader."No.");
+        end;
 
         PostedTransferNo := PostTransferOrder(TransferHeader);
 
-        Window.Close();
-        Message(PostedMsg, TransferHeader."No.", PostedTransferNo);
+        if not SuppressMessage then begin
+            Window.Close();
+            Message(PostedMsg, TransferHeader."No.", PostedTransferNo);
+        end;
     end;
 
     local procedure CheckTransferOrder(var TransferHdr: Record "JML AP Asset Transfer Header")
@@ -103,7 +110,8 @@ codeunit 70182392 "JML AP Asset Transfer-Post"
                     PostingNo,
                     LineNo);
                 LineNo += 10000;
-                Window.Update(2, Round(TransferLine."Line No." / LineNo * 10000, 1));
+                if not SuppressMessage then
+                    Window.Update(2, Round(TransferLine."Line No." / LineNo * 10000, 1));
             until TransferLine.Next() = 0;
         end;
 
@@ -231,5 +239,21 @@ codeunit 70182392 "JML AP Asset Transfer-Post"
                 LineNo += 10000;
             until TransferLine.Next() = 0;
         end;
+    end;
+
+    /// <summary>
+    /// Suppresses the confirmation dialog for posting. Used in automated testing.
+    /// </summary>
+    procedure SetSuppressConfirmation(Suppress: Boolean)
+    begin
+        SuppressConfirmation := Suppress;
+    end;
+
+    /// <summary>
+    /// Suppresses the success message after posting. Used in automated testing.
+    /// </summary>
+    procedure SetSuppressMessage(Suppress: Boolean)
+    begin
+        SuppressMessage := Suppress;
     end;
 }

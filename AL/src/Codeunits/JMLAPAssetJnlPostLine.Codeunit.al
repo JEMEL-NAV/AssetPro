@@ -280,6 +280,4 @@ codeunit 70182391 "JML AP Asset Jnl.-Post Line"
     begin
         exit(GlobalTransactionNo)
     end;
-
-
 }

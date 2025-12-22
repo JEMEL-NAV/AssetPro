@@ -277,7 +277,6 @@ codeunit 50106 "JML AP Parent-Child Tests"
         AssetSetup.Init();
         AssetSetup."Asset Nos." := NoSeries.Code;
         AssetSetup."Enable Attributes" := true;
-        AssetSetup."Enable Holder History" := true;
         AssetSetup.Insert();
 
         IsInitialized := true;
@@ -331,7 +330,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         Industry.Init();
         Industry.Code := 'IND-' + Format(CreateGuid()).Substring(1, 8);
-        Industry.Description := 'Test Industry';
+        Industry.Name := 'Test Industry';
         Industry.Insert(true);
     end;
 

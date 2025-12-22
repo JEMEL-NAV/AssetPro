@@ -15,9 +15,10 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Location: Record Location;
         HolderEntry: Record "JML AP Holder Entry";
         AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [FEATURE] Manual Holder Change via Journal (R8)
-        // [SCENARIO] User changes holder on Asset Card, journal entries created automatically
+        // [SCENARIO] User changes holder on Asset Card via Change Holder Dialog, journal entries created automatically
 
         // [GIVEN] Setup allows manual changes
         Initialize();
@@ -29,12 +30,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         CreateLocation(Location);
         CreateAssetAtLocation(Asset, Location.Code);
 
-        // [WHEN] User changes holder to Customer
+        // [WHEN] User changes holder to Customer via Change Holder Dialog
         CreateCustomer(Customer);
-        Asset.Get(Asset."No."); // Re-read to ensure xRec is set in trigger
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Customer;
-        Asset."Current Holder Code" := Customer."No.";
-        Asset.Modify(true);
+        Asset.Get(Asset."No.");
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.CreateAndPostManualChange(
+            Asset,
+            Asset."Current Holder Type"::Location,
+            Location.Code,
+            '',  // Old address code
+            Asset."Current Holder Type"::Customer,
+            Customer."No.",
+            '');  // New address code
 
         // [THEN] Two holder entries created (Transfer Out + Transfer In)
         HolderEntry.SetRange("Asset No.", Asset."No.");
@@ -60,6 +68,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Customer: Record Customer;
         Location: Record Location;
         AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [FEATURE] Manual Holder Change Control (R7)
         // [SCENARIO] Setup blocks manual changes, error thrown
@@ -74,14 +83,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         CreateLocation(Location);
         CreateAssetAtLocation(Asset, Location.Code);
 
-        // [WHEN] User tries to change holder
+        // [WHEN] User tries to change holder via Change Holder Dialog
         CreateCustomer(Customer);
-        Asset.Get(Asset."No."); // Re-read to ensure xRec is set in trigger
-        asserterror begin
-            Asset."Current Holder Type" := Asset."Current Holder Type"::Customer;
-            Asset."Current Holder Code" := Customer."No.";
-            Asset.Modify(true);
-        end;
+        Asset.Get(Asset."No.");
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        asserterror AssetJnlPost.CreateAndPostManualChange(
+            Asset,
+            Asset."Current Holder Type"::Location,
+            Location.Code,
+            '',
+            Asset."Current Holder Type"::Customer,
+            Customer."No.",
+            '');
 
         // [THEN] Error thrown
         Assert.ExpectedError('Manual holder changes are blocked');
@@ -97,6 +111,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Location: Record Location;
         HolderEntry: Record "JML AP Holder Entry";
         AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [FEATURE] Manual Holder Change with Children (R4 + R8)
         // [SCENARIO] Manual change transfers all children automatically
@@ -113,12 +128,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         CreateChildAssetAtHolder(ChildAsset1, ParentAsset."No.", Location);
         CreateChildAssetAtHolder(ChildAsset2, ParentAsset."No.", Location);
 
-        // [WHEN] User changes parent holder to Customer
+        // [WHEN] User changes parent holder to Customer via Change Holder Dialog
         CreateCustomer(Customer);
-        ParentAsset.Get(ParentAsset."No."); // Re-read to ensure xRec is set in trigger
-        ParentAsset."Current Holder Type" := ParentAsset."Current Holder Type"::Customer;
-        ParentAsset."Current Holder Code" := Customer."No.";
-        ParentAsset.Modify(true);
+        ParentAsset.Get(ParentAsset."No.");
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.CreateAndPostManualChange(
+            ParentAsset,
+            ParentAsset."Current Holder Type"::Location,
+            Location.Code,
+            '',
+            ParentAsset."Current Holder Type"::Customer,
+            Customer."No.",
+            '');
 
         // [THEN] 6 holder entries created (2 per asset: parent + 2 children)
         HolderEntry.SetFilter("Asset No.", '%1|%2|%3', ParentAsset."No.", ChildAsset1."No.", ChildAsset2."No.");
@@ -143,6 +165,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Customer: Record Customer;
         Location: Record Location;
         AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [FEATURE] Subasset Movement Restriction (R6)
         // [SCENARIO] Cannot manually change holder of attached subasset
@@ -158,14 +181,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         CreateAssetAtLocation(ParentAsset, Location.Code);
         CreateChildAssetAtHolder(ChildAsset, ParentAsset."No.", Location);
 
-        // [WHEN] User tries to change child holder directly
+        // [WHEN] User tries to change child holder directly via Change Holder Dialog
         CreateCustomer(Customer);
-        ChildAsset.Get(ChildAsset."No."); // Re-read to ensure xRec is set in trigger
-        asserterror begin
-            ChildAsset."Current Holder Type" := ChildAsset."Current Holder Type"::Customer;
-            ChildAsset."Current Holder Code" := Customer."No.";
-            ChildAsset.Modify(true);
-        end;
+        ChildAsset.Get(ChildAsset."No.");
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        asserterror AssetJnlPost.CreateAndPostManualChange(
+            ChildAsset,
+            ChildAsset."Current Holder Type"::Location,
+            Location.Code,
+            '',
+            ChildAsset."Current Holder Type"::Customer,
+            Customer."No.",
+            '');
 
         // [THEN] Error thrown (cannot transfer subasset)
         Assert.ExpectedError('Cannot transfer subasset');
@@ -178,6 +206,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Location: Record Location;
         HolderEntry: Record "JML AP Holder Entry";
         AssetSetup: Record "JML AP Asset Setup";
+        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [FEATURE] Manual Holder Change - Initial Assignment
         // [SCENARIO] Initial holder assignment creates holder entries
@@ -192,12 +221,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         CreateAsset(Asset);
         Assert.AreEqual(Asset."Current Holder Type"::" ", Asset."Current Holder Type", 'Initial holder type should be blank');
 
-        // [WHEN] User sets initial holder
+        // [WHEN] User sets initial holder via Change Holder Dialog
         CreateLocation(Location);
-        Asset.Get(Asset."No."); // Re-read to ensure xRec is set in trigger
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := Location.Code;
-        Asset.Modify(true);
+        Asset.Get(Asset."No.");
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.CreateAndPostManualChange(
+            Asset,
+            Asset."Current Holder Type"::" ",  // From blank
+            '',
+            '',
+            Asset."Current Holder Type"::Location,
+            Location.Code,
+            '');
 
         // [THEN] Holder entries created (even for initial assignment)
         HolderEntry.SetRange("Asset No.", Asset."No.");

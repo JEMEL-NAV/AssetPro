@@ -125,7 +125,6 @@ codeunit 50103 "JML AP Circular Ref Tests"
         AssetSetup.Init();
         AssetSetup."Asset Nos." := NoSeries.Code;
         AssetSetup."Enable Attributes" := true;
-        AssetSetup."Enable Holder History" := true;
         AssetSetup.Insert();
 
         IsInitialized := true;

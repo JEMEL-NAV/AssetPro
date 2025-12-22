@@ -286,9 +286,26 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
     // end;
 
     local procedure Initialize()
+    var
+        AssetSetup: Record "JML AP Asset Setup";
+        ComponentEntry: Record "JML AP Component Entry";
+        ComponentJnlLine: Record "JML AP Component Journal Line";
+        ItemJnlLine: Record "Item Journal Line";
     begin
+        // Clean up test data before each test (must run every time)
+        ComponentEntry.DeleteAll(true);
+        ComponentJnlLine.DeleteAll(true);
+        ItemJnlLine.DeleteAll(true);
+
+        // One-time setup
         if IsInitialized then
             exit;
+
+        // Create Asset Setup record if it doesn't exist
+        if not AssetSetup.Get() then begin
+            AssetSetup.Init();
+            AssetSetup.Insert(true);
+        end;
 
         IsInitialized := true;
         Commit();
@@ -296,24 +313,22 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
 
     local procedure CreateAsset(var Asset: Record "JML AP Asset")
     var
-        AssetNo: Code[20];
+        GuidStr: Text;
     begin
-        AssetNo := 'ASSET-' + Format(Random(99999));
         Asset.Init();
-        Asset."No." := AssetNo;
-        Asset.Description := 'Test Asset ' + AssetNo;
+        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
+        Asset."No." := CopyStr('A-' + CopyStr(GuidStr, 1, 8), 1, 20);
+        Asset.Description := 'Test Asset';
         Asset."Status" := Asset."Status"::Active;
         Asset.Insert(true);
     end;
 
     local procedure CreateItem(var Item: Record Item)
     var
-        ItemNo: Code[20];
+        GuidStr: Text;
         ItemUnitOfMeasure: Record "Item Unit of Measure";
         UnitOfMeasure: Record "Unit of Measure";
     begin
-        ItemNo := 'ITEM-' + Format(Random(99999));
-
         // Create Unit of Measure if it doesn't exist
         if not UnitOfMeasure.Get('PCS') then begin
             UnitOfMeasure.Init();
@@ -323,8 +338,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         end;
 
         Item.Init();
-        Item."No." := ItemNo;
-        Item.Description := 'Test Item ' + ItemNo;
+        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
+        Item."No." := CopyStr('I-' + CopyStr(GuidStr, 1, 8), 1, 20);
+        Item.Description := 'Test Item';
         Item.Type := Item.Type::Inventory;
         Item."Base Unit of Measure" := 'PCS';
         Item."Gen. Prod. Posting Group" := GetOrCreateGenProdPostingGroup();
@@ -396,12 +412,16 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
     var
         GenProdPostingGroup: Record "Gen. Product Posting Group";
         GeneralPostingSetup: Record "General Posting Setup";
+        GLAccount: Record "G/L Account";
     begin
         // Try to find an existing posting group with valid posting setup
         if GenProdPostingGroup.FindFirst() then begin
             // Check if General Posting Setup exists for this combination (empty bus. posting group)
             if GeneralPostingSetup.Get('', GenProdPostingGroup.Code) then
-                exit(GenProdPostingGroup.Code);
+                if (GeneralPostingSetup."COGS Account" <> '') and
+                   (GeneralPostingSetup."Direct Cost Applied Account" <> '')
+                then
+                    exit(GenProdPostingGroup.Code);
         end;
 
         // Create a test posting group if none exists
@@ -417,19 +437,54 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
             GeneralPostingSetup.Init();
             GeneralPostingSetup."Gen. Bus. Posting Group" := '';
             GeneralPostingSetup."Gen. Prod. Posting Group" := 'TEST';
+            GeneralPostingSetup."COGS Account" := GetOrCreateGLAccount('99999');
+            GeneralPostingSetup."Direct Cost Applied Account" := GetOrCreateGLAccount('99998');
+            GeneralPostingSetup."Inventory Adjmt. Account" := GetOrCreateGLAccount('99997');
             GeneralPostingSetup.Insert(true);
+        end else begin
+            // Update existing setup with GL accounts if missing
+            if (GeneralPostingSetup."COGS Account" = '') or
+               (GeneralPostingSetup."Direct Cost Applied Account" = '')
+            then begin
+                GeneralPostingSetup."COGS Account" := GetOrCreateGLAccount('99999');
+                GeneralPostingSetup."Direct Cost Applied Account" := GetOrCreateGLAccount('99998');
+                GeneralPostingSetup."Inventory Adjmt. Account" := GetOrCreateGLAccount('99997');
+                GeneralPostingSetup.Modify(true);
+            end;
         end;
 
         exit('TEST');
     end;
 
+    local procedure GetOrCreateGLAccount(AccountNo: Code[20]): Code[20]
+    var
+        GLAccount: Record "G/L Account";
+    begin
+        if not GLAccount.Get(AccountNo) then begin
+            GLAccount.Init();
+            GLAccount."No." := AccountNo;
+            GLAccount.Name := 'Test Account ' + AccountNo;
+            GLAccount."Account Type" := GLAccount."Account Type"::Posting;
+            GLAccount."Income/Balance" := GLAccount."Income/Balance"::"Balance Sheet";
+            GLAccount."Direct Posting" := true;
+            GLAccount.Insert(true);
+        end;
+        exit(GLAccount."No.");
+    end;
+
     local procedure GetOrCreateInventoryPostingGroup(): Code[20]
     var
         InventoryPostingGroup: Record "Inventory Posting Group";
+        InventoryPostingSetup: Record "Inventory Posting Setup";
+        LocationCode: Code[10];
     begin
-        // Try to find an existing inventory posting group
-        if InventoryPostingGroup.FindFirst() then
-            exit(InventoryPostingGroup.Code);
+        // Try to find an existing inventory posting group with valid setup
+        if InventoryPostingGroup.FindFirst() then begin
+            // Check if Inventory Posting Setup exists with Inventory Account
+            if InventoryPostingSetup.Get('', InventoryPostingGroup.Code) then
+                if InventoryPostingSetup."Inventory Account" <> '' then
+                    exit(InventoryPostingGroup.Code);
+        end;
 
         // Create a test inventory posting group if none exists
         if not InventoryPostingGroup.Get('TEST') then begin
@@ -437,6 +492,22 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
             InventoryPostingGroup.Code := 'TEST';
             InventoryPostingGroup.Description := 'Test Inventory Posting Group';
             InventoryPostingGroup.Insert(true);
+        end;
+
+        // Create Inventory Posting Setup for empty location + this inventory posting group
+        LocationCode := '';
+        if not InventoryPostingSetup.Get(LocationCode, 'TEST') then begin
+            InventoryPostingSetup.Init();
+            InventoryPostingSetup."Location Code" := LocationCode;
+            InventoryPostingSetup."Invt. Posting Group Code" := 'TEST';
+            InventoryPostingSetup."Inventory Account" := GetOrCreateGLAccount('99996');
+            InventoryPostingSetup.Insert(true);
+        end else begin
+            // Update existing setup with Inventory Account if missing
+            if InventoryPostingSetup."Inventory Account" = '' then begin
+                InventoryPostingSetup."Inventory Account" := GetOrCreateGLAccount('99996');
+                InventoryPostingSetup.Modify(true);
+            end;
         end;
 
         exit('TEST');

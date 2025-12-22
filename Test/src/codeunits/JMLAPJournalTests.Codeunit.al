@@ -27,6 +27,8 @@ codeunit 50107 "JML AP Journal Tests"
             AssetJnlLine."New Holder Type"::Location, Location2.Code);
 
         // [WHEN] Posting the journal
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlPost.Run(AssetJnlLine);
 
         // [THEN] Two holder entries created (Transfer Out + Transfer In)
@@ -63,15 +65,14 @@ codeunit 50107 "JML AP Journal Tests"
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
-        // [GIVEN] A journal line trying to transfer the CHILD asset
+        // [GIVEN] A journal batch
         CreateJournalBatch(AssetJnlBatch);
-        CreateJournalLine(AssetJnlLine, AssetJnlBatch.Name, ChildAsset."No.",
-            AssetJnlLine."New Holder Type"::Location, Location2.Code);
 
-        // [WHEN] Attempting to post the journal
-        // [THEN] Error is thrown
-        asserterror AssetJnlPost.Run(AssetJnlLine);
-        Assert.ExpectedError('Cannot transfer subasset');
+        // [WHEN] Attempting to create journal line with CHILD asset
+        // [THEN] Error is thrown (TableRelation filters out subassets)
+        asserterror CreateJournalLine(AssetJnlLine, AssetJnlBatch.Name, ChildAsset."No.",
+            AssetJnlLine."New Holder Type"::Location, Location2.Code);
+        Assert.ExpectedError('cannot be found in the related table');
 
         // Cleanup
         CleanupAsset(ChildAsset);
@@ -105,6 +106,8 @@ codeunit 50107 "JML AP Journal Tests"
             AssetJnlLine."New Holder Type"::Location, Location2.Code);
 
         // [WHEN] Posting the journal
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlPost.Run(AssetJnlLine);
 
         // [THEN] Parent asset transferred to Location 2
@@ -220,6 +223,9 @@ codeunit 50107 "JML AP Journal Tests"
         // [WHEN] Posting the journal
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlPost.Run(AssetJnlLine);
 
         // [THEN] Transfer succeeds, asset moved to Address 2
@@ -268,6 +274,7 @@ codeunit 50107 "JML AP Journal Tests"
         // [WHEN] Attempting to post
         // [THEN] Error thrown
         AssetJnlPost.SetSuppressConfirmation(true);
+        AssetJnlPost.SetSuppressSuccessMessage(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
         asserterror AssetJnlPost.Run(AssetJnlLine);
         Assert.ExpectedError('must be different');
@@ -416,6 +423,7 @@ codeunit 50107 "JML AP Journal Tests"
 
         // Create Transfer Out entry
         HolderEntry.Init();
+        HolderEntry."Entry No." := GetNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := PostingDate;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer Out";
@@ -428,6 +436,7 @@ codeunit 50107 "JML AP Journal Tests"
 
         // Create Transfer In entry
         HolderEntry.Init();
+        HolderEntry."Entry No." := GetNextEntryNo();
         HolderEntry."Asset No." := Asset."No.";
         HolderEntry."Posting Date" := PostingDate;
         HolderEntry."Entry Type" := HolderEntry."Entry Type"::"Transfer In";
@@ -523,6 +532,17 @@ codeunit 50107 "JML AP Journal Tests"
     begin
         if Customer.Get(Customer."No.") then
             Customer.Delete(true);
+    end;
+
+    local procedure GetNextEntryNo(): Integer
+    var
+        HolderEntry: Record "JML AP Holder Entry";
+    begin
+        HolderEntry.LockTable();
+        if HolderEntry.FindLast() then
+            exit(HolderEntry."Entry No." + 1)
+        else
+            exit(1);
     end;
 
     local procedure CleanupShipToAddress(var ShipToAddr: Record "Ship-to Address")

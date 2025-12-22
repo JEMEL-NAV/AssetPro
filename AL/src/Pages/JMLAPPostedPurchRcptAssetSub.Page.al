@@ -68,6 +68,22 @@ page 70182367 "JML AP Pstd Purch Rcpt Ast Sub"
     {
         area(processing)
         {
+            action(UndoReceipt)
+            {
+                ApplicationArea = All;
+                Caption = 'Undo Receipt';
+                ToolTip = 'Reverse the asset transfer to allow changes to the Purchase Order before invoicing.';
+                Image = Undo;
+                Enabled = not Rec.Correction;
+
+                trigger OnAction()
+                var
+                    UndoPurchRcptAsset: Codeunit "JML AP Undo Purch Rcpt Asset";
+                begin
+                    UndoPurchRcptAsset.Run(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
             action(AssetCard)
             {
                 ApplicationArea = All;

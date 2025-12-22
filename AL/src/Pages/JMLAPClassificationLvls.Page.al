@@ -28,6 +28,11 @@ page 70182335 "JML AP Classification Lvls"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the level name.';
                 }
+                field("Value Count"; Rec."Value Count")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number of values defined for this level.';
+                }
             }
         }
         area(factboxes)
