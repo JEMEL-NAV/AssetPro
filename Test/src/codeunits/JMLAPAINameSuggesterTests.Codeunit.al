@@ -2,6 +2,8 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -32,8 +34,7 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
         ExpectedContent := 'Classification:';
         LibraryAssert.IsTrue(true, 'Classification prompt logic validated');
 
-        // Cleanup
-        CleanupTestData(Asset, Industry, ClassValue);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -343,15 +344,7 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
         end;
     end;
 
-    local procedure CleanupTestData(var Asset: Record "JML AP Asset"; var Industry: Record "JML AP Asset Industry"; var ClassValue: Record "JML AP Classification Val")
-    begin
-        if Asset.Get(Asset."No.") then
-            Asset.Delete(true);
-        if ClassValue.Get(ClassValue."Industry Code", ClassValue."Level Number", ClassValue.Code) then
-            ClassValue.Delete(true);
-        if Industry.Get(Industry.Code) then
-            Industry.Delete(true);
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 
     local procedure TestParseJsonArray(JsonText: Text; var ResultList: List of [Text]): Boolean
     var

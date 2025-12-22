@@ -2,6 +2,8 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -247,8 +249,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         LibraryAssert.IsTrue(CorrectionLine.Correction, 'Correction line should have Correction=true');
         LibraryAssert.AreEqual(OriginalLineNo, CorrectionLine."Appl.-from Asset Line No.", 'Appl.-from should reference original line');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -297,8 +298,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         HolderEntry.SetRange("Asset No.", Asset."No.");
         LibraryAssert.IsTrue(HolderEntry.Count() >= 4, 'Should have at least 4 holder entries (2 original + 2 reverse)');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -359,10 +359,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         PostedAssetLine.SetFilter("Appl.-from Asset Line No.", '>0');
         LibraryAssert.RecordCount(PostedAssetLine, 3);
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset1."No.", Vendor."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
-        CleanupAsset(Asset3."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -405,9 +402,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when trying to undo invoiced receipt');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -455,10 +450,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when asset has moved');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location1.Code);
-        CleanupLocation(Location2.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -501,8 +493,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         CorrectionLine.FindFirst();
         LibraryAssert.AreEqual(ExpectedCorrectionLineNo, CorrectionLine."Line No.", 'Correction line should be next multiple of 10000');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -511,11 +502,16 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
 
     local procedure Initialize()
     begin
+        // BC Test Framework provides automatic test isolation
+        // Each test gets a clean database state
+
         if IsInitialized then
             exit;
 
+        // One-time setup here (if needed)
+
         IsInitialized := true;
-        Commit();
+        // No Commit() - automatic test isolation handles rollback
     end;
 
     local procedure EnsureSetupExists(var AssetSetup: Record "JML AP Asset Setup")
@@ -695,42 +691,5 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         UndoPurchRcptAsset.UndoPostedAssetLine(PostedAssetLine);
     end;
 
-    local procedure CleanupTestData(PurchHeaderNo: Code[20]; AssetNo: Code[20]; VendorNo: Code[20]; LocationCode: Code[10])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        if AssetNo <> '' then begin
-            HolderEntry.SetRange("Asset No.", AssetNo);
-            HolderEntry.DeleteAll(true);
-
-            if Asset.Get(AssetNo) then
-                Asset.Delete(true);
-        end;
-
-        Commit();
-    end;
-
-    local procedure CleanupAsset(AssetNo: Code[20])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.SetRange("Asset No.", AssetNo);
-        HolderEntry.DeleteAll(true);
-
-        if Asset.Get(AssetNo) then
-            Asset.Delete(true);
-
-        Commit();
-    end;
-
-    local procedure CleanupLocation(LocationCode: Code[10])
-    var
-        Location: Record Location;
-    begin
-        if Location.Get(LocationCode) then
-            Location.Delete(true);
-        Commit();
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 }

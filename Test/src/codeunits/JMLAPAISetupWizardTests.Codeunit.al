@@ -2,6 +2,8 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -37,8 +39,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(Industry.Get(IndustryCode), 'Industry record should exist');
         LibraryAssert.AreEqual('Fleet Management', Industry.Name, 'Industry name should match');
 
-        // Cleanup
-        CleanupIndustryConfig('FLEET');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -71,8 +72,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(ClassLevel.Get('FLEET', 2), 'Level 2 should exist');
         LibraryAssert.AreEqual('Vessel Category', ClassLevel."Level Name", 'Level 2 name should match');
 
-        // Cleanup
-        CleanupIndustryConfig('FLEET');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -101,8 +101,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(ClassValue.Get('FLEET', 1, 'COMMERCIAL'), 'COMMERCIAL value should exist');
         LibraryAssert.AreEqual('Commercial Vessels', ClassValue.Description, 'Description should match');
 
-        // Cleanup
-        CleanupIndustryConfig('FLEET');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -131,8 +130,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(ChildValue.Get('FLEET', 2, 'CARGO'), 'Child value should exist');
         LibraryAssert.AreEqual('COMMERCIAL', ChildValue."Parent Value Code", 'Child should reference parent');
 
-        // Cleanup
-        CleanupIndustryConfig('FLEET');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -164,8 +162,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(AttributeDefn.FindFirst(), 'VESSELNAME attribute should exist');
         LibraryAssert.AreEqual(AttributeDefn."Data Type"::Text, AttributeDefn."Data Type", 'Should be Text type');
 
-        // Cleanup
-        CleanupIndustryConfig('FLEET');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -204,8 +201,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         AttributeDefn.SetRange("Industry Code", IndustryCode);
         LibraryAssert.IsTrue(AttributeDefn.Count >= 3, 'Should have at least 3 attributes');
 
-        // Cleanup
-        CleanupIndustryConfig(IndustryCode);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -258,8 +254,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.AreEqual(FirstLevelCount, SecondLevelCount, 'Should not create duplicate levels');
         LibraryAssert.IsTrue(Industry.Get(IndustryCode), 'Industry should still exist');
 
-        // Cleanup
-        CleanupIndustryConfig(IndustryCode);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -365,8 +360,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         LibraryAssert.IsTrue(AttributeDefn.FindFirst(), 'Boolean attribute should exist');
         LibraryAssert.AreEqual(AttributeDefn."Data Type"::Boolean, AttributeDefn."Data Type", 'Should be Boolean type');
 
-        // Cleanup
-        CleanupIndustryConfig(IndustryCode);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -453,41 +447,7 @@ codeunit 50122 "JML AP AI Setup Wizard Tests"
         exit(ConfigJson);
     end;
 
-    local procedure CleanupIndustryConfig(IndustryCode: Code[20])
-    var
-        Industry: Record "JML AP Asset Industry";
-        ClassLevel: Record "JML AP Classification Lvl";
-        ClassValue: Record "JML AP Classification Val";
-        AttributeDefn: Record "JML AP Attribute Defn";
-        CurrentLevel: Integer;
-    begin
-        // Delete in reverse order of dependencies
-        AttributeDefn.SetRange("Industry Code", IndustryCode);
-        AttributeDefn.DeleteAll(true);
-
-        // Delete classification values in reverse level order (children before parents)
-        for CurrentLevel := 10 downto 1 do begin
-            ClassValue.SetRange("Industry Code", IndustryCode);
-            ClassValue.SetRange("Level Number", CurrentLevel);
-            if ClassValue.FindSet() then
-                repeat
-                    ClassValue.Delete(true);
-                until ClassValue.Next() = 0;
-        end;
-
-        // Delete classification levels in reverse order (higher levels before lower)
-        for CurrentLevel := 10 downto 1 do begin
-            ClassLevel.SetRange("Industry Code", IndustryCode);
-            ClassLevel.SetRange("Level Number", CurrentLevel);
-            if ClassLevel.FindSet() then
-                repeat
-                    ClassLevel.Delete(true);
-                until ClassLevel.Next() = 0;
-        end;
-
-        if Industry.Get(IndustryCode) then
-            Industry.Delete(true);
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 
     [MessageHandler]
     procedure MessageHandler(Message: Text[1024])

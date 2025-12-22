@@ -2,6 +2,8 @@ codeunit 50118 "JML AP Undo Shipment Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -187,6 +189,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     // ============================================================================
 
     [Test]
+    [HandlerFunctions('MessageHandler')]
     procedure TestUndoShipment_SingleAsset_CreatesCorrectionLine()
     var
         Customer: Record Customer;
@@ -239,11 +242,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         SalesAssetLine.Get(SalesAssetLine."Document Type", SalesAssetLine."Document No.", SalesAssetLine."Line No.");
         LibraryAssert.AreEqual(0, SalesAssetLine."Quantity Shipped", 'Quantity Shipped should be reduced to 0');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
+    [HandlerFunctions('MessageHandler')]
     procedure TestUndoShipment_SingleAsset_ReversesHolderTransfer()
     var
         Customer: Record Customer;
@@ -298,11 +301,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         PostedAssetLine.FindFirst();
         LibraryAssert.AreNotEqual(OriginalTransactionNo, PostedAssetLine."Transaction No.", 'Correction should have new transaction no.');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
+    [HandlerFunctions('MessageHandler')]
     procedure TestUndoShipment_MultipleAssets_AllReversed()
     var
         Customer: Record Customer;
@@ -368,10 +371,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         LibraryAssert.AreEqual("JML AP Holder Type"::Location, Asset2."Current Holder Type", 'Asset2 should be back at location');
         LibraryAssert.AreEqual("JML AP Holder Type"::Location, Asset3."Current Holder Type", 'Asset3 should be back at location');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset1."No.", Customer."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
-        CleanupAsset(Asset3."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -431,9 +431,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         PostedAssetLine.Get(PostedAssetLine."Document No.", PostedAssetLine."Line No.");
         LibraryAssert.IsFalse(PostedAssetLine.Correction, 'Original line should not be marked as correction');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(OriginalSalesOrderNo, Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -492,13 +490,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         PostedAssetLine.Get(PostedAssetLine."Document No.", PostedAssetLine."Line No.");
         LibraryAssert.IsFalse(PostedAssetLine.Correction, 'Original line should not be marked as correction');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location1.Code);
-        CleanupLocation(Location2.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
+    [HandlerFunctions('MessageHandler')]
     procedure TestUndoShipment_CorrectionLineNumbers_CalculatedCorrectly()
     var
         Customer: Record Customer;
@@ -556,9 +552,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         PostedAssetLine.SetRange("Document No.", PostedShptNo);
         LibraryAssert.RecordCount(PostedAssetLine, 3);
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset1."No.", Customer."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -567,11 +561,16 @@ codeunit 50118 "JML AP Undo Shipment Tests"
 
     local procedure Initialize()
     begin
+        // BC Test Framework provides automatic test isolation
+        // Each test gets a clean database state
+
         if IsInitialized then
             exit;
 
+        // One-time setup here (if needed)
+
         IsInitialized := true;
-        Commit();
+        // No Commit() - automatic test isolation handles rollback
     end;
 
     local procedure UndoSalesShipmentAssetLine(var PostedAssetLine: Record "JML AP Pstd Sales Shpt Ast Ln")
@@ -733,42 +732,5 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         end;
     end;
 
-    local procedure CleanupTestData(SalesHeaderNo: Code[20]; AssetNo: Code[20]; CustomerNo: Code[20]; LocationCode: Code[10])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        if AssetNo <> '' then begin
-            HolderEntry.SetRange("Asset No.", AssetNo);
-            HolderEntry.DeleteAll(true);
-
-            if Asset.Get(AssetNo) then
-                Asset.Delete(true);
-        end;
-
-        Commit();
-    end;
-
-    local procedure CleanupAsset(AssetNo: Code[20])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.SetRange("Asset No.", AssetNo);
-        HolderEntry.DeleteAll(true);
-
-        if Asset.Get(AssetNo) then
-            Asset.Delete(true);
-
-        Commit();
-    end;
-
-    local procedure CleanupLocation(LocationCode: Code[10])
-    var
-        Location: Record Location;
-    begin
-        if Location.Get(LocationCode) then
-            Location.Delete(true);
-        Commit();
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 }

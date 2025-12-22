@@ -2,6 +2,8 @@ codeunit 50123 "JML AP Sales Posting Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -64,8 +66,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         HolderEntry.SetRange("Transaction No.", PostedAssetLine."Transaction No.");
         LibraryAssert.RecordCount(HolderEntry, 2);
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -128,10 +129,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         HolderEntry.SetFilter("Asset No.", '%1|%2|%3', Asset1."No.", Asset2."No.", Asset3."No.");
         LibraryAssert.RecordCount(HolderEntry, 6);
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset1."No.", Customer."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
-        CleanupAsset(Asset3."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -174,8 +172,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.AreEqual(PostedShptHeader."Posting Date", PostedAssetLine."Posting Date", 'Posting date should match');
         LibraryAssert.IsTrue(PostedAssetLine."Transaction No." > 0, 'Transaction no. should be assigned');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -234,8 +231,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.AreEqual(Customer."No.", TransferInEntry."Holder Code", 'Transfer In holder code should be customer');
         LibraryAssert.AreEqual(TransactionNo, TransferInEntry."Transaction No.", 'Transaction numbers should match');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -296,9 +292,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.AreEqual(0, SalesAssetLine2."Quantity Shipped", 'Line 2 quantity shipped should be 0');
         LibraryAssert.AreEqual(0, SalesAssetLine2."Quantity to Ship", 'Line 2 quantity to ship should be 0');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset1."No.", Customer."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -348,10 +342,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.AreEqual("JML AP Holder Type"::Location, Asset."Current Holder Type", 'Asset should still be at location');
         LibraryAssert.AreEqual(Location1.Code, Asset."Current Holder Code", 'Asset should still be at original location');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location1.Code);
-        CleanupLocation(Location2.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -389,9 +380,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error for blocked asset');
         LibraryAssert.IsTrue(StrPos(LowerCase(GetLastErrorText()), 'blocked') > 0, 'Error should mention blocked');
 
-        // Cleanup (SalesHeader wasn't created due to error, so just clean up master data)
-        ClearLastError();
-        CleanupTestData('', Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -429,10 +418,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error for subasset transfer');
 
-        // Cleanup (SalesHeader wasn't created due to error)
-        ClearLastError();
-        CleanupTestData('', ChildAsset."No.", Customer."No.", Location.Code);
-        CleanupAsset(ParentAsset."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -466,9 +452,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error for non-existent asset');
         LibraryAssert.IsTrue(StrPos(LowerCase(GetLastErrorText()), 'cannot be found') > 0, 'Error should mention asset cannot be found');
 
-        // Cleanup (Asset line wasn't created due to error)
-        ClearLastError();
-        CleanupTestData(SalesHeader."No.", '', Customer."No.", '');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -500,8 +484,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         PostedAssetLine.SetRange("Document No.", PostedShptNo);
         LibraryAssert.RecordCount(PostedAssetLine, 0);
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", '', Customer."No.", '');
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -557,8 +540,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         HolderEntry.SetRange("Transaction No.", PostedAssetLine."Transaction No.");
         LibraryAssert.RecordCount(HolderEntry, 2);
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -598,9 +580,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when asset not at customer');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -646,8 +626,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         LibraryAssert.AreEqual(ReturnRcptHeader."Posting Date", PostedAssetLine."Posting Date", 'Posting date should match');
         LibraryAssert.IsTrue(PostedAssetLine."Transaction No." > 0, 'Transaction no. should be assigned');
 
-        // Cleanup
-        CleanupTestData(SalesHeader."No.", Asset."No.", Customer."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -656,11 +635,16 @@ codeunit 50123 "JML AP Sales Posting Tests"
 
     local procedure Initialize()
     begin
+        // BC Test Framework provides automatic test isolation
+        // Each test gets a clean database state
+
         if IsInitialized then
             exit;
 
+        // One-time setup here (if needed)
+
         IsInitialized := true;
-        Commit();
+        // No Commit() - automatic test isolation handles rollback
     end;
 
     local procedure EnsureSetupExists(var AssetSetup: Record "JML AP Asset Setup")
@@ -766,65 +750,7 @@ codeunit 50123 "JML AP Sales Posting Tests"
         exit('');
     end;
 
-    local procedure CleanupTestData(SalesHeaderNo: Code[20]; AssetNo: Code[20]; CustomerNo: Code[20]; LocationCode: Code[10])
-    var
-        SalesHeader: Record "Sales Header";
-        SalesAssetLine: Record "JML AP Sales Asset Line";
-        Asset: Record "JML AP Asset";
-        Customer: Record Customer;
-        Location: Record Location;
-        HolderEntry: Record "JML AP Holder Entry";
-        ReleaseSalesDoc: Codeunit "Release Sales Document";
-    begin
-        // Note: We don't delete posted Sales Headers/Lines as BC prevents this by design
-        // Posted documents remain in the database and are archived
-        // Tests should focus on verifying posted results, not cleanup
-        // Only clean up master data (assets, customers, locations, etc.)
-
-        // Delete asset and holder entries
-        if AssetNo <> '' then begin
-            HolderEntry.SetRange("Asset No.", AssetNo);
-            HolderEntry.DeleteAll(true);
-
-            if Asset.Get(AssetNo) then
-                Asset.Delete(true);
-        end;
-
-        // Don't delete customers with outstanding orders - BC prevents this
-        // if CustomerNo <> '' then
-        //     if Customer.Get(CustomerNo) then
-        //         Customer.Delete(true);
-
-        // Don't delete locations with inventory ledger entries - BC prevents this
-        // if LocationCode <> '' then
-        //     if Location.Get(LocationCode) then
-        //         Location.Delete(true);
-
-        Commit();
-    end;
-
-    local procedure CleanupAsset(AssetNo: Code[20])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.SetRange("Asset No.", AssetNo);
-        HolderEntry.DeleteAll(true);
-
-        if Asset.Get(AssetNo) then
-            Asset.Delete(true);
-
-        Commit();
-    end;
-
-    local procedure CleanupLocation(LocationCode: Code[10])
-    var
-        Location: Record Location;
-    begin
-        if Location.Get(LocationCode) then
-            Location.Delete(true);
-        Commit();
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 
     local procedure CreateTestItem(var Item: Record Item; ItemNo: Code[20])
     var

@@ -2,6 +2,8 @@ codeunit 50116 "JML AP Purch Posting Tests"
 {
     Subtype = Test;
     TestPermissions = Disabled;
+    // Note: BC Test Framework provides automatic test isolation
+    // Each test runs in isolated transaction that rolls back automatically
 
     var
         LibraryAssert: Codeunit "Library Assert";
@@ -64,8 +66,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         HolderEntry.SetRange("Transaction No.", PostedAssetLine."Transaction No.");
         LibraryAssert.RecordCount(HolderEntry, 2);
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -131,10 +132,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         HolderEntry.SetFilter("Asset No.", '%1|%2|%3', Asset1."No.", Asset2."No.", Asset3."No.");
         LibraryAssert.RecordCount(HolderEntry, 6);
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset1."No.", Vendor."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
-        CleanupAsset(Asset3."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -172,8 +170,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.IsTrue(PostedAssetLine."Transaction No." > 0, 'Transaction No. should be assigned');
         LibraryAssert.IsFalse(PostedAssetLine.Correction, 'Should not be a correction line');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -233,8 +230,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.IsTrue(TransferOutFound, 'Transfer Out entry should exist');
         LibraryAssert.IsTrue(TransferInFound, 'Transfer In entry should exist');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -289,9 +285,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         PostedAssetLine.FindFirst();
         LibraryAssert.AreEqual(Asset1."No.", PostedAssetLine."Asset No.", 'Posted line should be for first asset');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset1."No.", Vendor."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -342,9 +336,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.AreEqual("JML AP Holder Type"::Location, Asset."Current Holder Type", 'Asset should still be at Location');
         LibraryAssert.AreEqual(Location.Code, Asset."Current Holder Code", 'Asset should still be at original location');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -389,9 +381,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when asset is blocked');
         LibraryAssert.IsTrue(StrPos(LowerCase(GetLastErrorText()), 'blocked') > 0, 'Error should mention blocked');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -436,10 +426,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when adding subasset');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Subasset."No.", Vendor."No.", Location.Code);
-        CleanupAsset(ParentAsset."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -478,9 +465,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when asset does not exist');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", '', Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -513,8 +498,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.IsTrue(PostedRcptNo <> '', 'Posted receipt number should be assigned');
         LibraryAssert.IsTrue(PostedRcptHeader.Get(PostedRcptNo), 'Posted receipt header should exist');
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", '', Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -568,8 +552,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         HolderEntry.SetRange("Transaction No.", PostedAssetLine."Transaction No.");
         LibraryAssert.RecordCount(HolderEntry, 2);
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -618,9 +601,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
         LibraryAssert.AreEqual("JML AP Holder Type"::Customer, Asset."Current Holder Type", 'Asset should still be at Customer');
         LibraryAssert.AreEqual(Customer."No.", Asset."Current Holder Code", 'Asset should still be at customer');
 
-        // Cleanup
-        ClearLastError();
-        CleanupTestData(PurchHeader."No.", Asset."No.", Vendor."No.", Location.Code);
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     [Test]
@@ -667,9 +648,7 @@ codeunit 50116 "JML AP Purch Posting Tests"
             LibraryAssert.AreEqual(Location.Code, PostedAssetLine."Location Code", 'Location code should match');
         until PostedAssetLine.Next() = 0;
 
-        // Cleanup
-        CleanupTestData(PurchHeader."No.", Asset1."No.", Vendor."No.", Location.Code);
-        CleanupAsset(Asset2."No.");
+        // No cleanup needed - automatic test isolation handles rollback
     end;
 
     // ============================================================================
@@ -678,11 +657,16 @@ codeunit 50116 "JML AP Purch Posting Tests"
 
     local procedure Initialize()
     begin
+        // BC Test Framework provides automatic test isolation
+        // Each test gets a clean database state
+
         if IsInitialized then
             exit;
 
+        // One-time setup here (if needed)
+
         IsInitialized := true;
-        Commit();
+        // No Commit() - automatic test isolation handles rollback
     end;
 
     local procedure EnsureSetupExists(var AssetSetup: Record "JML AP Asset Setup")
@@ -919,40 +903,5 @@ codeunit 50116 "JML AP Purch Posting Tests"
         end;
     end;
 
-    local procedure CleanupTestData(PurchHeaderNo: Code[20]; AssetNo: Code[20]; VendorNo: Code[20]; LocationCode: Code[10])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        // Note: We don't delete posted Purchase Headers/Lines as BC prevents this by design
-        // Posted documents remain in the database
-        // Only clean up master data (assets, vendors, locations, etc.)
-
-        // Delete asset and holder entries
-        if AssetNo <> '' then begin
-            HolderEntry.SetRange("Asset No.", AssetNo);
-            HolderEntry.DeleteAll(true);
-
-            if Asset.Get(AssetNo) then
-                Asset.Delete(true);
-        end;
-
-        // Don't delete vendors/locations as they may be in use
-
-        Commit();
-    end;
-
-    local procedure CleanupAsset(AssetNo: Code[20])
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.SetRange("Asset No.", AssetNo);
-        HolderEntry.DeleteAll(true);
-
-        if Asset.Get(AssetNo) then
-            Asset.Delete(true);
-
-        Commit();
-    end;
+    // Cleanup procedures removed - framework handles test isolation!
 }
