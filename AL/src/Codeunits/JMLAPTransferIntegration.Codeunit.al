@@ -35,9 +35,6 @@ codeunit 70182400 "JML AP Transfer Integration"
         if TransferAssetLine.IsEmpty() then
             exit;
 
-        // Get next transaction number for this shipment
-        TransactionNo := GetNextTransactionNo();
-
         // Post each asset transfer via Asset Journal
         if TransferAssetLine.FindSet(true) then
             repeat
@@ -81,38 +78,25 @@ codeunit 70182400 "JML AP Transfer Integration"
             until TransferAssetLine.Next() = 0;
     end;
 
-    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; TransactionNo: Integer)
+    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; var TransactionNo: Integer)
     var
-        AssetJournalBatch: Record "JML AP Asset Journal Batch";
-        AssetJournalLine: Record "JML AP Asset Journal Line";
-        AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
+        TempAssetJournalLine: Record "JML AP Asset Journal Line" temporary;
+        AssetJnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
     begin
-        // Get or create system journal batch
-        if not AssetJournalBatch.Get('TRANS-POST') then begin
-            AssetJournalBatch.Init();
-            AssetJournalBatch.Name := 'TRANS-POST';
-            AssetJournalBatch.Description := 'System batch for transfer document posting';
-            AssetJournalBatch.Insert();
-        end;
-
-        // Delete any existing lines
-        AssetJournalLine.SetRange("Journal Batch Name", AssetJournalBatch.Name);
-        AssetJournalLine.DeleteAll();
-
         // Create journal line
-        AssetJournalLine.Init();
-        AssetJournalLine."Journal Batch Name" := AssetJournalBatch.Name;
-        AssetJournalLine."Line No." := 10000;
-        AssetJournalLine."Posting Date" := PostingDate;
-        AssetJournalLine."Document No." := DocumentNo;
-        AssetJournalLine."Asset No." := Asset."No.";
-        AssetJournalLine."New Holder Type" := NewHolderType;
-        AssetJournalLine."New Holder Code" := NewHolderCode;
-        AssetJournalLine."Reason Code" := ReasonCode;
-        AssetJournalLine.Insert(true);
+        TempAssetJournalLine.Init();
+        TempAssetJournalLine."Journal Batch Name" := '';
+        TempAssetJournalLine."Line No." := 10000;
+        TempAssetJournalLine."Posting Date" := PostingDate;
+        TempAssetJournalLine."Document No." := DocumentNo;
+        TempAssetJournalLine."Asset No." := Asset."No.";
+        TempAssetJournalLine."New Holder Type" := NewHolderType;
+        TempAssetJournalLine."New Holder Code" := NewHolderCode;
+        TempAssetJournalLine."Reason Code" := ReasonCode;
 
         // Post journal
-        AssetJnlPost.Run(AssetJournalLine);
+        AssetJnlPostLine.Run(TempAssetJournalLine);
+        TransactionNo := AssetJnlPostLine.GetTransactionNo();
     end;
 
     local procedure CreatePostedShipmentAssetLine(TransferAssetLine: Record "JML AP Transfer Asset Line"; TransShptHeader: Record "Transfer Shipment Header"; TransferHeader: Record "Transfer Header"; TransactionNo: Integer)
@@ -148,16 +132,5 @@ codeunit 70182400 "JML AP Transfer Integration"
         PostedAssetLine."Posting Date" := TransShptHeader."Posting Date";
         PostedAssetLine."Transaction No." := TransactionNo;
         PostedAssetLine.Insert(true);
-    end;
-
-    local procedure GetNextTransactionNo(): Integer
-    var
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.LockTable();
-        if HolderEntry.FindLast() then
-            exit(HolderEntry."Transaction No." + 1)
-        else
-            exit(1);
     end;
 }

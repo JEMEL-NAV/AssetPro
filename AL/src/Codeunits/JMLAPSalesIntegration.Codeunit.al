@@ -250,6 +250,7 @@ codeunit 70182398 "JML AP Sales Integration"
     begin
         // Create journal line
         TempAssetJournalLine.Init();
+        TempAssetJournalLine."Journal Batch Name" := '';
         TempAssetJournalLine."Line No." := 10000;
         TempAssetJournalLine."Posting Date" := PostingDate;
         TempAssetJournalLine."Document No." := DocumentNo;
@@ -259,7 +260,6 @@ codeunit 70182398 "JML AP Sales Integration"
         TempAssetJournalLine."Reason Code" := ReasonCode;
 
         // Post journal
-
         AssetJnlPostLine.Run(TempAssetJournalLine);
         TransactionNo := AssetJnlPostLine.GetTransactionNo();
     end;

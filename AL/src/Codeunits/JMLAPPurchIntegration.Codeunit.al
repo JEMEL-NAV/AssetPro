@@ -47,9 +47,6 @@ codeunit 70182399 "JML AP Purch. Integration"
         // Determine location (from header Location Code)
         LocationCode := PurchHeader."Location Code";
 
-        // Get next transaction number for this receipt
-        TransactionNo := GetNextTransactionNo();
-
         // Post each asset transfer via Asset Journal
         if PurchAssetLine.FindSet(true) then
             repeat
@@ -91,7 +88,6 @@ codeunit 70182399 "JML AP Purch. Integration"
             exit;
 
         LocationCode := PurchHeader."Location Code";
-        TransactionNo := GetNextTransactionNo();
 
         if PurchAssetLine.FindSet(true) then
             repeat
@@ -128,8 +124,6 @@ codeunit 70182399 "JML AP Purch. Integration"
         if PurchAssetLine.IsEmpty() then
             exit;
 
-        TransactionNo := GetNextTransactionNo();
-
         // Post each asset return
         if PurchAssetLine.FindSet(true) then
             repeat
@@ -155,13 +149,14 @@ codeunit 70182399 "JML AP Purch. Integration"
             until PurchAssetLine.Next() = 0;
     end;
 
-    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; TransactionNo: Integer)
+    local procedure PostAssetTransferViaJournal(var Asset: Record "JML AP Asset"; NewHolderType: Enum "JML AP Holder Type"; NewHolderCode: Code[20]; DocumentNo: Code[20]; ReasonCode: Code[10]; PostingDate: Date; var TransactionNo: Integer)
     var
         TempAssetJournalLine: Record "JML AP Asset Journal Line" temporary;
         AssetJnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
     begin
         // Create journal line
         TempAssetJournalLine.Init();
+        TempAssetJournalLine."Journal Batch Name" := '';
         TempAssetJournalLine."Line No." := 10000;
         TempAssetJournalLine."Posting Date" := PostingDate;
         TempAssetJournalLine."Document No." := DocumentNo;
@@ -170,8 +165,9 @@ codeunit 70182399 "JML AP Purch. Integration"
         TempAssetJournalLine."New Holder Code" := NewHolderCode;
         TempAssetJournalLine."Reason Code" := ReasonCode;
 
-        // Post journal        
+        // Post journal
         AssetJnlPostLine.Run(TempAssetJournalLine);
+        TransactionNo := AssetJnlPostLine.GetTransactionNo();
     end;
 
     local procedure CreatePostedReceiptAssetLine(PurchAssetLine: Record "JML AP Purch. Asset Line"; PurchRcptHeader: Record "Purch. Rcpt. Header"; PurchHeader: Record "Purchase Header"; LocationCode: Code[10]; TransactionNo: Integer)
@@ -236,16 +232,5 @@ codeunit 70182399 "JML AP Purch. Integration"
         PostedAssetLine."Posting Date" := ReturnShptHeader."Posting Date";
         PostedAssetLine."Transaction No." := TransactionNo;
         PostedAssetLine.Insert(true);
-    end;
-
-    local procedure GetNextTransactionNo(): Integer
-    var
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.LockTable();
-        if HolderEntry.FindLast() then
-            exit(HolderEntry."Transaction No." + 1)
-        else
-            exit(1);
     end;
 }
