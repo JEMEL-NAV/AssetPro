@@ -7,6 +7,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [MessageHandler]
@@ -29,7 +30,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Posted Purchase Receipt Asset Line has Correction field
         // [GIVEN] A Posted Purchase Receipt Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [WHEN] Setting Correction field
@@ -46,7 +47,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Posted Purchase Receipt Asset Line has Appl.-from Asset Line No. field
         // [GIVEN] A Posted Purchase Receipt Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [WHEN] Setting Appl.-from Asset Line No. field
@@ -63,7 +64,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Undo Purchase Receipt Asset codeunit compiles
         // [GIVEN] The undo codeunit
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Codeunit is accessible
         // This test validates the codeunit compiles correctly
@@ -78,7 +79,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Correction line number is calculated between existing lines
         // [GIVEN] Two posted asset lines with line numbers 10000 and 20000
-        Initialize();
+        TestLibrary.Initialize();
 
         PostedAssetLine1.Init();
         PostedAssetLine1."Document No." := 'TEST-PURCH-001';
@@ -110,7 +111,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Correction field defaults to false
         // [GIVEN] A new Posted Purchase Receipt Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [THEN] Correction field defaults to false
@@ -124,7 +125,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Appl.-from Asset Line No. field defaults to 0
         // [GIVEN] A new Posted Purchase Receipt Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [THEN] Appl.-from Asset Line No. field defaults to 0
@@ -138,7 +139,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] New fields can be modified programmatically
         // [GIVEN] A Posted Purchase Receipt Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
         PostedAssetLine."Document No." := 'TEST-PURCH-002';
         PostedAssetLine."Line No." := 10000;
@@ -166,7 +167,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Posted Purchase Receipt Asset Subpage has Undo action
         // [GIVEN] The Posted Purchase Receipt Asset Subpage
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Page compiles with Undo Receipt action (instantiation is sufficient)
         // Note: Run() removed to avoid UI interaction in automated tests
@@ -179,7 +180,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Posted Sales Shipment Asset Subpage has Undo action
         // [GIVEN] The Posted Sales Shipment Asset Subpage
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Page compiles with Undo Shipment action (instantiation is sufficient)
         // Note: Run() removed to avoid UI interaction in automated tests
@@ -193,7 +194,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     begin
         // [SCENARIO] Both undo codeunits follow the same pattern
         // [GIVEN] Both Sales and Purchase undo codeunits
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Both codeunits compile and are accessible
         // This validates consistent implementation pattern
@@ -221,11 +222,11 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Undo Purchase Receipt creates correction line with Correction=true and Appl.-from set
 
         // [GIVEN] Posted Purchase Receipt with one asset
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U01');
-        CreateTestLocation(Location, 'TEST-LOCU1');
-        CreateTestAsset(Asset, 'TEST-ASSET-U01', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U01');
+        Location := TestLibrary.CreateTestLocation('Test Location U1');
+        Asset := TestLibrary.CreateAssetAtVendor('Test Asset U01', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
 
@@ -270,11 +271,11 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Undo Purchase Receipt reverses asset holder transfer (Location back to Vendor)
 
         // [GIVEN] Posted Purchase Receipt with asset transferred from Vendor to Location
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U02');
-        CreateTestLocation(Location, 'TEST-LOCU2');
-        CreateTestAsset(Asset, 'TEST-ASSET-U02', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U02');
+        Location := TestLibrary.CreateTestLocation('Test Location U2');
+        Asset := TestLibrary.CreateAssetAtVendor('Test Asset U02', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
 
@@ -317,13 +318,13 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Undo Purchase Receipt with 3 assets - all reversed
 
         // [GIVEN] Posted Purchase Receipt with 3 assets
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U03');
-        CreateTestLocation(Location, 'TEST-LOCU3');
-        CreateTestAsset(Asset1, 'TEST-ASSET-U03', "JML AP Holder Type"::Vendor, Vendor."No.");
-        CreateTestAsset(Asset2, 'TEST-ASSET-U04', "JML AP Holder Type"::Vendor, Vendor."No.");
-        CreateTestAsset(Asset3, 'TEST-ASSET-U05', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U03');
+        Location := TestLibrary.CreateTestLocation('Test Location U3');
+        Asset1 := TestLibrary.CreateAssetAtVendor('Test Asset U03', Vendor."No.");
+        Asset2 := TestLibrary.CreateAssetAtVendor('Test Asset U04', Vendor."No.");
+        Asset3 := TestLibrary.CreateAssetAtVendor('Test Asset U05', Vendor."No.");
 
         CreatePurchaseOrderHeader(PurchHeader, Vendor."No.");
         PurchHeader."Location Code" := Location.Code;
@@ -378,11 +379,11 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Cannot undo receipt that has been invoiced
 
         // [GIVEN] Posted Purchase Receipt AND Invoice
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U04');
-        CreateTestLocation(Location, 'TEST-LOCU4');
-        CreateTestAsset(Asset, 'TEST-ASSET-U06', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U04');
+        Location := TestLibrary.CreateTestLocation('Test Location U4');
+        Asset := TestLibrary.CreateAssetAtVendor('Test Asset U06', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
 
         // Post Receipt + Invoice together
@@ -421,12 +422,12 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Cannot undo receipt if asset has moved to different location
 
         // [GIVEN] Posted Purchase Receipt (Vendor → Location1)
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U05');
-        CreateTestLocation(Location1, 'TEST-LOCU5');
-        CreateTestLocation(Location2, 'TEST-LOCU6');
-        CreateTestAsset(Asset, 'TEST-ASSET-U07', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U05');
+        Location1 := TestLibrary.CreateTestLocation('Test Location U5');
+        Location2 := TestLibrary.CreateTestLocation('Test Location U6');
+        Asset := TestLibrary.CreateAssetAtVendor('Test Asset U07', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location1.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
 
@@ -471,11 +472,11 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         // [SCENARIO] Correction line number is next multiple of 10000
 
         // [GIVEN] Posted Purchase Receipt with asset line
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestVendor(Vendor, 'TEST-VEND-U06');
-        CreateTestLocation(Location, 'TEST-LOCU7');
-        CreateTestAsset(Asset, 'TEST-ASSET-U08', "JML AP Holder Type"::Vendor, Vendor."No.");
+        Vendor := TestLibrary.CreateTestVendor('Test Vendor U06');
+        Location := TestLibrary.CreateTestLocation('Test Location U7');
+        Asset := TestLibrary.CreateAssetAtVendor('Test Asset U08', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
 
@@ -500,73 +501,11 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
     // Helper Procedures
     // ============================================================================
 
-    local procedure Initialize()
-    begin
-        // BC Test Framework provides automatic test isolation
-        // Each test gets a clean database state
-
-        if IsInitialized then
-            exit;
-
-        // One-time setup here (if needed)
-
-        IsInitialized := true;
-        // No Commit() - automatic test isolation handles rollback
-    end;
-
     local procedure EnsureSetupExists(var AssetSetup: Record "JML AP Asset Setup")
     begin
         if not AssetSetup.Get() then begin
             AssetSetup.Init();
             AssetSetup.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestVendor(var Vendor: Record Vendor; VendorNo: Code[20])
-    begin
-        if not Vendor.Get(VendorNo) then begin
-            Vendor.Init();
-            Vendor."No." := VendorNo;
-            Vendor.Name := 'Test Vendor ' + VendorNo;
-            Vendor."Gen. Bus. Posting Group" := 'DOMESTIC';
-            Vendor."Vendor Posting Group" := 'DOMESTIC';
-            Vendor.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestLocation(var Location: Record Location; LocationCode: Code[10])
-    var
-        InventoryPostingSetup: Record "Inventory Posting Setup";
-    begin
-        if not Location.Get(LocationCode) then begin
-            Location.Init();
-            Location.Code := LocationCode;
-            Location.Name := 'Test Location ' + LocationCode;
-            Location.Insert(true);
-        end;
-
-        if not InventoryPostingSetup.Get(LocationCode, 'RESALE') then begin
-            InventoryPostingSetup.Init();
-            InventoryPostingSetup."Location Code" := LocationCode;
-            InventoryPostingSetup."Invt. Posting Group Code" := 'RESALE';
-            InventoryPostingSetup."Inventory Account" := '2130';
-            InventoryPostingSetup.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; AssetNo: Code[20]; HolderType: Enum "JML AP Holder Type"; HolderCode: Code[20])
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-    begin
-        EnsureSetupExists(AssetSetup);
-
-        if not Asset.Get(AssetNo) then begin
-            Asset.Init();
-            Asset."No." := AssetNo;
-            Asset.Description := 'Test Asset ' + AssetNo;
-            Asset."Current Holder Type" := HolderType;
-            Asset."Current Holder Code" := HolderCode;
-            Asset.Insert(true);
         end;
     end;
 
@@ -639,7 +578,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         PurchLine: Record "Purchase Line";
         Item: Record Item;
     begin
-        CreateTestItem(Item, 'TEST-ITEM-U');
+        Item := TestLibrary.CreateTestItem('Test Item U');
 
         PurchLine.Init();
         PurchLine."Document Type" := PurchHeader."Document Type";
@@ -650,38 +589,6 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         PurchLine.Validate(Quantity, 1);
         PurchLine.Validate("Qty. to Receive", 1);
         PurchLine.Insert(true);
-    end;
-
-    local procedure CreateTestItem(var Item: Record Item; ItemNo: Code[20])
-    var
-        ItemUnitOfMeasure: Record "Item Unit of Measure";
-        UnitOfMeasure: Record "Unit of Measure";
-    begin
-        if not Item.Get(ItemNo) then begin
-            if not UnitOfMeasure.Get('PCS') then begin
-                UnitOfMeasure.Init();
-                UnitOfMeasure.Code := 'PCS';
-                UnitOfMeasure.Description := 'Pieces';
-                UnitOfMeasure.Insert(true);
-            end;
-
-            Item.Init();
-            Item."No." := ItemNo;
-            Item.Description := 'Test Item';
-            Item.Type := Item.Type::Inventory;
-            Item."Base Unit of Measure" := 'PCS';
-            Item."Gen. Prod. Posting Group" := 'RETAIL';
-            Item."Inventory Posting Group" := 'RESALE';
-            Item.Insert(true);
-
-            if not ItemUnitOfMeasure.Get(Item."No.", 'PCS') then begin
-                ItemUnitOfMeasure.Init();
-                ItemUnitOfMeasure."Item No." := Item."No.";
-                ItemUnitOfMeasure.Code := 'PCS';
-                ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
-                ItemUnitOfMeasure.Insert(true);
-            end;
-        end;
     end;
 
     local procedure UndoPurchaseReceiptAssetLine(var PostedAssetLine: Record "JML AP Pstd Purch Rcpt Ast Ln")

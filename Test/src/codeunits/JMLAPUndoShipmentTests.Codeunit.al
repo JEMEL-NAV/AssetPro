@@ -7,6 +7,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [ConfirmHandler]
@@ -29,7 +30,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Posted Sales Shipment Asset Line has Correction field
         // [GIVEN] A Posted Sales Shipment Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [WHEN] Setting Correction field
@@ -46,7 +47,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Posted Sales Shipment Asset Line has Appl.-from Asset Line No. field
         // [GIVEN] A Posted Sales Shipment Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [WHEN] Setting Appl.-from Asset Line No. field
@@ -63,7 +64,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Undo Sales Shipment Asset codeunit compiles
         // [GIVEN] The undo codeunit
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Codeunit is accessible
         // This test validates the codeunit compiles correctly
@@ -78,7 +79,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Correction line number is calculated between existing lines
         // [GIVEN] Two posted asset lines with line numbers 10000 and 20000
-        Initialize();
+        TestLibrary.Initialize();
 
         PostedAssetLine1.Init();
         PostedAssetLine1."Document No." := 'TEST-001';
@@ -110,7 +111,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Correction field defaults to false
         // [GIVEN] A new Posted Sales Shipment Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [THEN] Correction field defaults to false
@@ -124,7 +125,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Appl.-from Asset Line No. field defaults to 0
         // [GIVEN] A new Posted Sales Shipment Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
 
         // [THEN] Appl.-from Asset Line No. field defaults to 0
@@ -138,7 +139,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] New fields are marked as not editable
         // [GIVEN] A Posted Sales Shipment Asset Line record
-        Initialize();
+        TestLibrary.Initialize();
         PostedAssetLine.Init();
         PostedAssetLine."Document No." := 'TEST-002';
         PostedAssetLine."Line No." := 10000;
@@ -166,7 +167,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Posted Sales Shipment Asset Subpage has Undo Shipment action
         // [GIVEN] The Posted Sales Shipment Asset Subpage
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Page compiles with Undo Shipment action
     end;
@@ -179,7 +180,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     begin
         // [SCENARIO] Both undo codeunits follow the same pattern
         // [GIVEN] Both Sales and Purchase undo codeunits
-        Initialize();
+        TestLibrary.Initialize();
 
         // [THEN] Both codeunits compile and are accessible
     end;
@@ -206,11 +207,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Undo shipment creates correction line with proper fields
 
         // [GIVEN] A posted sales shipment with 1 asset
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-001');
-        CreateTestLocation(Location, 'UNDO-LOC1');
-        CreateTestAsset(Asset, 'UNDO-ASSET-001', "JML AP Holder Type"::Location, Location.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 001');
+        Location := TestLibrary.CreateTestLocation('Undo Location 1');
+        Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 001', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
 
@@ -264,11 +265,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Undo shipment reverses asset holder transfer
 
         // [GIVEN] A posted sales shipment with 1 asset (Location → Customer)
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-002');
-        CreateTestLocation(Location, 'UNDO-LOC2');
-        CreateTestAsset(Asset, 'UNDO-ASSET-002', "JML AP Holder Type"::Location, Location.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 002');
+        Location := TestLibrary.CreateTestLocation('Undo Location 2');
+        Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 002', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
 
@@ -321,13 +322,13 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Undo shipment with multiple assets reverses all
 
         // [GIVEN] A posted sales shipment with 3 assets
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-003');
-        CreateTestLocation(Location, 'UNDO-LOC3');
-        CreateTestAsset(Asset1, 'UNDO-ASSET-003', "JML AP Holder Type"::Location, Location.Code);
-        CreateTestAsset(Asset2, 'UNDO-ASSET-004', "JML AP Holder Type"::Location, Location.Code);
-        CreateTestAsset(Asset3, 'UNDO-ASSET-005', "JML AP Holder Type"::Location, Location.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 003');
+        Location := TestLibrary.CreateTestLocation('Undo Location 3');
+        Asset1 := TestLibrary.CreateAssetAtLocation('Undo Asset 003', Location.Code);
+        Asset2 := TestLibrary.CreateAssetAtLocation('Undo Asset 004', Location.Code);
+        Asset3 := TestLibrary.CreateAssetAtLocation('Undo Asset 005', Location.Code);
 
         CreateSalesOrderHeader(SalesHeader, Customer."No.");
         SalesHeader."Location Code" := Location.Code;
@@ -391,11 +392,11 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Cannot undo shipment after order is invoiced and deleted
 
         // [GIVEN] A posted sales shipment
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-004');
-        CreateTestLocation(Location, 'UNDO-LOC4');
-        CreateTestAsset(Asset, 'UNDO-ASSET-006', "JML AP Holder Type"::Location, Location.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 004');
+        Location := TestLibrary.CreateTestLocation('Undo Location 4');
+        Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 006', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         OriginalSalesOrderNo := SalesHeader."No.";
         PostedShptNo := PostSalesShipment(SalesHeader);
@@ -450,12 +451,12 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Cannot undo shipment when asset has moved to different holder
 
         // [GIVEN] A posted sales shipment (asset at customer)
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-005');
-        CreateTestLocation(Location1, 'UNDO-LOC5');
-        CreateTestLocation(Location2, 'UNDO-LOC6');
-        CreateTestAsset(Asset, 'UNDO-ASSET-007', "JML AP Holder Type"::Location, Location1.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 005');
+        Location1 := TestLibrary.CreateTestLocation('Undo Location 5');
+        Location2 := TestLibrary.CreateTestLocation('Undo Location 6');
+        Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 007', Location1.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location1.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
 
@@ -511,12 +512,12 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         // [SCENARIO] Correction line number is calculated between existing lines
 
         // [GIVEN] A posted sales shipment with 2 assets (lines 20000 and 30000)
-        Initialize();
+        TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
-        CreateTestCustomer(Customer, 'TEST-UNDO-006');
-        CreateTestLocation(Location, 'UNDO-LOC7');
-        CreateTestAsset(Asset1, 'UNDO-ASSET-008', "JML AP Holder Type"::Location, Location.Code);
-        CreateTestAsset(Asset2, 'UNDO-ASSET-009', "JML AP Holder Type"::Location, Location.Code);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer 006');
+        Location := TestLibrary.CreateTestLocation('Undo Location 7');
+        Asset1 := TestLibrary.CreateAssetAtLocation('Undo Asset 008', Location.Code);
+        Asset2 := TestLibrary.CreateAssetAtLocation('Undo Asset 009', Location.Code);
 
         CreateSalesOrderHeader(SalesHeader, Customer."No.");
         SalesHeader."Location Code" := Location.Code;
@@ -559,20 +560,6 @@ codeunit 50118 "JML AP Undo Shipment Tests"
     // Helper Procedures
     // ============================================================================
 
-    local procedure Initialize()
-    begin
-        // BC Test Framework provides automatic test isolation
-        // Each test gets a clean database state
-
-        if IsInitialized then
-            exit;
-
-        // One-time setup here (if needed)
-
-        IsInitialized := true;
-        // No Commit() - automatic test isolation handles rollback
-    end;
-
     local procedure UndoSalesShipmentAssetLine(var PostedAssetLine: Record "JML AP Pstd Sales Shpt Ast Ln")
     var
         UndoSalesShptAsset: Codeunit "JML AP Undo Sales Shpt Asset";
@@ -585,54 +572,6 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         if not AssetSetup.Get() then begin
             AssetSetup.Init();
             AssetSetup.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestCustomer(var Customer: Record Customer; CustomerNo: Code[20])
-    begin
-        if not Customer.Get(CustomerNo) then begin
-            Customer.Init();
-            Customer."No." := CustomerNo;
-            Customer.Name := 'Test Customer ' + CustomerNo;
-            Customer."Gen. Bus. Posting Group" := 'DOMESTIC';
-            Customer."Customer Posting Group" := 'DOMESTIC';
-            Customer.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestLocation(var Location: Record Location; LocationCode: Code[10])
-    var
-        InventoryPostingSetup: Record "Inventory Posting Setup";
-    begin
-        if not Location.Get(LocationCode) then begin
-            Location.Init();
-            Location.Code := LocationCode;
-            Location.Name := 'Test Location ' + LocationCode;
-            Location.Insert(true);
-        end;
-
-        if not InventoryPostingSetup.Get(LocationCode, 'RESALE') then begin
-            InventoryPostingSetup.Init();
-            InventoryPostingSetup."Location Code" := LocationCode;
-            InventoryPostingSetup."Invt. Posting Group Code" := 'RESALE';
-            InventoryPostingSetup."Inventory Account" := '2130';
-            InventoryPostingSetup.Insert(true);
-        end;
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; AssetNo: Code[20]; HolderType: Enum "JML AP Holder Type"; HolderCode: Code[20])
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-    begin
-        EnsureSetupExists(AssetSetup);
-
-        if not Asset.Get(AssetNo) then begin
-            Asset.Init();
-            Asset."No." := AssetNo;
-            Asset.Description := 'Test Asset ' + AssetNo;
-            Asset."Current Holder Type" := HolderType;
-            Asset."Current Holder Code" := HolderCode;
-            Asset.Insert(true);
         end;
     end;
 
@@ -687,7 +626,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         SalesLine: Record "Sales Line";
         Item: Record Item;
     begin
-        CreateTestItem(Item, 'TEST-ITEM-001');
+        Item := TestLibrary.CreateTestItem('Test Item 001');
 
         SalesLine.Init();
         SalesLine."Document Type" := SalesHeader."Document Type";
@@ -699,38 +638,4 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         SalesLine.Validate("Qty. to Ship", 1);
         SalesLine.Insert(true);
     end;
-
-    local procedure CreateTestItem(var Item: Record Item; ItemNo: Code[20])
-    var
-        ItemUnitOfMeasure: Record "Item Unit of Measure";
-        UnitOfMeasure: Record "Unit of Measure";
-    begin
-        if not Item.Get(ItemNo) then begin
-            if not UnitOfMeasure.Get('PCS') then begin
-                UnitOfMeasure.Init();
-                UnitOfMeasure.Code := 'PCS';
-                UnitOfMeasure.Description := 'Pieces';
-                UnitOfMeasure.Insert(true);
-            end;
-
-            Item.Init();
-            Item."No." := ItemNo;
-            Item.Description := 'Test Item';
-            Item.Type := Item.Type::Inventory;
-            Item."Base Unit of Measure" := 'PCS';
-            Item."Gen. Prod. Posting Group" := 'RETAIL';
-            Item."Inventory Posting Group" := 'RESALE';
-            Item.Insert(true);
-
-            if not ItemUnitOfMeasure.Get(ItemNo, 'PCS') then begin
-                ItemUnitOfMeasure.Init();
-                ItemUnitOfMeasure."Item No." := ItemNo;
-                ItemUnitOfMeasure.Code := 'PCS';
-                ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
-                ItemUnitOfMeasure.Insert(true);
-            end;
-        end;
-    end;
-
-    // Cleanup procedures removed - framework handles test isolation!
 }

@@ -5,6 +5,7 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -20,9 +21,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Item Journal Sale with Asset No. creates Component Install entry
 
         // [GIVEN] An asset and an item
-        Initialize();
-        CreateAsset(Asset);
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line: Entry Type = Sale, Negative Qty, Asset No. populated
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::Sale, -5);
@@ -60,9 +61,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Item Journal Positive Adjmt. with Asset No. creates Component Remove entry
 
         // [GIVEN] An asset and an item
-        Initialize();
-        CreateAsset(Asset);
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line: Entry Type = Positive Adjmt., Positive Qty, Asset No. populated
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::"Positive Adjmt.", 10);
@@ -93,9 +94,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Item Journal Negative Adjmt. with Asset No. creates Component Install entry
 
         // [GIVEN] An asset and an item
-        Initialize();
-        CreateAsset(Asset);
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line: Entry Type = Negative Adjmt., Negative Qty, Asset No. populated
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::"Negative Adjmt.", -8);
@@ -126,9 +127,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Item Journal Purchase with Asset No. does NOT create Component Entry
 
         // [GIVEN] An asset and an item
-        Initialize();
-        CreateAsset(Asset);
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line: Entry Type = Purchase, Asset No. populated
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::Purchase, 10);
@@ -155,8 +156,8 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Item Journal Sale without Asset No. does NOT create Component Entry
 
         // [GIVEN] An item
-        Initialize();
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line: Entry Type = Sale, Asset No. = blank
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::Sale, -5);
@@ -183,9 +184,9 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Component Entry links to Item Ledger Entry for traceability
 
         // [GIVEN] An asset and an item
-        Initialize();
-        CreateAsset(Asset);
-        CreateItem(Item);
+        TestLibrary.Initialize();
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
 
         // [GIVEN] Item Journal Line with Asset No.
         CreateItemJournalLine(ItemJnlLine, Item."No.", ItemJnlLine."Entry Type"::Sale, -3);
@@ -223,7 +224,7 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
         // [SCENARIO] Multiple Item Journal Lines with different assets create multiple Component Entries
 
         // [GIVEN] Two assets and two items
-        Initialize();
+        TestLibrary.Initialize();
         CreateAsset(Asset1);
         CreateAsset(Asset2);
         CreateItem(Item1);
@@ -284,78 +285,6 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
     //     LibraryAssert.AreEqual(ComponentEntry."Entry Type"::Install, ComponentEntry."Entry Type", 'Entry Type should be Install');
     //     LibraryAssert.IsTrue(ComponentEntry.Quantity > 0, 'Quantity should be positive for Install');
     // end;
-
-    local procedure Initialize()
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        ComponentEntry: Record "JML AP Component Entry";
-        ComponentJnlLine: Record "JML AP Component Journal Line";
-        ItemJnlLine: Record "Item Journal Line";
-    begin
-        // Clean up test data before each test (must run every time)
-        ComponentEntry.DeleteAll(true);
-        ComponentJnlLine.DeleteAll(true);
-        ItemJnlLine.DeleteAll(true);
-
-        // One-time setup
-        if IsInitialized then
-            exit;
-
-        // Create Asset Setup record if it doesn't exist
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert(true);
-        end;
-
-        IsInitialized := true;
-        Commit();
-    end;
-
-    local procedure CreateAsset(var Asset: Record "JML AP Asset")
-    var
-        GuidStr: Text;
-    begin
-        Asset.Init();
-        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
-        Asset."No." := CopyStr('A-' + CopyStr(GuidStr, 1, 8), 1, 20);
-        Asset.Description := 'Test Asset';
-        Asset."Status" := Asset."Status"::Active;
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateItem(var Item: Record Item)
-    var
-        GuidStr: Text;
-        ItemUnitOfMeasure: Record "Item Unit of Measure";
-        UnitOfMeasure: Record "Unit of Measure";
-    begin
-        // Create Unit of Measure if it doesn't exist
-        if not UnitOfMeasure.Get('PCS') then begin
-            UnitOfMeasure.Init();
-            UnitOfMeasure.Code := 'PCS';
-            UnitOfMeasure.Description := 'Pieces';
-            UnitOfMeasure.Insert(true);
-        end;
-
-        Item.Init();
-        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
-        Item."No." := CopyStr('I-' + CopyStr(GuidStr, 1, 8), 1, 20);
-        Item.Description := 'Test Item';
-        Item.Type := Item.Type::Inventory;
-        Item."Base Unit of Measure" := 'PCS';
-        Item."Gen. Prod. Posting Group" := GetOrCreateGenProdPostingGroup();
-        Item."Inventory Posting Group" := GetOrCreateInventoryPostingGroup();
-        Item.Insert(true);
-
-        // Create Item Unit of Measure
-        if not ItemUnitOfMeasure.Get(Item."No.", 'PCS') then begin
-            ItemUnitOfMeasure.Init();
-            ItemUnitOfMeasure."Item No." := Item."No.";
-            ItemUnitOfMeasure.Code := 'PCS';
-            ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
-            ItemUnitOfMeasure.Insert(true);
-        end;
-    end;
 
     local procedure CreateItemJournalLine(var ItemJnlLine: Record "Item Journal Line"; ItemNo: Code[20]; EntryType: Enum "Item Ledger Entry Type"; Quantity: Decimal)
     var

@@ -5,6 +5,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
         CannotDeleteAssetWithChildrenErr: Label 'Cannot delete asset %1 because it has child assets.', Comment = '%1 = Asset No.';
 
@@ -14,11 +15,11 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Vessel, Engine: Record "JML AP Asset";
     begin
         // [GIVEN] Initialize
-        Initialize();
+        TestLibrary.Initialize();
 
         // [WHEN] Create Vessel, then Engine with Parent=Vessel
-        CreateTestAsset(Vessel, 'MV Prosperity');
-        CreateTestAsset(Engine, 'Main Engine');
+        Vessel := TestLibrary.CreateTestAsset('MV Prosperity');
+        Engine := TestLibrary.CreateTestAsset('Main Engine');
 
         Engine.Validate("Parent Asset No.", Vessel."No.");
         Engine.Modify();
@@ -40,11 +41,11 @@ codeunit 50106 "JML AP Parent-Child Tests"
         // [WHEN] Create Vessel ? Engine ? Turbocharger
         CreateTestAsset(Vessel, 'MV Prosperity');
 
-        CreateTestAsset(Engine, 'Main Engine');
+        Engine := TestLibrary.CreateTestAsset('Main Engine');
         Engine.Validate("Parent Asset No.", Vessel."No.");
         Engine.Modify();
 
-        CreateTestAsset(Turbocharger, 'Turbocharger');
+        Turbocharger := TestLibrary.CreateTestAsset('Turbocharger');
         Turbocharger.Validate("Parent Asset No.", Engine."No.");
         Turbocharger.Modify();
 
@@ -66,14 +67,14 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Vessel, Engine1, Engine2: Record "JML AP Asset";
     begin
         // [GIVEN] Vessel with 2 engines
-        Initialize();
-        CreateTestAsset(Vessel, 'MV Prosperity');
+        TestLibrary.Initialize();
+        Vessel := TestLibrary.CreateTestAsset('MV Prosperity');
 
-        CreateTestAsset(Engine1, 'Main Engine 1');
+        Engine1 := TestLibrary.CreateTestAsset('Main Engine 1');
         Engine1.Validate("Parent Asset No.", Vessel."No.");
         Engine1.Modify();
 
-        CreateTestAsset(Engine2, 'Main Engine 2');
+        Engine2 := TestLibrary.CreateTestAsset('Main Engine 2');
         Engine2.Validate("Parent Asset No.", Vessel."No.");
         Engine2.Modify();
 
@@ -90,8 +91,8 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [GIVEN] Parent-child relationship
         Initialize();
-        CreateTestAsset(Parent, 'Parent Asset');
-        CreateTestAsset(Child, 'Child Asset');
+        Parent := TestLibrary.CreateTestAsset('Parent Asset');
+        Child := TestLibrary.CreateTestAsset('Child Asset');
 
         Child.Validate("Parent Asset No.", Parent."No.");
         Child.Modify();
@@ -116,18 +117,18 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [GIVEN] One parent
         Initialize();
-        CreateTestAsset(Parent, 'Parent Vessel');
+        Parent := TestLibrary.CreateTestAsset('Parent Vessel');
 
         // [WHEN] Create 3 children
-        CreateTestAsset(Child1, 'Engine 1');
+        Child1 := TestLibrary.CreateTestAsset('Engine 1');
         Child1.Validate("Parent Asset No.", Parent."No.");
         Child1.Modify();
 
-        CreateTestAsset(Child2, 'Engine 2');
+        Child2 := TestLibrary.CreateTestAsset('Engine 2');
         Child2.Validate("Parent Asset No.", Parent."No.");
         Child2.Modify();
 
-        CreateTestAsset(Child3, 'Propeller');
+        Child3 := TestLibrary.CreateTestAsset('Propeller');
         Child3.Validate("Parent Asset No.", Parent."No.");
         Child3.Modify();
 
@@ -145,11 +146,11 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [SCENARIO] Cannot assign parent if assets are at different holders
         // [GIVEN] Parent at Location 1, Child at Location 2
-        Initialize();
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Parent, 'Parent Asset', Location1.Code);
-        CreateAssetAtLocation(Child, 'Child Asset', Location2.Code);
+        TestLibrary.Initialize();
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Parent := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        Child := TestLibrary.CreateAssetAtLocation('Child Asset', Location2.Code);
 
         // [WHEN] Attempting to assign parent
         // [THEN] Error thrown - different holders
@@ -165,10 +166,10 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [SCENARIO] Can assign parent when both assets at same holder
         // [GIVEN] Parent and Child both at Location 1
-        Initialize();
-        CreateLocation(Location);
-        CreateAssetAtLocation(Parent, 'Parent Asset', Location.Code);
-        CreateAssetAtLocation(Child, 'Child Asset', Location.Code);
+        TestLibrary.Initialize();
+        Location := TestLibrary.CreateTestLocation('LOC1');
+        Parent := TestLibrary.CreateAssetAtLocation('Parent Asset', Location.Code);
+        Child := TestLibrary.CreateAssetAtLocation('Child Asset', Location.Code);
 
         // [WHEN] Assigning parent
         Child.Validate("Parent Asset No.", Parent."No.");
@@ -191,7 +192,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [SCENARIO] Cannot assign parent if classification levels incorrect
         // [GIVEN] Industry and classifications (proper hierarchy)
-        Initialize();
+        TestLibrary.Initialize();
         CreateIndustry(Industry);
 
         // Create classification levels first
@@ -205,7 +206,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
         CreateClassification(ClassValue3, Industry.Code, 3, ClassValue2.Code, 'Value Level 3');
 
         // [GIVEN] Parent at Level 3, Child at Level 3 (same level - wrong!)
-        CreateLocation(Location);
+        Location := TestLibrary.CreateTestLocation('LOC1');
         CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassValue3.Code);
         CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassValue3.Code);
 
@@ -226,7 +227,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
     begin
         // [SCENARIO] Can assign parent when levels are correct (parent = child - 1)
         // [GIVEN] Industry and classifications (proper hierarchy)
-        Initialize();
+        TestLibrary.Initialize();
         CreateIndustry(Industry);
 
         // Create classification levels first
@@ -240,7 +241,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
         CreateClassification(ClassValue3, Industry.Code, 3, ClassValue2.Code, 'Value Level 3');
 
         // [GIVEN] Parent at Level 2, Child at Level 3 (correct!)
-        CreateLocation(Location);
+        Location := TestLibrary.CreateTestLocation('LOC1');
         CreateAssetWithClassification(Parent, 'Parent', Location.Code, Industry.Code, ClassValue2.Code);
         CreateAssetWithClassification(Child, 'Child', Location.Code, Industry.Code, ClassValue3.Code);
 
@@ -253,78 +254,6 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Assert.AreEqual(Parent."No.", Child."Parent Asset No.", 'Parent should be assigned');
     end;
 
-    local procedure Initialize()
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
-    begin
-        if IsInitialized then
-            exit;
-
-        // Clean test data
-        HolderEntry.DeleteAll();
-        Asset.DeleteAll();
-        NoSeriesLine.DeleteAll();
-        NoSeries.DeleteAll();
-        AssetSetup.DeleteAll();
-
-        // Create basic setup
-        CreateTestNumberSeries(NoSeries, NoSeriesLine);
-
-        AssetSetup.Init();
-        AssetSetup."Asset Nos." := NoSeries.Code;
-        AssetSetup."Enable Attributes" := true;
-        AssetSetup.Insert();
-
-        IsInitialized := true;
-        Commit();
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; Description: Text[100])
-    begin
-        Asset.Init();
-        Asset.Validate(Description, Description);
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line")
-    begin
-        NoSeries.Init();
-        NoSeries.Code := 'ASSET-TEST';
-        NoSeries.Description := 'Test Asset Numbers';
-        NoSeries."Default Nos." := true;
-        NoSeries."Manual Nos." := true;
-        if NoSeries.Insert() then;
-
-        NoSeriesLine.Init();
-        NoSeriesLine."Series Code" := NoSeries.Code;
-        NoSeriesLine."Line No." := 10000;
-        NoSeriesLine."Starting No." := 'AT-0001';
-        NoSeriesLine."Ending No." := 'AT-9999';
-        NoSeriesLine."Increment-by No." := 1;
-        if NoSeriesLine.Insert() then;
-    end;
-
-    local procedure CreateLocation(var Location: Record Location)
-    begin
-        Location.Init();
-        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
-        Location.Name := 'Test Location ' + Location.Code;
-        Location.Insert(true);
-    end;
-
-    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; Description: Text[100]; LocationCode: Code[10])
-    begin
-        Asset.Init();
-        Asset.Validate(Description, Description);
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := LocationCode;
-        Asset."Current Holder Since" := WorkDate();
-        Asset.Insert(true);
-    end;
 
     local procedure CreateIndustry(var Industry: Record "JML AP Asset Industry")
     begin

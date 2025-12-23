@@ -5,6 +5,7 @@ codeunit 50107 "JML AP Journal Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
 
     [Test]
     procedure PostJournal_ValidData_CreatesHolderEntries()
@@ -17,9 +18,9 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [GIVEN] An asset at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         // [GIVEN] A journal batch and line to transfer to Location 2
         CreateJournalBatch(AssetJnlBatch);
@@ -41,11 +42,6 @@ codeunit 50107 "JML AP Journal Tests"
         Assert.AreEqual(Format(Asset."Current Holder Type"::Location),
             Format(Asset."Current Holder Type"), 'Holder type should be Location');
         Assert.AreEqual(Location2.Code, Asset."Current Holder Code", 'Holder code should be Location 2');
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     [Test]
@@ -58,10 +54,10 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [GIVEN] A parent asset and child asset at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -73,12 +69,6 @@ codeunit 50107 "JML AP Journal Tests"
         asserterror CreateJournalLine(AssetJnlLine, AssetJnlBatch.Name, ChildAsset."No.",
             AssetJnlLine."New Holder Type"::Location, Location2.Code);
         Assert.ExpectedError('cannot be found in the related table');
-
-        // Cleanup
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     [Test]
@@ -93,10 +83,10 @@ codeunit 50107 "JML AP Journal Tests"
         TransactionNo: Integer;
     begin
         // [GIVEN] A parent asset with one child at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -128,12 +118,6 @@ codeunit 50107 "JML AP Journal Tests"
         HolderEntry.SetRange("Asset No.", ChildAsset."No.");
         HolderEntry.SetRange("Transaction No.", TransactionNo);
         Assert.RecordCount(HolderEntry, 2);
-
-        // Cleanup
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     [Test]
@@ -146,10 +130,10 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] An asset transferred on 2024-01-15
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateLocation(Location3);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Location3 := TestLibrary.CreateTestLocation('LOC3');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         OldPostingDate := CalcDate('<-1M>', WorkDate());
         TransferAssetDirectly(Asset, Location2.Code, OldPostingDate);
@@ -160,12 +144,6 @@ codeunit 50107 "JML AP Journal Tests"
         // [THEN] Error is thrown
         asserterror AssetJnlPost.ValidatePostingDate(Asset."No.", NewPostingDate);
         Assert.ExpectedError('cannot be before last entry date');
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
-        CleanupLocation(Location3);
     end;
 
     [Test]
@@ -178,9 +156,9 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] An asset transferred on 2024-01-15
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         OldPostingDate := CalcDate('<-1M>', WorkDate());
         TransferAssetDirectly(Asset, Location2.Code, OldPostingDate);
@@ -190,11 +168,6 @@ codeunit 50107 "JML AP Journal Tests"
 
         // [THEN] No error thrown
         AssetJnlPost.ValidatePostingDate(Asset."No.", NewPostingDate);
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     [Test]
@@ -210,7 +183,7 @@ codeunit 50107 "JML AP Journal Tests"
     begin
         // [SCENARIO] Asset can be transferred to same holder with different address
         // [GIVEN] Asset at Customer A, Address 1
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         CreateShipToAddress(ShipToAddr1, Customer."No.", 'ADDR1');
         CreateShipToAddress(ShipToAddr2, Customer."No.", 'ADDR2');
         CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr1.Code);
@@ -242,12 +215,6 @@ codeunit 50107 "JML AP Journal Tests"
         HolderEntry.SetRange("Entry Type", HolderEntry."Entry Type"::"Transfer In");
         HolderEntry.FindFirst();
         Assert.AreEqual(ShipToAddr2.Code, HolderEntry."Holder Addr Code", 'Transfer In should have Address 2');
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupShipToAddress(ShipToAddr1);
-        CleanupShipToAddress(ShipToAddr2);
-        CleanupCustomer(Customer);
     end;
 
     [Test]
@@ -262,7 +229,7 @@ codeunit 50107 "JML AP Journal Tests"
     begin
         // [SCENARIO] Cannot transfer asset to same holder and same address
         // [GIVEN] Asset at Customer A, Address 1
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         CreateShipToAddress(ShipToAddr, Customer."No.", 'ADDR1');
         CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr.Code);
 
@@ -278,11 +245,6 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlPost.SetSuppressSuccessMessage(true);
         asserterror AssetJnlPost.Run(AssetJnlLine);
         Assert.ExpectedError('must be different');
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupShipToAddress(ShipToAddr);
-        CleanupCustomer(Customer);
     end;
 
     [Test]
@@ -296,7 +258,7 @@ codeunit 50107 "JML AP Journal Tests"
     begin
         // [SCENARIO] Current Holder Address field auto-populated from asset
         // [GIVEN] Asset at Customer with Ship-to Address
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         CreateShipToAddress(ShipToAddr, Customer."No.", 'MAIN');
         CreateAssetAtCustomerAddress(Asset, Customer."No.", ShipToAddr.Code);
 
@@ -310,11 +272,6 @@ codeunit 50107 "JML AP Journal Tests"
         // [THEN] Current Holder Address Code populated
         Assert.AreEqual(Customer."No.", AssetJnlLine."Current Holder Code", 'Current holder code should be populated');
         Assert.AreEqual(ShipToAddr.Code, AssetJnlLine."Current Holder Addr Code", 'Current holder address should be populated');
-
-        // Cleanup
-        CleanupAsset(Asset);
-        CleanupShipToAddress(ShipToAddr);
-        CleanupCustomer(Customer);
     end;
 
     [Test]
@@ -328,10 +285,10 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] Parent asset transferred on 2024-01-15
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -348,34 +305,9 @@ codeunit 50107 "JML AP Journal Tests"
         // [THEN] Error is thrown (must be after child's last entry)
         asserterror AssetJnlPost.ValidatePostingDate(ParentAsset."No.", NewPostingDate);
         Assert.ExpectedError('cannot be before last entry date');
-
-        // Cleanup
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     // Helper procedures
-
-    local procedure CreateLocation(var Location: Record Location)
-    begin
-        Location.Init();
-        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
-        Location.Name := 'Test Location ' + Location.Code;
-        Location.Insert(true);
-    end;
-
-    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
-    begin
-        Asset.Init();
-        Asset."No." := 'TST-' + Format(CreateGuid()).Substring(1, 15);
-        Asset.Description := 'Test Asset ' + Asset."No.";
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := LocationCode;
-        Asset."Current Holder Since" := WorkDate();
-        Asset.Insert(true);
-    end;
 
     local procedure CreateJournalBatch(var AssetJnlBatch: Record "JML AP Asset Journal Batch")
     begin
@@ -454,31 +386,6 @@ codeunit 50107 "JML AP Journal Tests"
         Asset.Modify(true);
     end;
 
-    local procedure CleanupAsset(var Asset: Record "JML AP Asset")
-    var
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        if Asset.Get(Asset."No.") then begin
-            HolderEntry.SetRange("Asset No.", Asset."No.");
-            HolderEntry.DeleteAll(true);
-            Asset.Delete(true);
-        end;
-    end;
-
-    local procedure CleanupLocation(var Location: Record Location)
-    begin
-        if Location.Get(Location.Code) then
-            Location.Delete(true);
-    end;
-
-    local procedure CreateCustomer(var Customer: Record Customer)
-    begin
-        Customer.Init();
-        Customer."No." := 'CUST-' + Format(CreateGuid()).Substring(1, 8);
-        Customer.Name := 'Test Customer ' + Customer."No.";
-        Customer.Insert(true);
-    end;
-
     local procedure CreateShipToAddress(var ShipToAddr: Record "Ship-to Address"; CustomerNo: Code[20]; AddrCode: Code[10])
     begin
         ShipToAddr.Init();
@@ -528,12 +435,6 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlLine.Insert(true);
     end;
 
-    local procedure CleanupCustomer(var Customer: Record Customer)
-    begin
-        if Customer.Get(Customer."No.") then
-            Customer.Delete(true);
-    end;
-
     local procedure GetNextEntryNo(): Integer
     var
         HolderEntry: Record "JML AP Holder Entry";
@@ -543,11 +444,5 @@ codeunit 50107 "JML AP Journal Tests"
             exit(HolderEntry."Entry No." + 1)
         else
             exit(1);
-    end;
-
-    local procedure CleanupShipToAddress(var ShipToAddr: Record "Ship-to Address")
-    begin
-        if ShipToAddr.Get(ShipToAddr."Customer No.", ShipToAddr.Code) then
-            ShipToAddr.Delete(true);
     end;
 }

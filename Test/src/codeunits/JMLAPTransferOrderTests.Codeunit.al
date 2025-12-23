@@ -5,6 +5,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
     // LibraryRandom: Codeunit "Library - Random";  // Temporarily disabled - missing package
 
@@ -23,12 +24,12 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         PostedNo: Code[20];
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] An asset at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         // [GIVEN] A released transfer order from Location 1 to Location 2
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
@@ -71,14 +72,14 @@ codeunit 50108 "JML AP Transfer Order Tests"
         PostedLine: Record "JML AP Pstd. Asset Trans. Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Three assets at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset1, Location1.Code);
-        CreateAssetAtLocation(Asset2, Location1.Code);
-        CreateAssetAtLocation(Asset3, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset1 := TestLibrary.CreateAssetAtLocation('Asset 1', Location1.Code);
+        Asset2 := TestLibrary.CreateAssetAtLocation('Asset 2', Location1.Code);
+        Asset3 := TestLibrary.CreateAssetAtLocation('Asset 3', Location1.Code);
 
         // [GIVEN] A released transfer order with 3 assets
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
@@ -124,12 +125,12 @@ codeunit 50108 "JML AP Transfer Order Tests"
         PostedTransfer: Record "JML AP Posted Asset Transfer";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
 
         // [GIVEN] A parent asset with one child at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
         CreateAssetAtLocation(ParentAsset, Location1.Code);
         CreateAssetAtLocation(ChildAsset, Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
@@ -173,12 +174,12 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] An open (not released) transfer order
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
         CreateTransferLine(TransferLine, TransferHeader."No.", Asset."No.");
 
@@ -205,8 +206,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
         // [GIVEN] A released transfer order with no lines
-        CreateLocation(Location1);
-        CreateLocation(Location2);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
         ReleaseTransferOrder(TransferHeader);
 
@@ -234,10 +235,10 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
         // [GIVEN] An asset at Location 3
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateLocation(Location3);
-        CreateAssetAtLocation(Asset, Location3.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Location3 := TestLibrary.CreateTestLocation('LOC3');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location3.Code);
 
         // [GIVEN] A released transfer order from Location 1 to Location 2
         CreateTransferOrder(TransferHeader, Location1.Code, Location2.Code);
@@ -265,12 +266,12 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] A blocked asset at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
         Asset.Blocked := true;
         Asset.Modify(true);
 
@@ -299,11 +300,11 @@ codeunit 50108 "JML AP Transfer Order Tests"
         TransferLine: Record "JML AP Asset Transfer Line";
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] A child asset at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
         CreateAssetAtLocation(ParentAsset, Location1.Code);
         CreateAssetAtLocation(ChildAsset, Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
@@ -340,13 +341,13 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         PastDate: Date;
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] An asset at Location 1 with an entry dated today
-        CreateLocation(Location1);
-        CreateLocation(Location2);
-        CreateLocation(Location3);
-        CreateAssetAtLocation(Asset, Location1.Code);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
+        Location3 := TestLibrary.CreateTestLocation('LOC3');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         // Create initial holder entry by posting a transfer (Location 1 -> Location 2)
         CreateTransferOrder(InitialTransfer, Location1.Code, Location2.Code);
@@ -393,11 +394,11 @@ codeunit 50108 "JML AP Transfer Order Tests"
         AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
         TransactionNo: Integer;
     begin
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] A parent asset with one child at Location 1
-        CreateLocation(Location1);
-        CreateLocation(Location2);
+        Location1 := TestLibrary.CreateTestLocation('LOC1');
+        Location2 := TestLibrary.CreateTestLocation('LOC2');
         CreateAssetAtLocation(ParentAsset, Location1.Code);
         CreateAssetAtLocation(ChildAsset, Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
@@ -446,77 +447,6 @@ codeunit 50108 "JML AP Transfer Order Tests"
     // Helper Procedures
     // ============================================
 
-    local procedure CreateLocation(var Location: Record Location)
-    begin
-        Location.Init();
-        Location.Code := 'L' + Format(CreateGuid()).Substring(1, 9);
-        Location.Name := 'Test Location ' + Location.Code;
-        Location.Insert(true);
-    end;
-
-    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
-    begin
-        Asset.Init();
-        Asset."No." := 'TST-' + Format(CreateGuid()).Substring(1, 15);
-        Asset.Description := 'Test Asset ' + Asset."No.";
-        Asset.Validate("Current Holder Type", Asset."Current Holder Type"::Location);
-        Asset.Validate("Current Holder Code", LocationCode);
-        Asset.Insert(true);
-    end;
-
-    local procedure Initialize()
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
-    begin
-        if IsInitialized then
-            exit;
-
-        // Create Asset Number Series
-        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'ASSET-TEST');
-
-        // Create Transfer Order Number Series
-        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'TRANS-TEST');
-
-        // Create Posted Transfer Number Series
-        CreateTestNumberSeries(NoSeries, NoSeriesLine, 'PSTRANS-TEST');
-
-        // Create Asset Setup
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert();
-        end;
-        AssetSetup."Asset Nos." := 'ASSET-TEST';
-        AssetSetup."Transfer Order Nos." := 'TRANS-TEST';
-        AssetSetup."Posted Transfer Nos." := 'PSTRANS-TEST';
-        AssetSetup.Modify();
-
-        IsInitialized := true;
-        Commit();
-    end;
-
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line"; SeriesCode: Code[20])
-    begin
-        if not NoSeries.Get(SeriesCode) then begin
-            NoSeries.Init();
-            NoSeries.Code := SeriesCode;
-            NoSeries."Default Nos." := true;
-            NoSeries."Manual Nos." := true;
-            NoSeries.Insert();
-        end;
-
-        NoSeriesLine.SetRange("Series Code", SeriesCode);
-        if not NoSeriesLine.FindFirst() then begin
-            NoSeriesLine.Init();
-            NoSeriesLine."Series Code" := SeriesCode;
-            NoSeriesLine."Line No." := 10000;
-            NoSeriesLine."Starting No." := SeriesCode + '001';
-            NoSeriesLine."Ending No." := SeriesCode + '999';
-            NoSeriesLine.Insert();
-        end;
-    end;
-
     local procedure CreateTransferOrder(var TransferHeader: Record "JML AP Asset Transfer Header"; FromLocationCode: Code[10]; ToLocationCode: Code[10])
     begin
         TransferHeader.Init();
@@ -550,22 +480,5 @@ codeunit 50108 "JML AP Transfer Order Tests"
     begin
         TransferHeader.Status := TransferHeader.Status::Released;
         TransferHeader.Modify(true);
-    end;
-
-    local procedure CleanupAsset(var Asset: Record "JML AP Asset")
-    var
-        HolderEntry: Record "JML AP Holder Entry";
-    begin
-        HolderEntry.SetRange("Asset No.", Asset."No.");
-        HolderEntry.DeleteAll(true);
-
-        if Asset.Get(Asset."No.") then
-            Asset.Delete(true);
-    end;
-
-    local procedure CleanupLocation(var Location: Record Location)
-    begin
-        if Location.Get(Location.Code) then
-            Location.Delete(true);
     end;
 }
