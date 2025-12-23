@@ -37,6 +37,20 @@ codeunit 50126 "JML AP Test Library"
             AssetSetup.Modify(true);
         end;
 
+        // Create Transfer Order number series if not exists or empty
+        if AssetSetup."Transfer Order Nos." = '' then begin
+            CreateTestNumberSeries(NoSeries, NoSeriesLine, 'TEST-TRANS', 'TST-T-00001', 'TST-T-99999');
+            AssetSetup.Validate("Transfer Order Nos.", NoSeries.Code);
+            AssetSetup.Modify(true);
+        end;
+
+        // Create Posted Transfer number series if not exists or empty
+        if AssetSetup."Posted Transfer Nos." = '' then begin
+            CreateTestNumberSeries(NoSeries, NoSeriesLine, 'TEST-PSTTR', 'TST-PT-00001', 'TST-PT-99999');
+            AssetSetup.Validate("Posted Transfer Nos.", NoSeries.Code);
+            AssetSetup.Modify(true);
+        end;
+
         // Create In-Transit location required for Transfer Orders (reused across tests)
         if not InTransitLoc.Get('INTRANS') then begin
             InTransitLoc.Init();

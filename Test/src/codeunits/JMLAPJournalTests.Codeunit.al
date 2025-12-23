@@ -18,6 +18,7 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [GIVEN] An asset at Location 1
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
@@ -54,6 +55,7 @@ codeunit 50107 "JML AP Journal Tests"
         AssetJnlPost: Codeunit "JML AP Asset Jnl.-Post";
     begin
         // [GIVEN] A parent asset and child asset at Location 1
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
@@ -83,6 +85,7 @@ codeunit 50107 "JML AP Journal Tests"
         TransactionNo: Integer;
     begin
         // [GIVEN] A parent asset with one child at Location 1
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
@@ -130,6 +133,7 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] An asset transferred on 2024-01-15
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         Location3 := TestLibrary.CreateTestLocation('LOC3');
@@ -156,6 +160,7 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] An asset transferred on 2024-01-15
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
@@ -285,6 +290,7 @@ codeunit 50107 "JML AP Journal Tests"
         NewPostingDate: Date;
     begin
         // [GIVEN] Parent asset transferred on 2024-01-15
+        TestLibrary.Initialize();
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
         ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);

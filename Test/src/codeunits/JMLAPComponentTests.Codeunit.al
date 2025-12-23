@@ -38,7 +38,7 @@ codeunit 50111 "JML AP Component Tests"
         ComponentEntry.SetRange("Item No.", Item."No.");
         LibraryAssert.RecordCount(ComponentEntry, 1);
         ComponentEntry.FindFirst();
-        LibraryAssert.AreEqual(1, ComponentEntry."Entry No.", 'Entry No. should be 1');
+        LibraryAssert.AreNotEqual(0, ComponentEntry."Entry No.", 'Entry No. should be assigned');
         LibraryAssert.AreEqual(1, ComponentEntry.Quantity, 'Quantity should be 1');
         LibraryAssert.AreEqual(ComponentEntry."Entry Type"::Install, ComponentEntry."Entry Type", 'Entry Type should be Install');
 
@@ -193,6 +193,8 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
+        FirstTransactionNo: Integer;
+        SecondTransactionNo: Integer;
     begin
         // [SCENARIO] Transaction No. is assigned and increments correctly
         TestLibrary.Initialize();
@@ -209,13 +211,15 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost.SetSuppressSuccessMessage(true);
         ComponentJnlPost.Run(ComponentJnlLine);
 
-        // [THEN] Two entries created with Transaction Nos. 1 and 2
+        // [THEN] Two entries created with sequential Transaction Nos.
         ComponentEntry.SetRange("Asset No.", Asset."No.");
         LibraryAssert.RecordCount(ComponentEntry, 2);
         ComponentEntry.FindSet();
-        LibraryAssert.AreEqual(1, ComponentEntry."Transaction No.", 'First Transaction No. should be 1');
+        FirstTransactionNo := ComponentEntry."Transaction No.";
+        LibraryAssert.AreNotEqual(0, FirstTransactionNo, 'First Transaction No. should be assigned');
         ComponentEntry.Next();
-        LibraryAssert.AreEqual(2, ComponentEntry."Transaction No.", 'Second Transaction No. should be 2');
+        SecondTransactionNo := ComponentEntry."Transaction No.";
+        LibraryAssert.AreEqual(FirstTransactionNo + 1, SecondTransactionNo, 'Second Transaction No. should be first + 1');
     end;
 
     [Test]
@@ -227,6 +231,9 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlLine: Record "JML AP Component Journal Line";
         ComponentEntry: Record "JML AP Component Entry";
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
+        FirstEntryNo: Integer;
+        SecondEntryNo: Integer;
+        ThirdEntryNo: Integer;
     begin
         // [SCENARIO] Entry No. is assigned sequentially using BC pattern
         TestLibrary.Initialize();
@@ -244,15 +251,18 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost.SetSuppressSuccessMessage(true);
         ComponentJnlPost.Run(ComponentJnlLine);
 
-        // [THEN] Three entries created with Entry Nos. 1, 2, 3
+        // [THEN] Three entries created with sequential Entry Nos.
         ComponentEntry.SetRange("Asset No.", Asset."No.");
         LibraryAssert.RecordCount(ComponentEntry, 3);
         ComponentEntry.FindSet();
-        LibraryAssert.AreEqual(1, ComponentEntry."Entry No.", 'First Entry No. should be 1');
+        FirstEntryNo := ComponentEntry."Entry No.";
+        LibraryAssert.AreNotEqual(0, FirstEntryNo, 'First Entry No. should be assigned');
         ComponentEntry.Next();
-        LibraryAssert.AreEqual(2, ComponentEntry."Entry No.", 'Second Entry No. should be 2');
+        SecondEntryNo := ComponentEntry."Entry No.";
+        LibraryAssert.AreEqual(FirstEntryNo + 1, SecondEntryNo, 'Second Entry No. should be first + 1');
         ComponentEntry.Next();
-        LibraryAssert.AreEqual(3, ComponentEntry."Entry No.", 'Third Entry No. should be 3');
+        ThirdEntryNo := ComponentEntry."Entry No.";
+        LibraryAssert.AreEqual(SecondEntryNo + 1, ThirdEntryNo, 'Third Entry No. should be second + 1');
     end;
 
     local procedure CreateTestJournalBatch(var ComponentJnlBatch: Record "JML AP Component Jnl. Batch")

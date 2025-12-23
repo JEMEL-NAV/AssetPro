@@ -18,6 +18,7 @@ codeunit 50109 "JML AP Relationship Tests"
         TestPostingDate: Date;
     begin
         // [SCENARIO] LogAttachEvent creates a relationship entry with correct field values
+        TestLibrary.Initialize();
 
         // [GIVEN] A parent asset and a child asset
         ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
@@ -51,6 +52,7 @@ codeunit 50109 "JML AP Relationship Tests"
         TestPostingDate: Date;
     begin
         // [SCENARIO] LogDetachEvent creates a relationship entry with correct field values
+        TestLibrary.Initialize();
 
         // [GIVEN] A parent asset and a child asset
         ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
@@ -131,7 +133,7 @@ codeunit 50109 "JML AP Relationship Tests"
         ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
         ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Test');
         Customer := TestLibrary.CreateTestCustomer('Test Customer');
-        Location := TestLibrary.CreateTestLocation('Test Location');
+        Location := TestLibrary.CreateTestLocation('LOC-TEST');
 
         // [GIVEN] Child asset is initially at customer
         ChildAsset."Current Holder Type" := ChildAsset."Current Holder Type"::Customer;
@@ -304,8 +306,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [GIVEN] Asset with parent (subasset)
         ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Transfer Test');
         ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Transfer Test');
-        Location1 := TestLibrary.CreateTestLocation('Location 008A');
-        Location2 := TestLibrary.CreateTestLocation('Location 008B');
+        Location1 := TestLibrary.CreateTestLocation('LOC-008A');
+        Location2 := TestLibrary.CreateTestLocation('LOC-008B');
 
         ChildAsset.Get(ChildAsset."No.");
         ChildAsset.Validate("Parent Asset No.", ParentAsset."No.");

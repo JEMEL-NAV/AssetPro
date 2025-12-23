@@ -225,7 +225,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U01');
-        Location := TestLibrary.CreateTestLocation('Test Location U1');
+        Location := TestLibrary.CreateTestLocation('LOC-U1');
         Asset := TestLibrary.CreateAssetAtVendor('Test Asset U01', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
@@ -274,7 +274,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U02');
-        Location := TestLibrary.CreateTestLocation('Test Location U2');
+        Location := TestLibrary.CreateTestLocation('LOC-U2');
         Asset := TestLibrary.CreateAssetAtVendor('Test Asset U02', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
@@ -321,7 +321,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U03');
-        Location := TestLibrary.CreateTestLocation('Test Location U3');
+        Location := TestLibrary.CreateTestLocation('LOC-U3');
         Asset1 := TestLibrary.CreateAssetAtVendor('Test Asset U03', Vendor."No.");
         Asset2 := TestLibrary.CreateAssetAtVendor('Test Asset U04', Vendor."No.");
         Asset3 := TestLibrary.CreateAssetAtVendor('Test Asset U05', Vendor."No.");
@@ -382,7 +382,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U04');
-        Location := TestLibrary.CreateTestLocation('Test Location U4');
+        Location := TestLibrary.CreateTestLocation('LOC-U4');
         Asset := TestLibrary.CreateAssetAtVendor('Test Asset U06', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
 
@@ -425,8 +425,8 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U05');
-        Location1 := TestLibrary.CreateTestLocation('Test Location U5');
-        Location2 := TestLibrary.CreateTestLocation('Test Location U6');
+        Location1 := TestLibrary.CreateTestLocation('LOC-U5');
+        Location2 := TestLibrary.CreateTestLocation('LOC-U6');
         Asset := TestLibrary.CreateAssetAtVendor('Test Asset U07', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location1.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);
@@ -475,7 +475,7 @@ codeunit 50119 "JML AP Undo Purch Rcpt Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Vendor := TestLibrary.CreateTestVendor('Test Vendor U06');
-        Location := TestLibrary.CreateTestLocation('Test Location U7');
+        Location := TestLibrary.CreateTestLocation('LOC-U7');
         Asset := TestLibrary.CreateAssetAtVendor('Test Asset U08', Vendor."No.");
         CreatePurchaseOrderWithAsset(PurchHeader, PurchAssetLine, Vendor."No.", Asset."No.", Location.Code);
         PostedRcptNo := PostPurchaseReceipt(PurchHeader);

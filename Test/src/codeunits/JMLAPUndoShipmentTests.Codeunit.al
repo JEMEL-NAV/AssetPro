@@ -210,7 +210,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 001');
-        Location := TestLibrary.CreateTestLocation('Undo Location 1');
+        Location := TestLibrary.CreateTestLocation('UNDO-LOC1');
         Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 001', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
@@ -268,7 +268,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 002');
-        Location := TestLibrary.CreateTestLocation('Undo Location 2');
+        Location := TestLibrary.CreateTestLocation('UNDO-LOC2');
         Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 002', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
@@ -325,7 +325,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 003');
-        Location := TestLibrary.CreateTestLocation('Undo Location 3');
+        Location := TestLibrary.CreateTestLocation('UNDO-LOC3');
         Asset1 := TestLibrary.CreateAssetAtLocation('Undo Asset 003', Location.Code);
         Asset2 := TestLibrary.CreateAssetAtLocation('Undo Asset 004', Location.Code);
         Asset3 := TestLibrary.CreateAssetAtLocation('Undo Asset 005', Location.Code);
@@ -395,7 +395,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 004');
-        Location := TestLibrary.CreateTestLocation('Undo Location 4');
+        Location := TestLibrary.CreateTestLocation('UNDO-LOC4');
         Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 006', Location.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location.Code);
         OriginalSalesOrderNo := SalesHeader."No.";
@@ -454,8 +454,8 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 005');
-        Location1 := TestLibrary.CreateTestLocation('Undo Location 5');
-        Location2 := TestLibrary.CreateTestLocation('Undo Location 6');
+        Location1 := TestLibrary.CreateTestLocation('UNDO-LOC5');
+        Location2 := TestLibrary.CreateTestLocation('UNDO-LOC6');
         Asset := TestLibrary.CreateAssetAtLocation('Undo Asset 007', Location1.Code);
         CreateSalesOrderWithAsset(SalesHeader, SalesAssetLine, Customer."No.", Asset."No.", Location1.Code);
         PostedShptNo := PostSalesShipment(SalesHeader);
@@ -515,7 +515,7 @@ codeunit 50118 "JML AP Undo Shipment Tests"
         TestLibrary.Initialize();
         EnsureSetupExists(AssetSetup);
         Customer := TestLibrary.CreateTestCustomer('Test Customer 006');
-        Location := TestLibrary.CreateTestLocation('Undo Location 7');
+        Location := TestLibrary.CreateTestLocation('UNDO-LOC7');
         Asset1 := TestLibrary.CreateAssetAtLocation('Undo Asset 008', Location.Code);
         Asset2 := TestLibrary.CreateAssetAtLocation('Undo Asset 009', Location.Code);
 
