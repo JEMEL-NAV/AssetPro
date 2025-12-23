@@ -5,7 +5,7 @@ codeunit 50113 "JML AP Sales Integration Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
-        IsInitialized: Boolean;
+        TestLibrary: Codeunit "JML AP Test Library";
 
     [Test]
     procedure TestSalesLine_AssetNoFieldExists()
@@ -15,7 +15,7 @@ codeunit 50113 "JML AP Sales Integration Tests"
         // [SCENARIO] Sales Line table has been extended with Asset No. field
 
         // [GIVEN] A Sales Line record
-        Initialize();
+        TestLibrary.Initialize();
         SalesLine.Init();
 
         // [THEN] Asset No. field is accessible
@@ -31,7 +31,7 @@ codeunit 50113 "JML AP Sales Integration Tests"
         // [SCENARIO] Posted Sales Shipment Line table has been extended with Asset No. field
 
         // [GIVEN] A Sales Shipment Line record
-        Initialize();
+        TestLibrary.Initialize();
         SalesShptLine.Init();
 
         // [THEN] Asset No. field is accessible
@@ -47,7 +47,7 @@ codeunit 50113 "JML AP Sales Integration Tests"
         // [SCENARIO] Posted Sales Invoice Line table has been extended with Asset No. field
 
         // [GIVEN] A Sales Invoice Line record
-        Initialize();
+        TestLibrary.Initialize();
         SalesInvLine.Init();
 
         // [THEN] Asset No. field is accessible
@@ -63,7 +63,7 @@ codeunit 50113 "JML AP Sales Integration Tests"
         // [SCENARIO] Posted Sales Credit Memo Line table has been extended with Asset No. field
 
         // [GIVEN] A Sales Cr.Memo Line record
-        Initialize();
+        TestLibrary.Initialize();
         SalesCrMemoLine.Init();
 
         // [THEN] Asset No. field is accessible
@@ -79,20 +79,11 @@ codeunit 50113 "JML AP Sales Integration Tests"
         // [SCENARIO] Return Receipt Line table has been extended with Asset No. field
 
         // [GIVEN] A Return Receipt Line record
-        Initialize();
+        TestLibrary.Initialize();
         ReturnRcptLine.Init();
 
         // [THEN] Asset No. field is accessible
         ReturnRcptLine."JML AP Asset No." := 'TEST';
         LibraryAssert.AreEqual('TEST', ReturnRcptLine."JML AP Asset No.", 'Asset No. field should be accessible');
-    end;
-
-    local procedure Initialize()
-    begin
-        if IsInitialized then
-            exit;
-
-        IsInitialized := true;
-        Commit();
     end;
 }

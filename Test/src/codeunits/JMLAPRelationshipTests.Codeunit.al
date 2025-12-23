@@ -5,6 +5,7 @@ codeunit 50109 "JML AP Relationship Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
 
     [Test]
     procedure TestLogAttachEvent_CreatesEntryWithCorrectFields()
@@ -19,8 +20,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] LogAttachEvent creates a relationship entry with correct field values
 
         // [GIVEN] A parent asset and a child asset
-        CreateTestAsset(ParentAsset, 'PARENT-001', 'Parent Asset for Test');
-        CreateTestAsset(ChildAsset, 'CHILD-001', 'Child Asset for Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Test');
         TestPostingDate := WorkDate();
 
         // [WHEN] LogAttachEvent is called
@@ -37,8 +38,6 @@ codeunit 50109 "JML AP Relationship Tests"
         Assert.AreEqual(ChildAsset."Current Holder Code", RelationshipEntry."Holder Code at Entry", 'Holder Code should be captured');
         Assert.AreNotEqual(0, RelationshipEntry."Transaction No.", 'Transaction No. should be assigned');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -54,8 +53,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] LogDetachEvent creates a relationship entry with correct field values
 
         // [GIVEN] A parent asset and a child asset
-        CreateTestAsset(ParentAsset, 'PARENT-002', 'Parent Asset for Test');
-        CreateTestAsset(ChildAsset, 'CHILD-002', 'Child Asset for Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Test');
         TestPostingDate := WorkDate();
 
         // [WHEN] LogDetachEvent is called
@@ -70,8 +69,6 @@ codeunit 50109 "JML AP Relationship Tests"
         Assert.AreEqual('DETACH', RelationshipEntry."Reason Code", 'Reason Code should match');
         Assert.AreNotEqual(0, RelationshipEntry."Transaction No.", 'Transaction No. should be assigned');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -86,8 +83,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] Multiple attach/detach cycles create complete audit history
 
         // [GIVEN] A parent asset and a child asset
-        CreateTestAsset(ParentAsset, 'PARENT-003', 'Parent Asset for Test');
-        CreateTestAsset(ChildAsset, 'CHILD-003', 'Child Asset for Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Test');
 
         // [WHEN] Multiple attach and detach events occur
         RelationshipMgt.LogAttachEvent(ChildAsset."No.", ParentAsset."No.", 'INITIAL', WorkDate());
@@ -114,8 +111,6 @@ codeunit 50109 "JML AP Relationship Tests"
         RelationshipEntry.Next();
         Assert.AreEqual(RelationshipEntry."Entry Type"::Detach, RelationshipEntry."Entry Type", 'Fourth entry should be Detach');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -133,10 +128,10 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] Holder information is captured at the moment of each relationship change
 
         // [GIVEN] A parent asset, child asset, customer, and location
-        CreateTestAsset(ParentAsset, 'PARENT-004', 'Parent Asset for Test');
-        CreateTestAsset(ChildAsset, 'CHILD-004', 'Child Asset for Test');
-        CreateTestCustomer(Customer, 'CUST-001');
-        CreateTestLocation(Location, 'LOC-001');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Test');
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
+        Location := TestLibrary.CreateTestLocation('Test Location');
 
         // [GIVEN] Child asset is initially at customer
         ChildAsset."Current Holder Type" := ChildAsset."Current Holder Type"::Customer;
@@ -164,8 +159,6 @@ codeunit 50109 "JML AP Relationship Tests"
         Assert.AreEqual(RelationshipEntry."Holder Type at Entry"::Location, RelationshipEntry."Holder Type at Entry", 'Should capture Location holder type');
         Assert.AreEqual(Location.Code, RelationshipEntry."Holder Code at Entry", 'Should capture location code');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -184,10 +177,10 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] GetComponentsAtDate returns children that were attached on a specific date
 
         // [GIVEN] A parent asset and three children with different attach/detach dates
-        CreateTestAsset(ParentAsset, 'PARENT-005', 'Parent Asset for Test');
-        CreateTestAsset(Child1, 'CHILD-005A', 'Child 1 for Test');
-        CreateTestAsset(Child2, 'CHILD-005B', 'Child 2 for Test');
-        CreateTestAsset(Child3, 'CHILD-005C', 'Child 3 for Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Test');
+        Child1 := TestLibrary.CreateTestAsset('Child 1 for Test');
+        Child2 := TestLibrary.CreateTestAsset('Child 2 for Test');
+        Child3 := TestLibrary.CreateTestAsset('Child 3 for Test');
 
         Date1 := WorkDate();
         Date2 := WorkDate() + 10;
@@ -227,8 +220,6 @@ codeunit 50109 "JML AP Relationship Tests"
         // [THEN] Should have Child1 and Child3
         Assert.AreEqual(2, TempChildAssets.Count(), 'Should have 2 children at Date3+5');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -241,8 +232,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] Setting Parent Asset No. field creates attach relationship entry
 
         // [GIVEN] Two assets with no parent relationship
-        CreateTestAsset(ParentAsset, 'PARENT-006', 'Parent Asset for Field Test');
-        CreateTestAsset(ChildAsset, 'CHILD-006', 'Child Asset for Field Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Field Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Field Test');
 
         // [WHEN] Set Parent Asset No. field on child asset
         ChildAsset.Get(ChildAsset."No."); // Refresh to ensure xRec is set correctly
@@ -259,8 +250,6 @@ codeunit 50109 "JML AP Relationship Tests"
         Assert.AreEqual(ChildAsset."Current Holder Type", RelationshipEntry."Holder Type at Entry", 'Holder type should be captured at attach');
         Assert.AreEqual(ChildAsset."Current Holder Code", RelationshipEntry."Holder Code at Entry", 'Holder code should be captured at attach');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -274,8 +263,8 @@ codeunit 50109 "JML AP Relationship Tests"
         // [SCENARIO] Clearing Parent Asset No. field creates detach relationship entry
 
         // [GIVEN] Asset with parent relationship
-        CreateTestAsset(ParentAsset, 'PARENT-007', 'Parent Asset for Detach Test');
-        CreateTestAsset(ChildAsset, 'CHILD-007', 'Child Asset for Detach Test');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Detach Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Detach Test');
         ChildAsset.Get(ChildAsset."No.");
         ChildAsset.Validate("Parent Asset No.", ParentAsset."No.");
         ChildAsset.Modify(true);
@@ -298,8 +287,6 @@ codeunit 50109 "JML AP Relationship Tests"
         RelationshipEntry.SetRange("Asset No.", ChildAsset."No.");
         Assert.AreEqual(AttachEntryNo + 1, RelationshipEntry.Count(), 'Should have both attach and detach entries');
 
-        // [CLEANUP]
-        CleanupTestData();
     end;
 
     [Test]
@@ -318,10 +305,10 @@ codeunit 50109 "JML AP Relationship Tests"
         CleanupTestData();
 
         // [GIVEN] Asset with parent (subasset)
-        CreateTestAsset(ParentAsset, 'PARENT-008', 'Parent Asset for Transfer Test');
-        CreateTestAsset(ChildAsset, 'CHILD-008', 'Child Asset for Transfer Test');
-        CreateTestLocation(Location1, 'LOC-008A');
-        CreateTestLocation(Location2, 'LOC-008B');
+        ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Transfer Test');
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Transfer Test');
+        Location1 := TestLibrary.CreateTestLocation('Location 008A');
+        Location2 := TestLibrary.CreateTestLocation('Location 008B');
 
         ChildAsset.Get(ChildAsset."No.");
         ChildAsset.Validate("Parent Asset No.", ParentAsset."No.");
@@ -357,56 +344,6 @@ codeunit 50109 "JML AP Relationship Tests"
         ChildAsset.Get(ChildAsset."No.");
         Assert.AreEqual(Location2.Code, ChildAsset."Current Holder Code", 'Asset should be transferred to new location after detach');
 
-        // [CLEANUP]
-        CleanupTestData();
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; AssetNo: Code[20]; Description: Text[100])
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeriesRec: Record "No. Series";
-    begin
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert();
-        end;
-
-        // Ensure number series allows manual numbers (test independence)
-        if AssetSetup."Asset Nos." <> '' then
-            if NoSeriesRec.Get(AssetSetup."Asset Nos.") then
-                if not NoSeriesRec."Manual Nos." then begin
-                    NoSeriesRec."Manual Nos." := true;
-                    NoSeriesRec.Modify();
-                end;
-
-        Asset.Init();
-        Asset."No." := AssetNo;
-        Asset.Description := Description;
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := '';
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateTestCustomer(var Customer: Record Customer; CustomerNo: Code[20])
-    begin
-        if Customer.Get(CustomerNo) then
-            exit;
-
-        Customer.Init();
-        Customer."No." := CustomerNo;
-        Customer.Name := 'Test Customer ' + CustomerNo;
-        Customer.Insert(true);
-    end;
-
-    local procedure CreateTestLocation(var Location: Record Location; LocationCode: Code[10])
-    begin
-        if Location.Get(LocationCode) then
-            exit;
-
-        Location.Init();
-        Location.Code := LocationCode;
-        Location.Name := 'Test Location ' + LocationCode;
-        Location.Insert(true);
     end;
 
     local procedure CreateTestJournalLine(var AssetJournalLine: Record "JML AP Asset Journal Line"; AssetNo: Code[20]; FromLocationCode: Code[10]; ToLocationCode: Code[10])
@@ -430,55 +367,5 @@ codeunit 50109 "JML AP Relationship Tests"
         AssetJournalLine.Validate("New Holder Code", ToLocationCode);
         AssetJournalLine."Posting Date" := WorkDate();
         AssetJournalLine.Insert(true);
-    end;
-
-    local procedure CleanupTestData()
-    var
-        Asset: Record "JML AP Asset";
-        RelationshipEntry: Record "JML AP Asset Relation Entry";
-        HolderEntry: Record "JML AP Holder Entry";
-        Customer: Record Customer;
-        Location: Record Location;
-        AssetJournalBatch: Record "JML AP Asset Journal Batch";
-        AssetJournalLine: Record "JML AP Asset Journal Line";
-    begin
-        // Delete test journal lines and batches
-        AssetJournalLine.Reset();
-        AssetJournalLine.SetRange("Journal Batch Name", 'TEST');
-        AssetJournalLine.DeleteAll(true);
-
-        if AssetJournalBatch.Get('TEST') then
-            AssetJournalBatch.Delete(true);
-
-        // Delete test holder entries
-        HolderEntry.Reset();
-        HolderEntry.SetFilter("Asset No.", 'CHILD-*|PARENT-*');
-        HolderEntry.DeleteAll(true);
-
-        // Delete test relationship entries
-        RelationshipEntry.Reset();
-        RelationshipEntry.SetFilter("Asset No.", 'CHILD-*');
-        RelationshipEntry.DeleteAll(true);
-
-        // Delete test assets
-        Asset.Reset();
-        Asset.SetFilter("No.", 'PARENT-*|CHILD-*');
-        Asset.DeleteAll(true);
-
-        // Delete test customers
-        Customer.Reset();
-        Customer.SetFilter("No.", 'CUST-*');
-        if Customer.FindSet() then
-            repeat
-                Customer.Delete(true);
-            until Customer.Next() = 0;
-
-        // Delete test locations
-        Location.Reset();
-        Location.SetFilter(Code, 'LOC-*');
-        if Location.FindSet() then
-            repeat
-                Location.Delete(true);
-            until Location.Next() = 0;
     end;
 }

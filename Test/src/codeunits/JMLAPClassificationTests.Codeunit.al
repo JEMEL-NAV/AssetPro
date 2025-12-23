@@ -5,6 +5,7 @@ codeunit 50101 "JML AP Classification Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -93,29 +94,25 @@ codeunit 50101 "JML AP Classification Tests"
 
     local procedure Initialize()
     var
-        Asset: Record "JML AP Asset";
         Industry: Record "JML AP Asset Industry";
         ClassLevel: Record "JML AP Classification Lvl";
         ClassValue: Record "JML AP Classification Val";
-        HolderEntry: Record "JML AP Holder Entry";
         AssetSetup: Record "JML AP Asset Setup";
     begin
         if IsInitialized then
             exit;
 
-        // Clean test data
-        HolderEntry.DeleteAll();
-        Asset.DeleteAll();
+        TestLibrary.Initialize();
+
+        // Clean classification-specific test data
         ClassValue.DeleteAll();
         ClassLevel.DeleteAll();
         Industry.DeleteAll();
-        AssetSetup.DeleteAll();
 
-        // Create basic setup
-        AssetSetup.Init();
-        AssetSetup."Asset Nos." := 'ASSET-TEST';
+        // Enable attributes in setup
+        TestLibrary.EnsureSetupExists(AssetSetup);
         AssetSetup."Enable Attributes" := true;
-        AssetSetup.Insert();
+        AssetSetup.Modify();
 
         IsInitialized := true;
         Commit();

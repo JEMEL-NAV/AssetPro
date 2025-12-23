@@ -5,6 +5,7 @@ codeunit 50111 "JML AP Component Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -19,11 +20,11 @@ codeunit 50111 "JML AP Component Tests"
     begin
         // [FEATURE] Component Ledger Posting
         // [SCENARIO] Post component journal line with Install entry type
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Asset, Item, and Component Journal Line with Install type and positive quantity
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
 
@@ -57,11 +58,11 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Post component journal line with Remove entry type
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Asset, Item, and Component Journal Line with Remove type and negative quantity
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
 
@@ -88,7 +89,7 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Asset does not exist
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Item and Component Journal Line with non-existent Asset
         CreateTestItem(Item);
@@ -113,7 +114,7 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Item does not exist
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Asset and Component Journal Line with non-existent Item
         CreateTestAsset(Asset);
@@ -139,11 +140,11 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Install has negative quantity
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Component Journal Line with Install type and negative quantity
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, -1);
 
@@ -166,11 +167,11 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Posting fails when Remove has positive quantity
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Component Journal Line with Remove type and positive quantity
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, 1);
 
@@ -194,11 +195,11 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Transaction No. is assigned and increments correctly
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Two component journal lines
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Remove, -1);
@@ -228,11 +229,11 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlPost: Codeunit "JML AP Component Jnl.-Post";
     begin
         // [SCENARIO] Entry No. is assigned sequentially using BC pattern
-        Initialize();
+        TestLibrary.Initialize();
 
         // [GIVEN] Three component journal lines
-        CreateTestAsset(Asset);
-        CreateTestItem(Item);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", Item."No.", ComponentJnlLine."Entry Type"::Install, 2);
@@ -252,29 +253,6 @@ codeunit 50111 "JML AP Component Tests"
         LibraryAssert.AreEqual(2, ComponentEntry."Entry No.", 'Second Entry No. should be 2');
         ComponentEntry.Next();
         LibraryAssert.AreEqual(3, ComponentEntry."Entry No.", 'Third Entry No. should be 3');
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset")
-    var
-        GuidText: Text;
-    begin
-        Asset.Init();
-        GuidText := Format(CreateGuid());
-        Asset."No." := CopyStr('TST-A-' + CopyStr(GuidText, 2, 13), 1, 20);
-        Asset.Description := 'Test Asset for Component Tests';
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateTestItem(var Item: Record Item)
-    var
-        GuidText: Text;
-    begin
-        Item.Init();
-        GuidText := Format(CreateGuid());
-        Item."No." := CopyStr('TST-I-' + CopyStr(GuidText, 2, 13), 1, 20);
-        Item.Description := 'Test Item for Component Tests';
-        Item."Base Unit of Measure" := 'PCS';
-        Item.Insert(true);
     end;
 
     local procedure CreateTestJournalBatch(var ComponentJnlBatch: Record "JML AP Component Jnl. Batch")
@@ -314,28 +292,5 @@ codeunit 50111 "JML AP Component Tests"
         ComponentJnlLine."Posting Date" := WorkDate();
         ComponentJnlLine."Document No." := 'TEST-DOC';
         ComponentJnlLine.Insert(true);
-    end;
-
-    local procedure Initialize()
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        ComponentEntry: Record "JML AP Component Entry";
-        ComponentJnlLine: Record "JML AP Component Journal Line";
-    begin
-        // Clean up test data before each test (must run every time)
-        ComponentEntry.DeleteAll(true);
-        ComponentJnlLine.DeleteAll(true);
-
-        // One-time setup
-        if IsInitialized then
-            exit;
-
-        // Create Asset Setup record if it doesn't exist
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert(true);
-        end;
-
-        IsInitialized := true;
     end;
 }

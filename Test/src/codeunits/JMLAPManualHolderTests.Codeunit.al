@@ -5,7 +5,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
 
     var
         Assert: Codeunit "Library Assert";
-        IsInitialized: Boolean;
+        TestLibrary: Codeunit "JML AP Test Library";
 
     [Test]
     procedure TestManualHolderChange_CreatesJournalEntries()
@@ -21,17 +21,17 @@ codeunit 50110 "JML AP Manual Holder Tests"
         // [SCENARIO] User changes holder on Asset Card via Change Holder Dialog, journal entries created automatically
 
         // [GIVEN] Setup allows manual changes
-        Initialize();
+        TestLibrary.Initialize();
         AssetSetup.GetRecordOnce();
         AssetSetup."Block Manual Holder Change" := false;
         AssetSetup.Modify();
 
         // [GIVEN] Asset at Location
-        CreateLocation(Location);
-        CreateAssetAtLocation(Asset, Location.Code);
+        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location.Code);
 
         // [WHEN] User changes holder to Customer via Change Holder Dialog
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         Asset.Get(Asset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
@@ -74,17 +74,17 @@ codeunit 50110 "JML AP Manual Holder Tests"
         // [SCENARIO] Setup blocks manual changes, error thrown
 
         // [GIVEN] Setup blocks manual changes
-        Initialize();
+        TestLibrary.Initialize();
         AssetSetup.GetRecordOnce();
         AssetSetup."Block Manual Holder Change" := true;
         AssetSetup.Modify();
 
         // [GIVEN] Asset at Location
-        CreateLocation(Location);
-        CreateAssetAtLocation(Asset, Location.Code);
+        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location.Code);
 
         // [WHEN] User tries to change holder via Change Holder Dialog
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         Asset.Get(Asset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
@@ -117,19 +117,19 @@ codeunit 50110 "JML AP Manual Holder Tests"
         // [SCENARIO] Manual change transfers all children automatically
 
         // [GIVEN] Setup allows manual changes
-        Initialize();
+        TestLibrary.Initialize();
         AssetSetup.GetRecordOnce();
         AssetSetup."Block Manual Holder Change" := false;
         AssetSetup.Modify();
 
         // [GIVEN] Parent asset with 2 children at Location
-        CreateLocation(Location);
-        CreateAssetAtLocation(ParentAsset, Location.Code);
+        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location.Code);
         CreateChildAssetAtHolder(ChildAsset1, ParentAsset."No.", Location);
         CreateChildAssetAtHolder(ChildAsset2, ParentAsset."No.", Location);
 
         // [WHEN] User changes parent holder to Customer via Change Holder Dialog
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         ParentAsset.Get(ParentAsset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
@@ -171,18 +171,18 @@ codeunit 50110 "JML AP Manual Holder Tests"
         // [SCENARIO] Cannot manually change holder of attached subasset
 
         // [GIVEN] Setup allows manual changes
-        Initialize();
+        TestLibrary.Initialize();
         AssetSetup.GetRecordOnce();
         AssetSetup."Block Manual Holder Change" := false;
         AssetSetup.Modify();
 
         // [GIVEN] Child asset attached to parent at Location
-        CreateLocation(Location);
-        CreateAssetAtLocation(ParentAsset, Location.Code);
+        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location.Code);
         CreateChildAssetAtHolder(ChildAsset, ParentAsset."No.", Location);
 
         // [WHEN] User tries to change child holder directly via Change Holder Dialog
-        CreateCustomer(Customer);
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
         ChildAsset.Get(ChildAsset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
@@ -212,17 +212,17 @@ codeunit 50110 "JML AP Manual Holder Tests"
         // [SCENARIO] Initial holder assignment creates holder entries
 
         // [GIVEN] Setup allows manual changes
-        Initialize();
+        TestLibrary.Initialize();
         AssetSetup.GetRecordOnce();
         AssetSetup."Block Manual Holder Change" := false;
         AssetSetup.Modify();
 
         // [GIVEN] New asset with no holder
-        CreateAsset(Asset);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
         Assert.AreEqual(Asset."Current Holder Type"::" ", Asset."Current Holder Type", 'Initial holder type should be blank');
 
         // [WHEN] User sets initial holder via Change Holder Dialog
-        CreateLocation(Location);
+        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
         Asset.Get(Asset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);
@@ -254,64 +254,13 @@ codeunit 50110 "JML AP Manual Holder Tests"
     // procedure TestManualHolderChange_WithOrderAddress_SavesAddressCode()
     // Test that address code is preserved when manually changing holder to vendor with order address
 
-    local procedure Initialize()
-    begin
-        if IsInitialized then
-            exit;
-
-        IsInitialized := true;
-        Commit();
-    end;
-
-    local procedure CreateAsset(var Asset: Record "JML AP Asset")
-    var
-        GuidStr: Text;
-    begin
-        Asset.Init();
-        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
-        Asset."No." := CopyStr('T-' + CopyStr(GuidStr, 1, 8), 1, 20);
-        Asset.Description := 'Test Asset';
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateAssetAtLocation(var Asset: Record "JML AP Asset"; LocationCode: Code[10])
-    begin
-        CreateAsset(Asset);
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := LocationCode;
-        Asset."Current Holder Since" := WorkDate();
-        Asset.Modify(true);
-    end;
-
     local procedure CreateChildAssetAtHolder(var ChildAsset: Record "JML AP Asset"; ParentAssetNo: Code[20]; Location: Record Location)
     begin
-        CreateAsset(ChildAsset);
+        ChildAsset := TestLibrary.CreateTestAsset('Child Asset');
         ChildAsset."Parent Asset No." := ParentAssetNo;
         ChildAsset."Current Holder Type" := ChildAsset."Current Holder Type"::Location;
         ChildAsset."Current Holder Code" := Location.Code;
         ChildAsset."Current Holder Since" := WorkDate();
         ChildAsset.Modify(true);
-    end;
-
-    local procedure CreateCustomer(var Customer: Record Customer)
-    var
-        GuidStr: Text;
-    begin
-        Customer.Init();
-        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
-        Customer."No." := CopyStr('TC-' + CopyStr(GuidStr, 1, 8), 1, 20);
-        Customer.Name := 'Test Customer';
-        Customer.Insert(true);
-    end;
-
-    local procedure CreateLocation(var Location: Record Location)
-    var
-        GuidStr: Text;
-    begin
-        Location.Init();
-        GuidStr := DelChr(Format(CreateGuid()), '=', '{}');
-        Location.Code := CopyStr('TL' + CopyStr(GuidStr, 1, 6), 1, 10);
-        Location.Name := 'Test Location';
-        Location.Insert(true);
     end;
 }

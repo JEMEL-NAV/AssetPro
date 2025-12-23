@@ -5,6 +5,7 @@ codeunit 50104 "JML AP Attribute Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -19,7 +20,7 @@ codeunit 50104 "JML AP Attribute Tests"
         Initialize();
         CreateTestIndustry(Industry, 'FLEET');
         CreateAttributeDefinition(AttrDefn, Industry.Code, 0, 'SERIAL', 'Serial Number', AttrDefn."Data Type"::Text, '', false);
-        CreateTestAsset(Asset, 'Test Asset');
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
 
         // [WHEN] Set attribute value
         CreateAttributeValue(AttrValue, Asset."No.", AttrDefn."Attribute Code");
@@ -42,7 +43,7 @@ codeunit 50104 "JML AP Attribute Tests"
         Initialize();
         CreateTestIndustry(Industry, 'FLEET');
         CreateAttributeDefinition(AttrDefn, Industry.Code, 0, 'YEAR', 'Year', AttrDefn."Data Type"::Integer, '', false);
-        CreateTestAsset(Asset, 'Test Asset');
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
 
         // [WHEN] Set attribute value
         CreateAttributeValue(AttrValue, Asset."No.", AttrDefn."Attribute Code");
@@ -65,7 +66,7 @@ codeunit 50104 "JML AP Attribute Tests"
         Initialize();
         CreateTestIndustry(Industry, 'FLEET');
         CreateAttributeDefinition(AttrDefn, Industry.Code, 0, 'WARRANTY', 'Under Warranty', AttrDefn."Data Type"::Boolean, '', false);
-        CreateTestAsset(Asset, 'Test Asset');
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
 
         // [WHEN] Set attribute value
         CreateAttributeValue(AttrValue, Asset."No.", AttrDefn."Attribute Code");
@@ -78,35 +79,25 @@ codeunit 50104 "JML AP Attribute Tests"
 
     local procedure Initialize()
     var
-        Asset: Record "JML AP Asset";
         Industry: Record "JML AP Asset Industry";
         AttrDefn: Record "JML AP Attribute Defn";
         AttrValue: Record "JML AP Attribute Value";
-        HolderEntry: Record "JML AP Holder Entry";
         AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
     begin
         if IsInitialized then
             exit;
 
-        // Clean test data
+        TestLibrary.Initialize();
+
+        // Clean attribute-specific test data
         AttrValue.DeleteAll();
         AttrDefn.DeleteAll();
-        HolderEntry.DeleteAll();
-        Asset.DeleteAll();
         Industry.DeleteAll();
-        NoSeriesLine.DeleteAll();
-        NoSeries.DeleteAll();
-        AssetSetup.DeleteAll();
 
-        // Create basic setup
-        CreateTestNumberSeries(NoSeries, NoSeriesLine);
-
-        AssetSetup.Init();
-        AssetSetup."Asset Nos." := NoSeries.Code;
+        // Enable attributes in setup
+        TestLibrary.EnsureSetupExists(AssetSetup);
         AssetSetup."Enable Attributes" := true;
-        AssetSetup.Insert();
+        AssetSetup.Modify();
 
         IsInitialized := true;
         Commit();
@@ -141,30 +132,5 @@ codeunit 50104 "JML AP Attribute Tests"
         AttrValue."Asset No." := AssetNo;
         AttrValue."Attribute Code" := AttrCode;
         AttrValue.Insert();
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; Description: Text[100])
-    begin
-        Asset.Init();
-        Asset.Validate(Description, Description);
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line")
-    begin
-        NoSeries.Init();
-        NoSeries.Code := 'ASSET-TEST';
-        NoSeries.Description := 'Test Asset Numbers';
-        NoSeries."Default Nos." := true;
-        NoSeries."Manual Nos." := true;
-        if NoSeries.Insert() then;
-
-        NoSeriesLine.Init();
-        NoSeriesLine."Series Code" := NoSeries.Code;
-        NoSeriesLine."Line No." := 10000;
-        NoSeriesLine."Starting No." := 'AT-0001';
-        NoSeriesLine."Ending No." := 'AT-9999';
-        NoSeriesLine."Increment-by No." := 1;
-        if NoSeriesLine.Insert() then;
     end;
 }
