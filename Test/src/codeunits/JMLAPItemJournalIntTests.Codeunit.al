@@ -225,10 +225,10 @@ codeunit 50112 "JML AP Item Journal Int. Tests"
 
         // [GIVEN] Two assets and two items
         TestLibrary.Initialize();
-        CreateAsset(Asset1);
-        CreateAsset(Asset2);
-        CreateItem(Item1);
-        CreateItem(Item2);
+        Asset1 := TestLibrary.CreateTestAsset('Asset 1');
+        Asset2 := TestLibrary.CreateTestAsset('Asset 2');
+        Item1 := TestLibrary.CreateTestItem('Item 1');
+        Item2 := TestLibrary.CreateTestItem('Item 2');
 
         // [GIVEN] Two Item Journal Lines with different assets
         CreateItemJournalLine(ItemJnlLine, Item1."No.", ItemJnlLine."Entry Type"::Sale, -5);

@@ -92,7 +92,7 @@ codeunit 50111 "JML AP Component Tests"
         TestLibrary.Initialize();
 
         // [GIVEN] Item and Component Journal Line with non-existent Asset
-        CreateTestItem(Item);
+        Item := TestLibrary.CreateTestItem('Test Item');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", 'NONEXIST', Item."No.", ComponentJnlLine."Entry Type"::Install, 1);
 
@@ -117,7 +117,7 @@ codeunit 50111 "JML AP Component Tests"
         TestLibrary.Initialize();
 
         // [GIVEN] Asset and Component Journal Line with non-existent Item
-        CreateTestAsset(Asset);
+        Asset := TestLibrary.CreateTestAsset('Test Asset');
         CreateTestJournalBatch(ComponentJnlBatch);
         CreateComponentJournalLine(ComponentJnlLine, ComponentJnlBatch."Name", Asset."No.", 'NONEXIST', ComponentJnlLine."Entry Type"::Install, 1);
 

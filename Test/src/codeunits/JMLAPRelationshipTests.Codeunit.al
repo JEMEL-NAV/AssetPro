@@ -301,9 +301,6 @@ codeunit 50109 "JML AP Relationship Tests"
     begin
         // [SCENARIO] Subasset transfer blocked when attached, allowed when detached
 
-        // Clean up any leftover test data
-        CleanupTestData();
-
         // [GIVEN] Asset with parent (subasset)
         ParentAsset := TestLibrary.CreateTestAsset('Parent Asset for Transfer Test');
         ChildAsset := TestLibrary.CreateTestAsset('Child Asset for Transfer Test');

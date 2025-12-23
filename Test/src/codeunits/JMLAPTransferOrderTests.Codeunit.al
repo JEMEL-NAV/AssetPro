@@ -54,11 +54,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // [THEN] Source transfer order deleted
         Assert.IsFalse(TransferHeader.Get(TransferHeader."No."), 'Source transfer order should be deleted');
 
-        // Cleanup
+        // Cleanup handled by test framework (automatic rollback)
         PostedTransfer.Delete(true);
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
     end;
 
     [Test]
@@ -108,11 +105,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // Cleanup
         PostedTransfer.Delete(true);
-        CleanupAsset(Asset1);
-        CleanupAsset(Asset2);
-        CleanupAsset(Asset3);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -131,8 +124,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // [GIVEN] A parent asset with one child at Location 1
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -155,10 +148,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup
         PostedTransfer.Get(TransferHeader."Posting No.");
         PostedTransfer.Delete(true);
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     // ============================================
@@ -193,9 +183,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists (posting should have failed)
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -221,8 +209,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists (posting should have failed)
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -251,10 +238,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
-        CleanupLocation(Location3);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -286,9 +270,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -305,8 +287,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // [GIVEN] A child asset at Location 1
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -321,10 +303,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     // ============================================
@@ -375,10 +354,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // Cleanup - only delete if it still exists (posting should have failed)
         if TransferHeader.Get(TransferHeader."No.") then
             TransferHeader.Delete(true);
-        CleanupAsset(Asset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
-        CleanupLocation(Location3);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     [Test]
@@ -399,8 +375,8 @@ codeunit 50108 "JML AP Transfer Order Tests"
         // [GIVEN] A parent asset with one child at Location 1
         Location1 := TestLibrary.CreateTestLocation('LOC1');
         Location2 := TestLibrary.CreateTestLocation('LOC2');
-        CreateAssetAtLocation(ParentAsset, Location1.Code);
-        CreateAssetAtLocation(ChildAsset, Location1.Code);
+        ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location1.Code);
+        ChildAsset := TestLibrary.CreateAssetAtLocation('Child Asset', Location1.Code);
         ChildAsset."Parent Asset No." := ParentAsset."No.";
         ChildAsset.Modify(true);
 
@@ -427,10 +403,7 @@ codeunit 50108 "JML AP Transfer Order Tests"
 
         // Cleanup
         PostedTransfer.Delete(true);
-        CleanupAsset(ChildAsset);
-        CleanupAsset(ParentAsset);
-        CleanupLocation(Location1);
-        CleanupLocation(Location2);
+        // Cleanup handled by test framework (automatic rollback)
     end;
 
     // TODO: Add test for Transfer Order with address codes

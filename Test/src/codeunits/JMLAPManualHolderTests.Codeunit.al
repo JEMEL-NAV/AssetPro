@@ -27,7 +27,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         AssetSetup.Modify();
 
         // [GIVEN] Asset at Location
-        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Location := TestLibrary.CreateTestLocation(CopyStr(TestLibrary.GetNextTestNumber('LOC'), 1, 10));
         Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location.Code);
 
         // [WHEN] User changes holder to Customer via Change Holder Dialog
@@ -80,7 +80,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         AssetSetup.Modify();
 
         // [GIVEN] Asset at Location
-        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Location := TestLibrary.CreateTestLocation(CopyStr(TestLibrary.GetNextTestNumber('LOC'), 1, 10));
         Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location.Code);
 
         // [WHEN] User tries to change holder via Change Holder Dialog
@@ -123,7 +123,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         AssetSetup.Modify();
 
         // [GIVEN] Parent asset with 2 children at Location
-        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Location := TestLibrary.CreateTestLocation(CopyStr(TestLibrary.GetNextTestNumber('LOC'), 1, 10));
         ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location.Code);
         CreateChildAssetAtHolder(ChildAsset1, ParentAsset."No.", Location);
         CreateChildAssetAtHolder(ChildAsset2, ParentAsset."No.", Location);
@@ -177,7 +177,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         AssetSetup.Modify();
 
         // [GIVEN] Child asset attached to parent at Location
-        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Location := TestLibrary.CreateTestLocation(CopyStr(TestLibrary.GetNextTestNumber('LOC'), 1, 10));
         ParentAsset := TestLibrary.CreateAssetAtLocation('Parent Asset', Location.Code);
         CreateChildAssetAtHolder(ChildAsset, ParentAsset."No.", Location);
 
@@ -222,7 +222,7 @@ codeunit 50110 "JML AP Manual Holder Tests"
         Assert.AreEqual(Asset."Current Holder Type"::" ", Asset."Current Holder Type", 'Initial holder type should be blank');
 
         // [WHEN] User sets initial holder via Change Holder Dialog
-        Location := TestLibrary.CreateTestLocation(TestLibrary.GetNextTestNumber('LOC'));
+        Location := TestLibrary.CreateTestLocation(CopyStr(TestLibrary.GetNextTestNumber('LOC'), 1, 10));
         Asset.Get(Asset."No.");
         AssetJnlPost.SetSuppressConfirmation(true);
         AssetJnlPost.SetSuppressSuccessMessage(true);

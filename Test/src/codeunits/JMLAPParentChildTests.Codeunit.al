@@ -36,10 +36,10 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Vessel, Engine, Turbocharger: Record "JML AP Asset";
     begin
         // [GIVEN] Initialize
-        Initialize();
+        TestLibrary.Initialize();
 
         // [WHEN] Create Vessel ? Engine ? Turbocharger
-        CreateTestAsset(Vessel, 'MV Prosperity');
+        Vessel := TestLibrary.CreateTestAsset('MV Prosperity');
 
         Engine := TestLibrary.CreateTestAsset('Main Engine');
         Engine.Validate("Parent Asset No.", Vessel."No.");
@@ -90,7 +90,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
         Parent, Child: Record "JML AP Asset";
     begin
         // [GIVEN] Parent-child relationship
-        Initialize();
+        TestLibrary.Initialize();
         Parent := TestLibrary.CreateTestAsset('Parent Asset');
         Child := TestLibrary.CreateTestAsset('Child Asset');
 
@@ -116,7 +116,7 @@ codeunit 50106 "JML AP Parent-Child Tests"
         ChildCount: Integer;
     begin
         // [GIVEN] One parent
-        Initialize();
+        TestLibrary.Initialize();
         Parent := TestLibrary.CreateTestAsset('Parent Vessel');
 
         // [WHEN] Create 3 children
