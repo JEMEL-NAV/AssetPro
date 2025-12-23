@@ -4,7 +4,7 @@ pageextension 70182424 "JML AP Transfer Order Ext" extends "Transfer Order"
     {
         addafter(TransferLines)
         {
-            part("Asset Lines"; "JML AP Transfer Asset Subpage")
+            part(JMLAssetLines; "JML AP Transfer Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

@@ -4,7 +4,7 @@ pageextension 70182425 "JML AP Pstd Trans Shpt Ext" extends "Posted Transfer Shi
     {
         addafter(TransferShipmentLines)
         {
-            part("Asset Lines"; "JML AP Pstd Trans Shpt Ast Sub")
+            part(JMLAssetLines; "JML AP Pstd Trans Shpt Ast Sub")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';
