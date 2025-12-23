@@ -4,7 +4,7 @@ pageextension 70182433 "JML AP Purch. Return Order Ext" extends "Purchase Return
     {
         addafter(PurchLines)
         {
-            part(AssetLines; "JML AP Purch. Asset Subpage")
+            part(JMLAssetLines; "JML AP Purch. Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

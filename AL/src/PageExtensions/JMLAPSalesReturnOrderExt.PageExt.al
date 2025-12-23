@@ -4,7 +4,7 @@ pageextension 70182448 "JML AP Sales Return Order Ext" extends "Sales Return Ord
     {
         addafter(SalesLines)
         {
-            part(AssetLines; "JML AP Sales Asset Subpage")
+            part(JMLAssetLines; "JML AP Sales Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

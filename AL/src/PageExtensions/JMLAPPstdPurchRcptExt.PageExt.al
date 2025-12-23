@@ -4,7 +4,7 @@ pageextension 70182434 "JML AP Pstd Purch. Rcpt Ext" extends "Posted Purchase Re
     {
         addafter(PurchReceiptLines)
         {
-            part(AssetLines; "JML AP Pstd Purch Rcpt Ast Sub")
+            part(JMLAssetLines; "JML AP Pstd Purch Rcpt Ast Sub")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

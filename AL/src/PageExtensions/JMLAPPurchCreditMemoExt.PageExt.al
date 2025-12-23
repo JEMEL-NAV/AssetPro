@@ -4,7 +4,7 @@ pageextension 70182432 "JML AP Purch. Credit Memo Ext" extends "Purchase Credit 
     {
         addafter(PurchLines)
         {
-            part(AssetLines; "JML AP Purch. Asset Subpage")
+            part(JMLAssetLines; "JML AP Purch. Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

@@ -4,7 +4,7 @@ pageextension 70182422 "JML AP Pstd Ret Shpt Ext" extends "Posted Return Shipmen
     {
         addafter(ReturnShptLines)
         {
-            part(AssetLines; "JML AP Pstd Ret Shpt Ast Sub")
+            part(JMLAssetLines; "JML AP Pstd Ret Shpt Ast Sub")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

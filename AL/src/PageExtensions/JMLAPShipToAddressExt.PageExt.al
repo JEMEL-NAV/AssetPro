@@ -4,7 +4,7 @@ pageextension 70182413 "JML AP Ship-to Address Ext" extends "Ship-to Address"
     {
         addfirst(factboxes)
         {
-            part(ShipToAssets; "JML AP Ship-to Asset FB")
+            part(JMLShipToAssets; "JML AP Ship-to Asset FB")
             {
                 ApplicationArea = All;
                 Caption = 'Assets';

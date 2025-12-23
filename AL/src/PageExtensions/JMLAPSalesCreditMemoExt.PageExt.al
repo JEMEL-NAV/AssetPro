@@ -4,7 +4,7 @@ pageextension 70182446 "JML AP Sales Credit Memo Ext" extends "Sales Credit Memo
     {
         addafter(SalesLines)
         {
-            part(AssetLines; "JML AP Sales Asset Subpage")
+            part(JMLAssetLines; "JML AP Sales Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

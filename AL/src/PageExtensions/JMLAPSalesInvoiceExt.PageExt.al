@@ -4,7 +4,7 @@ pageextension 70182449 "JML AP Sales Invoice Ext" extends "Sales Invoice"
     {
         addafter(SalesLines)
         {
-            part(AssetLines; "JML AP Sales Asset Subpage")
+            part(JMLAssetLines; "JML AP Sales Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

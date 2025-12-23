@@ -4,7 +4,7 @@ pageextension 70182444 "JML AP Pstd Sales Shpt Ext" extends "Posted Sales Shipme
     {
         addafter(SalesShipmLines)
         {
-            part(AssetLines; "JML AP Pstd Sales Shpt Ast Sub")
+            part(JMLAssetLines; "JML AP Pstd Sales Shpt Ast Sub")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';

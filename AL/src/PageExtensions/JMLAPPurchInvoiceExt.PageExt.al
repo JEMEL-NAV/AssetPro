@@ -4,7 +4,7 @@ pageextension 70182431 "JML AP Purch. Invoice Ext" extends "Purchase Invoice"
     {
         addafter(PurchLines)
         {
-            part(AssetLines; "JML AP Purch. Asset Subpage")
+            part(JMLAssetLines; "JML AP Purch. Asset Subpage")
             {
                 ApplicationArea = All;
                 Caption = 'Asset Lines';
