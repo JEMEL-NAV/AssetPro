@@ -5,6 +5,7 @@ codeunit 50121 "JML AP AI Helper Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         AIHelper: Codeunit "JML AP AI Helper";
 
     // ============================================================================

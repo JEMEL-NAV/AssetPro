@@ -7,6 +7,7 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         AIHelper: Codeunit "JML AP AI Helper";
 
     // ============================================================================
@@ -58,10 +59,6 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
         // [THEN] Prompt should contain manufacturer and model
         LibraryAssert.AreEqual('CATERP', Asset."Manufacturer Code", 'Manufacturer should be set');
         LibraryAssert.AreEqual('CAT-320D', Asset."Model No.", 'Model should be set');
-
-        // Cleanup
-        if Asset.Get(Asset."No.") then
-            Asset.Delete(true);
     end;
 
     [Test]
@@ -85,10 +82,6 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
         // [THEN] Prompt should contain serial number and year
         LibraryAssert.AreEqual('SN123456789', Asset."Serial No.", 'Serial number should be set');
         LibraryAssert.AreEqual(2023, Asset."Year of Manufacture", 'Year should be set');
-
-        // Cleanup
-        if Asset.Get(Asset."No.") then
-            Asset.Delete(true);
     end;
 
     [Test]
@@ -119,11 +112,7 @@ codeunit 50120 "JML AP AI Name Suggester Tests"
             ErrorOccurred := true;
 
         LibraryAssert.IsTrue(ErrorOccurred, 'Should throw error when asset has no meaningful data');
-
-        // Cleanup
         ClearLastError();
-        if Asset.Get(Asset."No.") then
-            Asset.Delete(true);
     end;
 
     [Test]
