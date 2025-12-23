@@ -7,6 +7,7 @@ codeunit 50125 "JML AP Ownership Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     // ============================================================================
@@ -364,104 +365,45 @@ codeunit 50125 "JML AP Ownership Tests"
     end;
 
     // ============================================================================
-    // Helper Procedures
+    // Helper Procedures - REFACTORED TO USE CENTRALIZED TEST LIBRARY
     // ============================================================================
 
     local procedure Initialize()
-    var
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
     begin
         if IsInitialized then
             exit;
 
-        // Ensure Asset Setup exists with number series
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert(true);
-        end;
-
-        // Create number series if not exists or empty
-        if AssetSetup."Asset Nos." = '' then begin
-            CreateTestNumberSeries(NoSeries, NoSeriesLine);
-            AssetSetup.Validate("Asset Nos.", NoSeries.Code);
-            AssetSetup.Modify(true);
-        end;
-
+        TestLibrary.Initialize(); // Centralized setup in JML AP Test Library
         IsInitialized := true;
-        Commit(); // Commit setup data so it's available across test isolation boundaries
     end;
 
     local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; Description: Text[100])
     begin
-        Asset.Init();
-        Asset.Validate(Description, Description);
-        Asset.Insert(true);
+        Asset := TestLibrary.CreateTestAsset(Description);
     end;
 
     local procedure CreateTestCustomer(var Customer: Record Customer; Name: Text[100])
     begin
-        Customer.Init();
-        Customer."No." := CopyStr('CUST-' + Format(CreateGuid()), 1, MaxStrLen(Customer."No."));
-        Customer.Name := CopyStr(Name, 1, MaxStrLen(Customer.Name));
-        Customer.Insert(true);
+        Customer := TestLibrary.CreateTestCustomer(Name);
     end;
 
     local procedure CreateTestVendor(var Vendor: Record Vendor; Name: Text[100])
     begin
-        Vendor.Init();
-        Vendor."No." := CopyStr('VEND-' + Format(CreateGuid()), 1, MaxStrLen(Vendor."No."));
-        Vendor.Name := CopyStr(Name, 1, MaxStrLen(Vendor.Name));
-        Vendor.Insert(true);
+        Vendor := TestLibrary.CreateTestVendor(Name);
     end;
 
     local procedure CreateTestEmployee(var Employee: Record Employee; FirstName: Text[30]; LastName: Text[30])
     begin
-        Employee.Init();
-        Employee."No." := CopyStr('EMP-' + Format(CreateGuid()), 1, MaxStrLen(Employee."No."));
-        Employee."First Name" := CopyStr(FirstName, 1, MaxStrLen(Employee."First Name"));
-        Employee."Last Name" := CopyStr(LastName, 1, MaxStrLen(Employee."Last Name"));
-        Employee.Insert(true);
+        Employee := TestLibrary.CreateTestEmployee(FirstName, LastName);
     end;
 
     local procedure CreateTestResponsibilityCenter(var RespCenter: Record "Responsibility Center"; Name: Text[100])
     begin
-        RespCenter.Init();
-        RespCenter.Code := CopyStr('RC-' + Format(CreateGuid()), 1, MaxStrLen(RespCenter.Code));
-        RespCenter.Name := CopyStr(Name, 1, MaxStrLen(RespCenter.Name));
-        RespCenter.Insert(true);
+        RespCenter := TestLibrary.CreateTestResponsibilityCenter(Name);
     end;
 
     local procedure CreateTestLocation(var Location: Record Location; Code: Code[10])
     begin
-        if Location.Get(Code) then
-            exit;
-
-        Location.Init();
-        Location.Code := Code;
-        Location.Name := 'Test Location ' + Code;
-        Location.Insert(true);
-    end;
-
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line")
-    begin
-        NoSeries.Init();
-        NoSeries.Code := 'TEST-ASSET-NS';
-        NoSeries.Description := 'Test Asset Number Series';
-        NoSeries."Default Nos." := true;
-        if not NoSeries.Insert() then
-            NoSeries.Modify();
-
-        NoSeriesLine.SetRange("Series Code", NoSeries.Code);
-        if not NoSeriesLine.FindFirst() then begin
-            NoSeriesLine.Init();
-            NoSeriesLine."Series Code" := NoSeries.Code;
-            NoSeriesLine."Line No." := 10000;
-            NoSeriesLine."Starting No." := 'TST-A-00001';
-            NoSeriesLine."Ending No." := 'TST-A-99999';
-            NoSeriesLine."Increment-by No." := 1;
-            NoSeriesLine.Insert();
-        end;
+        Location := TestLibrary.CreateTestLocation(Code);
     end;
 }

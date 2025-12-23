@@ -5,6 +5,7 @@ codeunit 50105 "JML AP Transfer Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -18,14 +19,10 @@ codeunit 50105 "JML AP Transfer Tests"
         EntryCount: Integer;
     begin
         // [GIVEN] Asset at location
-        Initialize();
-        CreateTestLocation(Location, 'WH01-TEST', 'Test Warehouse');
-        CreateTestCustomer(Customer, 'C001-TEST', 'Test Customer');
-        CreateTestAsset(Asset, 'Test Asset');
-
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := Location.Code;
-        Asset.Modify();
+        TestLibrary.Initialize();
+        Location := TestLibrary.CreateTestLocation('WH01-TEST');
+        Customer := TestLibrary.CreateTestCustomer('Test Customer');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location.Code);
 
         // [WHEN] Transfer to customer
         TransferMgt.TransferAsset(
@@ -58,14 +55,10 @@ codeunit 50105 "JML AP Transfer Tests"
         TransNo1, TransNo2: Integer;
     begin
         // [GIVEN] Asset and 2 locations
-        Initialize();
-        CreateTestLocation(Location1, 'WH01-TEST', 'Warehouse 1');
-        CreateTestLocation(Location2, 'WH02-TEST', 'Warehouse 2');
-        CreateTestAsset(Asset, 'Test Asset');
-
-        Asset."Current Holder Type" := Asset."Current Holder Type"::Location;
-        Asset."Current Holder Code" := Location1.Code;
-        Asset.Modify();
+        TestLibrary.Initialize();
+        Location1 := TestLibrary.CreateTestLocation('WH01-TEST');
+        Location2 := TestLibrary.CreateTestLocation('WH02-TEST');
+        Asset := TestLibrary.CreateAssetAtLocation('Test Asset', Location1.Code);
 
         // [WHEN] Perform 2 transfers
         TransferMgt.TransferAsset(Asset, Asset."Current Holder Type"::Location, Location2.Code, "JML AP Document Type"::Manual, '', '');
@@ -84,82 +77,4 @@ codeunit 50105 "JML AP Transfer Tests"
         end;
     end;
 
-    local procedure Initialize()
-    var
-        Asset: Record "JML AP Asset";
-        HolderEntry: Record "JML AP Holder Entry";
-        Customer: Record Customer;
-        Location: Record Location;
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
-    begin
-        if IsInitialized then
-            exit;
-
-        // Clean test data
-        HolderEntry.DeleteAll();
-        Asset.DeleteAll();
-        Customer.DeleteAll();
-        Location.DeleteAll();
-        NoSeriesLine.DeleteAll();
-        NoSeries.DeleteAll();
-        AssetSetup.DeleteAll();
-
-        // Create basic setup
-        CreateTestNumberSeries(NoSeries, NoSeriesLine);
-
-        AssetSetup.Init();
-        AssetSetup."Asset Nos." := NoSeries.Code;
-        AssetSetup."Enable Attributes" := true;
-        AssetSetup.Insert();
-
-        IsInitialized := true;
-        Commit();
-    end;
-
-    local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; Description: Text[100])
-    begin
-        Asset.Init();
-        Asset.Validate(Description, Description);
-        Asset.Insert(true);
-    end;
-
-    local procedure CreateTestLocation(var Location: Record Location; LocationCode: Code[10]; LocationName: Text[100])
-    begin
-        if not Location.Get(LocationCode) then begin
-            Location.Init();
-            Location.Code := LocationCode;
-            Location.Name := LocationName;
-            Location.Insert();
-        end;
-    end;
-
-    local procedure CreateTestCustomer(var Customer: Record Customer; CustomerNo: Code[20]; CustomerName: Text[100])
-    begin
-        if not Customer.Get(CustomerNo) then begin
-            Customer.Init();
-            Customer."No." := CustomerNo;
-            Customer.Name := CustomerName;
-            Customer.Insert();
-        end;
-    end;
-
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line")
-    begin
-        NoSeries.Init();
-        NoSeries.Code := 'ASSET-TEST';
-        NoSeries.Description := 'Test Asset Numbers';
-        NoSeries."Default Nos." := true;
-        NoSeries."Manual Nos." := true;
-        if NoSeries.Insert() then;
-
-        NoSeriesLine.Init();
-        NoSeriesLine."Series Code" := NoSeries.Code;
-        NoSeriesLine."Line No." := 10000;
-        NoSeriesLine."Starting No." := 'AT-0001';
-        NoSeriesLine."Ending No." := 'AT-9999';
-        NoSeriesLine."Increment-by No." := 1;
-        if NoSeriesLine.Insert() then;
-    end;
 }

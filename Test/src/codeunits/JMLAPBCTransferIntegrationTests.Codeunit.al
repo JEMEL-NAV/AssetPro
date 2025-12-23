@@ -8,6 +8,7 @@ codeunit 50124 "JML AP BC Transfer Integ Tests"
 
     var
         LibraryAssert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [MessageHandler]
@@ -453,66 +454,22 @@ codeunit 50124 "JML AP BC Transfer Integ Tests"
     // ============================================================================
 
     local procedure Initialize()
-    var
-        InTransitLoc: Record Location;
-        InventoryPostingSetup: Record "Inventory Posting Setup";
     begin
-        // BC Test Framework provides automatic test isolation
-        // Each test gets a clean database state and changes roll back automatically
-
         if IsInitialized then
             exit;
 
-        // Create In-Transit location required for Transfer Orders
-        // This is created once and reused across tests
-        if not InTransitLoc.Get('INTRANS') then begin
-            InTransitLoc.Init();
-            InTransitLoc.Code := 'INTRANS';
-            InTransitLoc.Name := 'In-Transit';
-            InTransitLoc."Use As In-Transit" := true;
-            InTransitLoc.Insert(true);
-
-            // Create Inventory Posting Setup for INTRANS location
-            if not InventoryPostingSetup.Get('INTRANS', 'RESALE') then begin
-                InventoryPostingSetup.Init();
-                InventoryPostingSetup."Location Code" := 'INTRANS';
-                InventoryPostingSetup."Invt. Posting Group Code" := 'RESALE';
-                InventoryPostingSetup."Inventory Account" := '2130';
-                InventoryPostingSetup.Insert(true);
-            end;
-        end;
-
+        TestLibrary.Initialize(); // Centralized setup includes INTRANS location
         IsInitialized := true;
-        // No Commit() - automatic test isolation handles rollback
     end;
 
     local procedure EnsureSetupExists(var AssetSetup: Record "JML AP Asset Setup")
     begin
-        if not AssetSetup.Get() then begin
-            AssetSetup.Init();
-            AssetSetup.Insert(true);
-        end;
+        TestLibrary.EnsureSetupExists(AssetSetup);
     end;
 
     local procedure CreateTestLocation(var Location: Record Location; LocationCode: Code[10])
-    var
-        InventoryPostingSetup: Record "Inventory Posting Setup";
     begin
-        if not Location.Get(LocationCode) then begin
-            Location.Init();
-            Location.Code := LocationCode;
-            Location.Name := 'Test Location ' + LocationCode;
-            Location.Insert(true);
-        end;
-
-        // Create Inventory Posting Setup for this location if it doesn't exist
-        if not InventoryPostingSetup.Get(LocationCode, 'RESALE') then begin
-            InventoryPostingSetup.Init();
-            InventoryPostingSetup."Location Code" := LocationCode;
-            InventoryPostingSetup."Invt. Posting Group Code" := 'RESALE';
-            InventoryPostingSetup."Inventory Account" := '2130'; // Use standard Inventory GL account from demo data
-            InventoryPostingSetup.Insert(true);
-        end;
+        Location := TestLibrary.CreateTestLocation(LocationCode);
     end;
 
     local procedure CreateTestAsset(var Asset: Record "JML AP Asset"; AssetNo: Code[20]; HolderType: Enum "JML AP Holder Type"; HolderCode: Code[20])
@@ -582,35 +539,24 @@ codeunit 50124 "JML AP BC Transfer Integ Tests"
     local procedure CreateTestItem(var Item: Record Item; ItemNo: Code[20])
     var
         ItemUnitOfMeasure: Record "Item Unit of Measure";
-        UnitOfMeasure: Record "Unit of Measure";
     begin
-        if not Item.Get(ItemNo) then begin
-            // Create Unit of Measure if it doesn't exist
-            if not UnitOfMeasure.Get('PCS') then begin
-                UnitOfMeasure.Init();
-                UnitOfMeasure.Code := 'PCS';
-                UnitOfMeasure.Description := 'Pieces';
-                UnitOfMeasure.Insert(true);
-            end;
+        if Item.Get(ItemNo) then
+            exit;
 
-            // Create Item
-            Item.Init();
-            Item."No." := ItemNo;
-            Item.Description := 'Test Item';
-            Item.Type := Item.Type::Inventory;
-            Item."Base Unit of Measure" := 'PCS';
-            Item."Gen. Prod. Posting Group" := 'RETAIL';
-            Item."Inventory Posting Group" := 'RESALE';
-            Item.Insert(true);
+        Item := TestLibrary.CreateTestItem('Test Item ' + ItemNo);
 
-            // Create Item Unit of Measure
-            if not ItemUnitOfMeasure.Get(ItemNo, 'PCS') then begin
-                ItemUnitOfMeasure.Init();
-                ItemUnitOfMeasure."Item No." := ItemNo;
-                ItemUnitOfMeasure.Code := 'PCS';
-                ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
-                ItemUnitOfMeasure.Insert(true);
-            end;
+        // Override No. if specific one needed
+        if ItemNo <> Item."No." then begin
+            Item.Rename(ItemNo);
+        end;
+
+        // Ensure Item Unit of Measure exists
+        if not ItemUnitOfMeasure.Get(ItemNo, 'PCS') then begin
+            ItemUnitOfMeasure.Init();
+            ItemUnitOfMeasure."Item No." := ItemNo;
+            ItemUnitOfMeasure.Code := 'PCS';
+            ItemUnitOfMeasure."Qty. per Unit of Measure" := 1;
+            ItemUnitOfMeasure.Insert(true);
         end;
     end;
 

@@ -5,6 +5,7 @@ codeunit 50102 "JML AP Asset Creation Tests"
 
     var
         Assert: Codeunit "Library Assert";
+        TestLibrary: Codeunit "JML AP Test Library";
         IsInitialized: Boolean;
 
     [Test]
@@ -13,12 +14,10 @@ codeunit 50102 "JML AP Asset Creation Tests"
         Asset: Record "JML AP Asset";
     begin
         // [GIVEN] Basic setup
-        Initialize();
+        TestLibrary.Initialize();
 
         // [WHEN] Create asset with only Description
-        Asset.Init();
-        Asset.Validate(Description, 'Minimal Test Asset');
-        Asset.Insert(true);
+        Asset := TestLibrary.CreateTestAsset('Minimal Test Asset');
 
         // [THEN] Asset created with defaults
         Assert.AreNotEqual('', Asset."No.", 'No. should be assigned');
@@ -34,7 +33,7 @@ codeunit 50102 "JML AP Asset Creation Tests"
         Asset: Record "JML AP Asset";
     begin
         // [GIVEN] Three-level classification
-        Initialize();
+        TestLibrary.Initialize();
         CreateTestIndustry(Industry, 'FLEET', 'Fleet Management');
         CreateClassificationLevel(Level1, Industry.Code, 1, 'Category');
         CreateClassificationLevel(Level2, Industry.Code, 2, 'Type');
@@ -65,7 +64,7 @@ codeunit 50102 "JML AP Asset Creation Tests"
         Asset: Record "JML AP Asset";
     begin
         // [GIVEN] Asset with classification
-        Initialize();
+        TestLibrary.Initialize();
         CreateTestIndustry(Industry1, 'FLEET', 'Fleet Management');
         CreateClassificationLevel(Level1, Industry1.Code, 1, 'Category');
         CreateClassificationValue(Value1, Industry1.Code, 1, 'COMM', '', 'Commercial');
@@ -97,25 +96,12 @@ codeunit 50102 "JML AP Asset Creation Tests"
         NoSeriesLine: Record "No. Series Line";
     begin
         // [GIVEN] Number series configured
-        Initialize();
-        CreateTestNumberSeries(NoSeries, NoSeriesLine);
-
-        AssetSetup.GetRecordOnce();
-        AssetSetup."Asset Nos." := NoSeries.Code;
-        AssetSetup.Modify();
+        TestLibrary.Initialize();
 
         // [WHEN] Create 3 assets
-        Asset1.Init();
-        Asset1.Validate(Description, 'Asset 1');
-        Asset1.Insert(true);
-
-        Asset2.Init();
-        Asset2.Validate(Description, 'Asset 2');
-        Asset2.Insert(true);
-
-        Asset3.Init();
-        Asset3.Validate(Description, 'Asset 3');
-        Asset3.Insert(true);
+        Asset1 := TestLibrary.CreateTestAsset('Asset 1');
+        Asset2 := TestLibrary.CreateTestAsset('Asset 2');
+        Asset3 := TestLibrary.CreateTestAsset('Asset 3');
 
         // [THEN] Numbers increment sequentially
         Assert.AreNotEqual('', Asset1."No.", 'Asset1 No. should be assigned');
@@ -125,41 +111,6 @@ codeunit 50102 "JML AP Asset Creation Tests"
         Assert.AreNotEqual(Asset2."No.", Asset3."No.", 'Asset numbers should be unique');
     end;
 
-    local procedure Initialize()
-    var
-        Asset: Record "JML AP Asset";
-        Industry: Record "JML AP Asset Industry";
-        ClassLevel: Record "JML AP Classification Lvl";
-        ClassValue: Record "JML AP Classification Val";
-        HolderEntry: Record "JML AP Holder Entry";
-        AssetSetup: Record "JML AP Asset Setup";
-        NoSeries: Record "No. Series";
-        NoSeriesLine: Record "No. Series Line";
-    begin
-        if IsInitialized then
-            exit;
-
-        // Clean test data
-        HolderEntry.DeleteAll();
-        Asset.DeleteAll();
-        ClassValue.DeleteAll();
-        ClassLevel.DeleteAll();
-        Industry.DeleteAll();
-        NoSeriesLine.DeleteAll();
-        NoSeries.DeleteAll();
-        AssetSetup.DeleteAll();
-
-        // Create basic setup with number series
-        CreateTestNumberSeries(NoSeries, NoSeriesLine);
-
-        AssetSetup.Init();
-        AssetSetup."Asset Nos." := NoSeries.Code;
-        AssetSetup."Enable Attributes" := true;
-        AssetSetup.Insert();
-
-        IsInitialized := true;
-        Commit();
-    end;
 
     local procedure CreateTestIndustry(var Industry: Record "JML AP Asset Industry"; IndustryCode: Code[20]; IndustryName: Text[100])
     begin
@@ -195,21 +146,4 @@ codeunit 50102 "JML AP Asset Creation Tests"
         end;
     end;
 
-    local procedure CreateTestNumberSeries(var NoSeries: Record "No. Series"; var NoSeriesLine: Record "No. Series Line")
-    begin
-        NoSeries.Init();
-        NoSeries.Code := 'ASSET-TEST';
-        NoSeries.Description := 'Test Asset Numbers';
-        NoSeries."Default Nos." := true;
-        NoSeries."Manual Nos." := true;
-        if NoSeries.Insert() then;
-
-        NoSeriesLine.Init();
-        NoSeriesLine."Series Code" := NoSeries.Code;
-        NoSeriesLine."Line No." := 10000;
-        NoSeriesLine."Starting No." := 'AT-0001';
-        NoSeriesLine."Ending No." := 'AT-9999';
-        NoSeriesLine."Increment-by No." := 1;
-        if NoSeriesLine.Insert() then;
-    end;
 }
