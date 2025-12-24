@@ -267,7 +267,11 @@ page 70182352 "JML AP Asset Journal"
     trigger OnOpenPage()
     var
         ServerSetting: Codeunit "Server Setting";
+        JMLAPGeneral: Codeunit "JML AP General";
     begin
+        if not JMLAPGeneral.IsAllowedToUse(false) then
+            Error('');
+
         IsSaaSExcelAddinEnabled := ServerSetting.GetIsSaasExcelAddinEnabled();
         if CurrentBatchName = '' then
             SetDefaultBatch();

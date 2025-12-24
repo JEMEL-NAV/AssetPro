@@ -130,8 +130,13 @@ codeunit 70182398 "JML AP Sales Integration"
     var
         SalesAssetLine: Record "JML AP Sales Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Get asset lines to ship
         SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
         SalesAssetLine.SetRange("Document No.", SalesHeader."No.");
@@ -204,9 +209,14 @@ codeunit 70182398 "JML AP Sales Integration"
     var
         SalesAssetLine: Record "JML AP Sales Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
         LocationCode: Code[10];
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Get asset lines to receive
         SalesAssetLine.SetRange("Document Type", SalesHeader."Document Type");
         SalesAssetLine.SetRange("Document No.", SalesHeader."No.");

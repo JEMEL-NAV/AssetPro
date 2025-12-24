@@ -136,5 +136,6 @@ permissionset 70182300 "JML AssetPro"
         report "JML AP Posted Asset Transfer" = X,
         codeunit "JML AP Report Management" = X,
         codeunit "JML AP Undo Purch Rcpt Asset" = X,
-        codeunit "JML AP Undo Sales Shpt Asset" = X;
+        codeunit "JML AP Undo Sales Shpt Asset" = X,
+        codeunit "JML AP General" = X;
 }

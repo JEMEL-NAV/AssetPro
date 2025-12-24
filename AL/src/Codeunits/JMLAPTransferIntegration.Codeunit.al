@@ -26,8 +26,13 @@ codeunit 70182400 "JML AP Transfer Integration"
     var
         TransferAssetLine: Record "JML AP Transfer Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Get asset lines to ship
         TransferAssetLine.SetRange("Document No.", TransferHeader."No.");
         TransferAssetLine.SetFilter("Quantity to Ship", '>0');

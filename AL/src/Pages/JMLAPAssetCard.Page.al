@@ -481,6 +481,14 @@ page 70182333 "JML AP Asset Card"
         AssetNameUpdatedMsg: Label 'Asset name updated to: %1', Comment = '%1 = New asset name';
         AssetDetachedMsg: Label 'Asset detached from parent.';
 
+    trigger OnOpenPage()
+    var
+        JMLAPGeneral: Codeunit "JML AP General";
+    begin
+        if not JMLAPGeneral.IsAllowedToUse(false) then
+            Error('');
+    end;
+
     trigger OnAfterGetRecord()
     var
         AssetSetup: Record "JML AP Asset Setup";

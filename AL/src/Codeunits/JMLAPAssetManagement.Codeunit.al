@@ -9,7 +9,16 @@ codeunit 70182380 "JML AP Asset Management"
         CopyChildren: Boolean): Code[20]
     var
         NewAsset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
     begin
+        // License check
+        if GuiAllowed then begin
+            if not JMLAPGeneral.IsAllowedToUse(false) then
+                error('');
+        end else
+            if not JMLAPGeneral.IsAllowedToUse(true) then
+                error('');
+
         // Create new asset
         NewAsset.Init();
         NewAsset.TransferFields(SourceAsset, false);

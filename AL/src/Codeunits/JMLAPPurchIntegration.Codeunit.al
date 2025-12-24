@@ -33,9 +33,14 @@ codeunit 70182399 "JML AP Purch. Integration"
     var
         PurchAssetLine: Record "JML AP Purch. Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
         LocationCode: Code[10];
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Get asset lines to receive
         PurchAssetLine.SetRange("Document Type", PurchHeader."Document Type");
         PurchAssetLine.SetRange("Document No.", PurchHeader."No.");
@@ -76,9 +81,14 @@ codeunit 70182399 "JML AP Purch. Integration"
     var
         PurchAssetLine: Record "JML AP Purch. Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
         LocationCode: Code[10];
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Only post if no prior receipt exists (invoice-only scenario)
         PurchAssetLine.SetRange("Document Type", PurchHeader."Document Type");
         PurchAssetLine.SetRange("Document No.", PurchHeader."No.");
@@ -114,8 +124,13 @@ codeunit 70182399 "JML AP Purch. Integration"
     var
         PurchAssetLine: Record "JML AP Purch. Asset Line";
         Asset: Record "JML AP Asset";
+        JMLAPGeneral: Codeunit "JML AP General";
         TransactionNo: Integer;
     begin
+        // License check
+        if not JMLAPGeneral.IsAllowedToUse(true) then
+            error('');
+
         // Get asset lines to ship (return to vendor)
         PurchAssetLine.SetRange("Document Type", PurchHeader."Document Type");
         PurchAssetLine.SetRange("Document No.", PurchHeader."No.");

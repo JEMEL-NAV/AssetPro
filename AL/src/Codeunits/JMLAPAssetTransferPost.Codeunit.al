@@ -24,8 +24,17 @@ codeunit 70182392 "JML AP Asset Transfer-Post"
 
     local procedure Code()
     var
+        JMLAPGeneral: Codeunit "JML AP General";
         PostedTransferNo: Code[20];
     begin
+        // License check
+        if GuiAllowed then begin
+            if not JMLAPGeneral.IsAllowedToUse(false) then
+                error('');
+        end else
+            if not JMLAPGeneral.IsAllowedToUse(true) then
+                error('');
+
         CheckTransferOrder(TransferHeader);
 
         // Confirm posting

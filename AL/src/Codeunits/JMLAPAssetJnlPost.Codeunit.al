@@ -25,7 +25,16 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
     var
         AssetJnlBatch: Record "JML AP Asset Journal Batch";
         JnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
+        JMLAPGeneral: Codeunit "JML AP General";
     begin
+        // License check
+        if GuiAllowed then begin
+            if not JMLAPGeneral.IsAllowedToUse(false) then
+                error('');
+        end else
+            if not JMLAPGeneral.IsAllowedToUse(true) then
+                error('');
+
         if AssetJnlLine."Journal Batch Name" = '' then
             exit;
 
@@ -97,9 +106,18 @@ codeunit 70182390 "JML AP Asset Jnl.-Post"
         TempJnlLine: Record "JML AP Asset Journal Line" temporary;
         JnlPostLine: Codeunit "JML AP Asset Jnl.-Post Line";
         AssetSetup: Record "JML AP Asset Setup";
+        JMLAPGeneral: Codeunit "JML AP General";
         DocumentNo: Code[20];
         ManualHolderChangeBlockedErr: Label 'Manual holder changes are blocked in setup. Use Asset Journal or Transfer Orders to change holders.';
     begin
+        // License check
+        if GuiAllowed then begin
+            if not JMLAPGeneral.IsAllowedToUse(false) then
+                error('');
+        end else
+            if not JMLAPGeneral.IsAllowedToUse(true) then
+                error('');
+
         // Validate manual holder changes are not blocked
         AssetSetup.GetRecordOnce();
         if AssetSetup."Block Manual Holder Change" then
