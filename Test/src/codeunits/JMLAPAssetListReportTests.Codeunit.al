@@ -22,13 +22,14 @@ codeunit 50132 "JML AP Asset List Rpt Tests"
         // [GIVEN] No assets in the system
         Asset.DeleteAll();
 
-        // [WHEN] Running the Asset List report
+        // [WHEN] Running the Asset List report with no data
         Asset.SetView('');
         AssetListReport.SetTableView(Asset);
         AssetListReport.UseRequestPage(false);
 
-        // [THEN] Report runs without error (would throw if error occurred)
-        AssetListReport.Run();
+        // [THEN] Report throws error for empty dataset (BC standard behavior)
+        asserterror AssetListReport.Run();
+        Assert.ExpectedError('The report couldn''t be generated, because it was empty');
     end;
 
     [Test]

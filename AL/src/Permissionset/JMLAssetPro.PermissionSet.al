@@ -1,6 +1,6 @@
-permissionset 70182300 "JML JMLAssetPro"
+permissionset 70182300 "JML AssetPro"
 {
-    Assignable = true;
+    Assignable = false;
     Permissions = tabledata "JML AP Asset" = RIMD,
         tabledata "JML AP Asset Attr Val Sel" = RIMD,
         tabledata "JML AP Asset Industry" = RIMD,
@@ -128,5 +128,13 @@ permissionset 70182300 "JML JMLAssetPro"
         page "JML AP Purch. Asset Subpage" = X,
         page "JML AP Sales Asset Subpage" = X,
         page "JML AP Ship-to Asset FB" = X,
-        page "JML AP Vendor Asset FB" = X;
+        page "JML AP Vendor Asset FB" = X,
+        report "JML AP Asset Card Report" = X,
+        report "JML AP Asset List" = X,
+        report "JML AP Asset Transfer Order" = X,
+        report "JML AP Assets by Holder" = X,
+        report "JML AP Posted Asset Transfer" = X,
+        codeunit "JML AP Report Management" = X,
+        codeunit "JML AP Undo Purch Rcpt Asset" = X,
+        codeunit "JML AP Undo Sales Shpt Asset" = X;
 }

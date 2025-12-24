@@ -188,8 +188,10 @@ report 70182304 "JML AP Assets by Holder"
         Asset: Record "JML AP Asset";
         TempHolder: Record "Name/Value Buffer" temporary;
         HolderKey: Text[50];
+        HolderCount: Integer;
     begin
         // Build distinct list of holders from filtered assets
+        HolderCount := 0;
         Asset.CopyFilters("JML AP Asset");
         if Asset.FindSet() then
             repeat
@@ -199,7 +201,8 @@ report 70182304 "JML AP Assets by Holder"
                     HolderKey := Format(Asset."Current Holder Type") + '|' + Asset."Current Holder Code";
                     if not TempHolder.Get(HolderKey) then begin
                         TempHolder.Init();
-                        TempHolder.ID := TempHolder.Count + 1;
+                        HolderCount += 1;
+                        TempHolder.ID := HolderCount;
                         TempHolder.Name := HolderKey;
                         TempHolder.Value := Asset."Current Holder Name";
                         TempHolder.Insert();
@@ -209,7 +212,7 @@ report 70182304 "JML AP Assets by Holder"
 
         TempHolderBuffer.Copy(TempHolder, true);
         HolderIterator := 0;
-        TotalHolders := TempHolderBuffer.Count();
+        TotalHolders := HolderCount;
     end;
 
     local procedure GetNextHolder(): Boolean

@@ -22,13 +22,14 @@ codeunit 50134 "JML AP Pstd Transfer Rpt Tests"
         // [GIVEN] No posted transfers in the system
         PostedTransfer.DeleteAll();
 
-        // [WHEN] Running the Posted Asset Transfer report
+        // [WHEN] Running the Posted Asset Transfer report with no data
         PostedTransfer.SetView('');
         PostedTransferReport.SetTableView(PostedTransfer);
         PostedTransferReport.UseRequestPage(false);
 
-        // [THEN] Report runs without error
-        PostedTransferReport.Run();
+        // [THEN] Report throws error for empty dataset (BC standard behavior)
+        asserterror PostedTransferReport.Run();
+        Assert.ExpectedError('The report couldn''t be generated, because it was empty');
     end;
 
     [Test]
@@ -400,7 +401,7 @@ codeunit 50134 "JML AP Pstd Transfer Rpt Tests"
         Asset2 := TestLibrary.CreateAssetAtLocation('Asset 2', Location1.Code);
 
         TestLibrary.CreateAndPostTransferOrder(Asset1."No.", Location1.Code, Location2.Code);
-        TestLibrary.CreateAndPostTransferOrder(Asset2."No.", Location2.Code, Location1.Code);
+        TestLibrary.CreateAndPostTransferOrder(Asset2."No.", Location1.Code, Location2.Code);
 
         // [WHEN] Running the Posted Asset Transfer report for all posted transfers
         PostedTransfer.SetView('');

@@ -22,13 +22,14 @@ codeunit 50133 "JML AP Assets By Holder Tests"
         // [GIVEN] No assets in the system
         Asset.DeleteAll();
 
-        // [WHEN] Running the Assets by Holder report
+        // [WHEN] Running the Assets by Holder report with no data
         Asset.SetView('');
         AssetsByHolderReport.SetTableView(Asset);
         AssetsByHolderReport.UseRequestPage(false);
 
-        // [THEN] Report runs without error
-        AssetsByHolderReport.Run();
+        // [THEN] Report throws error for empty dataset (BC standard behavior)
+        asserterror AssetsByHolderReport.Run();
+        Assert.ExpectedError('The report couldn''t be generated, because it was empty');
     end;
 
     [Test]
@@ -325,13 +326,14 @@ codeunit 50133 "JML AP Assets By Holder Tests"
         AssetNoHolder."Current Holder Code" := '';
         AssetNoHolder.Modify(true);
 
-        // [WHEN] Running the Assets by Holder report
+        // [WHEN] Running the Assets by Holder report with asset that has no holder
         Asset.SetRange("No.", AssetNoHolder."No.");
         AssetsByHolderReport.SetTableView(Asset);
         AssetsByHolderReport.UseRequestPage(false);
-        AssetsByHolderReport.Run();
 
-        // [THEN] Report completes successfully (handles empty holder)
+        // [THEN] Report throws error because holder list is empty
+        asserterror AssetsByHolderReport.Run();
+        Assert.ExpectedError('The report couldn''t be generated, because it was empty');
         Assert.IsTrue(true, 'Report should handle assets with no holder');
     end;
 

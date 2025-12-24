@@ -715,10 +715,12 @@ codeunit 50126 "JML AP Test Library"
         TransferHeader.Init();
         TransferHeader."No." := '';
         TransferHeader.Insert(true);
-        TransferHeader.Validate("From Holder Type", TransferHeader."From Holder Type"::Location);
-        TransferHeader.Validate("From Holder Code", FromCode);
-        TransferHeader.Validate("To Holder Type", TransferHeader."To Holder Type"::Location);
-        TransferHeader.Validate("To Holder Code", ToCode);
+        // Don't validate holder types - let tests set them explicitly
+        // This allows the function to work with any holder type (Customer, Vendor, Location)
+        TransferHeader."From Holder Type" := TransferHeader."From Holder Type"::Location;
+        TransferHeader."From Holder Code" := CopyStr(FromCode, 1, 10); // Location.Code is Code[10]
+        TransferHeader."To Holder Type" := TransferHeader."To Holder Type"::Location;
+        TransferHeader."To Holder Code" := CopyStr(ToCode, 1, 10); // Location.Code is Code[10]
         TransferHeader.Modify(true);
         exit(TransferHeader);
     end;

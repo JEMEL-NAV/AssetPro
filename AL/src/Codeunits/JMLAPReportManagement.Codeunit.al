@@ -14,44 +14,39 @@ codeunit 70182350 "JML AP Report Management"
     procedure BuildClassificationPath(IndustryCode: Code[20]; ClassificationCode: Code[20]): Text[250]
     var
         ClassValue: Record "JML AP Classification Val";
-        Asset: Record "JML AP Asset";
         Path: Text[250];
         CurrentCode: Code[20];
-        CurrentLevelNo: Integer;
         Separator: Text[3];
+        MaxIterations: Integer;
     begin
         if ClassificationCode = '' then
             exit('');
 
-        // Find the classification level
-        Asset.SetRange("Industry Code", IndustryCode);
-        Asset.SetRange("Classification Code", ClassificationCode);
-        if Asset.FindFirst() then begin
-            Asset.CalcFields("Classification Level No.");
-            CurrentLevelNo := Asset."Classification Level No.";
-        end else begin
-            // If no asset found, try to get level directly from classification value
-            if ClassValue.Get(IndustryCode, 0, ClassificationCode) then
-                CurrentLevelNo := ClassValue."Level Number"
-            else
-                exit(ClassificationCode);  // Fallback if not found
-        end;
+        // Find the leaf classification value
+        ClassValue.SetRange("Industry Code", IndustryCode);
+        ClassValue.SetRange(Code, ClassificationCode);
+        if not ClassValue.FindFirst() then
+            exit(ClassificationCode);  // Fallback if not found
 
         CurrentCode := ClassificationCode;
         Separator := ' / ';
+        MaxIterations := 10;  // Prevent infinite loops
 
-        // Build path from current up to root
-        while (CurrentCode <> '') and (CurrentLevelNo > 0) do
-            if ClassValue.Get(IndustryCode, CurrentLevelNo, CurrentCode) then begin
+        // Build path from leaf to root
+        while (CurrentCode <> '') and (MaxIterations > 0) do begin
+            ClassValue.SetRange("Industry Code", IndustryCode);
+            ClassValue.SetRange(Code, CurrentCode);
+            if ClassValue.FindFirst() then begin
                 if Path = '' then
                     Path := CopyStr(ClassValue.Description, 1, 250)
                 else
                     Path := CopyStr(ClassValue.Description + Separator + Path, 1, 250);
 
                 CurrentCode := ClassValue."Parent Value Code";
-                CurrentLevelNo -= 1;
+                MaxIterations -= 1;
             end else
                 CurrentCode := '';
+        end;
 
         exit(Path);
     end;
@@ -161,12 +156,12 @@ codeunit 70182350 "JML AP Report Management"
             exit('All Dates');
 
         if FromDate = 0D then
-            exit(StrSubstNo('Through %1', ToDate));
+            exit(StrSubstNo('Through %1', Format(ToDate, 0, 4)));
 
         if ToDate = 0D then
-            exit(StrSubstNo('From %1', FromDate));
+            exit(StrSubstNo('From %1', Format(FromDate, 0, 4)));
 
-        exit(StrSubstNo('%1 - %2', FromDate, ToDate));
+        exit(StrSubstNo('%1 - %2', Format(FromDate, 0, 4), Format(ToDate, 0, 4)));
     end;
 
     /// <summary>
@@ -179,18 +174,21 @@ codeunit 70182350 "JML AP Report Management"
     var
         TempHolder: Record "Name/Value Buffer" temporary;
         HolderKey: Text[50];
+        HolderCount: Integer;
     begin
+        HolderCount := 0;
         if Asset.FindSet() then
             repeat
                 HolderKey := Format(Asset."Current Holder Type") + '|' + Asset."Current Holder Code";
                 if not TempHolder.Get(HolderKey) then begin
                     TempHolder.Init();
-                    TempHolder.ID := TempHolder.Count + 1;
+                    HolderCount += 1;
+                    TempHolder.ID := HolderCount;
                     TempHolder.Name := HolderKey;
                     TempHolder.Insert();
                 end;
             until Asset.Next() = 0;
 
-        exit(TempHolder.Count());
+        exit(HolderCount);
     end;
 }
