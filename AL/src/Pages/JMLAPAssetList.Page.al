@@ -132,6 +132,25 @@ page 70182332 "JML AP Asset List"
                 end;
             }
         }
+        area(Reporting)
+        {
+            action(AssetListReport)
+            {
+                ApplicationArea = All;
+                Caption = 'Asset List Report';
+                ToolTip = 'Print a detailed list of assets with optional grouping.';
+                Image = Report;
+                RunObject = report "JML AP Asset List";
+            }
+            action(AssetsByHolderReport)
+            {
+                ApplicationArea = All;
+                Caption = 'Assets by Holder Report';
+                ToolTip = 'Show which assets are currently held by each holder.';
+                Image = Report;
+                RunObject = report "JML AP Assets by Holder";
+            }
+        }
     }
 
     var

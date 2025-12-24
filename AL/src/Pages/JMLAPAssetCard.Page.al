@@ -453,6 +453,25 @@ page 70182333 "JML AP Asset Card"
                 end;
             }
         }
+        area(Reporting)
+        {
+            action(PrintAssetCard)
+            {
+                ApplicationArea = All;
+                Caption = 'Print Asset Card';
+                ToolTip = 'Print a detailed report for this asset including history and attributes.';
+                Image = PrintReport;
+
+                trigger OnAction()
+                var
+                    Asset: Record "JML AP Asset";
+                begin
+                    Asset := Rec;
+                    Asset.SetRecFilter();
+                    Report.Run(Report::"JML AP Asset Card Report", true, false, Asset);
+                end;
+            }
+        }
     }
 
     var

@@ -1,0 +1,711 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="ReportTitle">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Fields!ReportTitle.Value</Value>
+                    <Style>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>ReportTitle</rd:DefaultName>
+            <Top>0.25in</Top>
+            <Left>0.5in</Left>
+            <Height>0.5in</Height>
+            <Width>7in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <Textbox Name="HolderHeader">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Fields!HolderType.Value &amp; ": " &amp; Fields!HolderName.Value</Value>
+                    <Style>
+                      <FontSize>12pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>HolderHeader</rd:DefaultName>
+            <Top>1in</Top>
+            <Left>0.5in</Left>
+            <Height>0.3in</Height>
+            <Width>7in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+              <BackgroundColor>#F0F0F0</BackgroundColor>
+              <PaddingLeft>5pt</PaddingLeft>
+            </Style>
+          </Textbox>
+          <Tablix Name="AssetTable">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>1.2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.8in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AssetNoHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Asset No.</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AssetNoHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DescriptionHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Description</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DescriptionHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ClassificationHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Classification</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ClassificationHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="StatusHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Status</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>StatusHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DaysHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Days</Value>
+                                  <Style>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DaysHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AssetNo_Asset">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!AssetNo_Asset.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AssetNo_Asset</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Description_Asset">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Description_Asset.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Description_Asset</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="ClassificationPath">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ClassificationPath.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>ClassificationPath</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Status_Asset">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Status_Asset.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Status_Asset</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DaysWithHolder">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!DaysWithHolder.Value</Value>
+                                  <Style />
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DaysWithHolder</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet_Result</DataSetName>
+            <Top>1.5in</Top>
+            <Left>0.5in</Left>
+            <Height>0.5in</Height>
+            <Width>7in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Tablix>
+        </ReportItems>
+        <Height>3in</Height>
+        <Style />
+      </Body>
+      <Width>8in</Width>
+      <Page>
+        <PageHeight>11in</PageHeight>
+        <PageWidth>8.5in</PageWidth>
+        <LeftMargin>0.5in</LeftMargin>
+        <RightMargin>0.5in</RightMargin>
+        <TopMargin>0.5in</TopMargin>
+        <BottomMargin>0.5in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="HolderTypeCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>HolderTypeCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>HolderTypeCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="HolderNameCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>HolderNameCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>HolderNameCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ContactInfoCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ContactInfoCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ContactInfoCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AssetCountCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>AssetCountCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AssetCountCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ClassificationCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ClassificationCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ClassificationCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="StatusCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>StatusCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>StatusCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="DateAcquiredCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>DateAcquiredCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>DateAcquiredCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="DaysWithHolderCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>DaysWithHolderCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>DaysWithHolderCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TotalAssetsCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>TotalAssetsCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>TotalAssetsCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TotalHoldersCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>TotalHoldersCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>TotalHoldersCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="PageCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>PageCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>PageCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AssetNo_AssetCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>AssetNo_AssetCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AssetNo_AssetCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Description_AssetCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Description_AssetCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Description_AssetCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SerialNo_AssetCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>SerialNo_AssetCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>SerialNo_AssetCaption</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>14</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>HolderTypeCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>HolderNameCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>ContactInfoCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>AssetCountCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>4</RowIndex>
+          <ParameterName>ClassificationCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>5</RowIndex>
+          <ParameterName>StatusCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>6</RowIndex>
+          <ParameterName>DateAcquiredCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>7</RowIndex>
+          <ParameterName>DaysWithHolderCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>8</RowIndex>
+          <ParameterName>TotalAssetsCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>9</RowIndex>
+          <ParameterName>TotalHoldersCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>10</RowIndex>
+          <ParameterName>PageCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>11</RowIndex>
+          <ParameterName>AssetNo_AssetCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>12</RowIndex>
+          <ParameterName>Description_AssetCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>13</RowIndex>
+          <ParameterName>SerialNo_AssetCaption</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>b8e9d1a2-5f74-4c3e-9b2a-7e8f5d6c4a3b</rd:ReportID>
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Fields>
+        <Field Name="HolderType">
+          <DataField>HolderType</DataField>
+        </Field>
+        <Field Name="HolderName">
+          <DataField>HolderName</DataField>
+        </Field>
+        <Field Name="HolderContactInfo">
+          <DataField>HolderContactInfo</DataField>
+        </Field>
+        <Field Name="AssetCountForHolder">
+          <DataField>AssetCountForHolder</DataField>
+        </Field>
+        <Field Name="DateRangeText">
+          <DataField>DateRangeText</DataField>
+        </Field>
+        <Field Name="ShowContactInfo">
+          <DataField>ShowContactInfo</DataField>
+        </Field>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+        </Field>
+        <Field Name="ReportTitle">
+          <DataField>ReportTitle</DataField>
+        </Field>
+        <Field Name="AssetNo_Asset">
+          <DataField>AssetNo_Asset</DataField>
+        </Field>
+        <Field Name="Description_Asset">
+          <DataField>Description_Asset</DataField>
+        </Field>
+        <Field Name="ClassificationPath">
+          <DataField>ClassificationPath</DataField>
+        </Field>
+        <Field Name="Status_Asset">
+          <DataField>Status_Asset</DataField>
+        </Field>
+        <Field Name="DateAcquiredByHolder">
+          <DataField>DateAcquiredByHolder</DataField>
+        </Field>
+        <Field Name="DaysWithHolder">
+          <DataField>DaysWithHolder</DataField>
+        </Field>
+        <Field Name="SerialNo_Asset">
+          <DataField>SerialNo_Asset</DataField>
+        </Field>
+        <Field Name="ShowDaysWithHolder">
+          <DataField>ShowDaysWithHolder</DataField>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText />
+      </Query>
+    </DataSet>
+  </DataSets>
+</Report>

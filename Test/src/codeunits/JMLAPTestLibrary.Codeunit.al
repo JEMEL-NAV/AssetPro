@@ -631,4 +631,130 @@ codeunit 50126 "JML AP Test Library"
         HolderEntry.SetRange("Transaction No.", TransactionNo);
         LibraryAssert.IsTrue(HolderEntry.Count > 0, 'Holder entries should exist for transaction ' + Format(TransactionNo));
     end;
+
+    // ============================================================================
+    // MODULE 7: Industry and Classification Setup
+    // ============================================================================
+
+    procedure CreateIndustry(IndustryCode: Code[20]; IndustryName: Text[100]): Record "JML AP Asset Industry"
+    var
+        Industry: Record "JML AP Asset Industry";
+    begin
+        Industry.Init();
+        Industry.Code := IndustryCode;
+        Industry.Name := CopyStr(IndustryName, 1, MaxStrLen(Industry.Name));
+        if not Industry.Insert(true) then
+            Industry.Modify(true);
+        exit(Industry);
+    end;
+
+    procedure CreateClassificationLevel(IndustryCode: Code[20]; LevelNo: Integer; LevelName: Text[100]): Record "JML AP Classification Lvl"
+    var
+        ClassLevel: Record "JML AP Classification Lvl";
+    begin
+        ClassLevel.Init();
+        ClassLevel."Industry Code" := IndustryCode;
+        ClassLevel."Level Number" := LevelNo;
+        ClassLevel."Level Name" := CopyStr(LevelName, 1, MaxStrLen(ClassLevel."Level Name"));
+        if not ClassLevel.Insert(true) then
+            ClassLevel.Modify(true);
+        exit(ClassLevel);
+    end;
+
+    procedure CreateClassificationValue(IndustryCode: Code[20]; LevelNo: Integer; ValueCode: Code[20]; ValueDesc: Text[100]; ParentCode: Code[20]; ParentLevelNo: Integer): Record "JML AP Classification Val"
+    var
+        ClassValue: Record "JML AP Classification Val";
+    begin
+        ClassValue.Init();
+        ClassValue."Industry Code" := IndustryCode;
+        ClassValue."Level Number" := LevelNo;
+        ClassValue.Code := ValueCode;
+        ClassValue.Description := CopyStr(ValueDesc, 1, MaxStrLen(ClassValue.Description));
+        ClassValue."Parent Value Code" := ParentCode;
+        ClassValue."Parent Level Number" := ParentLevelNo;
+        if not ClassValue.Insert(true) then
+            ClassValue.Modify(true);
+        exit(ClassValue);
+    end;
+
+    procedure CreateCustomer(): Record Customer
+    begin
+        exit(CreateTestCustomer('Test Customer ' + Format(CreateGuid())));
+    end;
+
+    procedure CreateVendor(): Record Vendor
+    begin
+        exit(CreateTestVendor('Test Vendor ' + Format(CreateGuid())));
+    end;
+
+    // ============================================================================
+    // MODULE 8: Asset Transfer Order Helpers
+    // ============================================================================
+
+    procedure CreateTransferOrder(FromCode: Code[20]; ToCode: Code[20]): Record "JML AP Asset Transfer Header"
+    var
+        TransferHeader: Record "JML AP Asset Transfer Header";
+    begin
+        TransferHeader.Init();
+        TransferHeader."No." := '';
+        TransferHeader.Insert(true);
+        TransferHeader.Validate("From Holder Type", TransferHeader."From Holder Type"::Location);
+        TransferHeader.Validate("From Holder Code", FromCode);
+        TransferHeader.Validate("To Holder Type", TransferHeader."To Holder Type"::Location);
+        TransferHeader.Validate("To Holder Code", ToCode);
+        TransferHeader.Modify(true);
+        exit(TransferHeader);
+    end;
+
+    procedure CreateTransferLine(var TransferLine: Record "JML AP Asset Transfer Line"; DocumentNo: Code[20]; AssetNo: Code[20])
+    var
+        LastLineNo: Integer;
+    begin
+        TransferLine.SetRange("Document No.", DocumentNo);
+        if TransferLine.FindLast() then
+            LastLineNo := TransferLine."Line No."
+        else
+            LastLineNo := 0;
+
+        TransferLine.Init();
+        TransferLine."Document No." := DocumentNo;
+        TransferLine."Line No." := LastLineNo + 10000;
+        TransferLine.Validate("Asset No.", AssetNo);
+        TransferLine.Insert(true);
+    end;
+
+    procedure CreateTransferLineForOrder(var TransferHeader: Record "JML AP Asset Transfer Header"; AssetNo: Code[20])
+    var
+        TransferLine: Record "JML AP Asset Transfer Line";
+    begin
+        CreateTransferLine(TransferLine, TransferHeader."No.", AssetNo);
+    end;
+
+    procedure ReleaseTransferOrder(var TransferHeader: Record "JML AP Asset Transfer Header")
+    begin
+        TransferHeader.Status := TransferHeader.Status::Released;
+        TransferHeader.Modify(true);
+    end;
+
+    procedure ReleaseAndPostTransferOrder(var TransferHeader: Record "JML AP Asset Transfer Header"): Record "JML AP Asset Transfer Header"
+    var
+        AssetTransferPost: Codeunit "JML AP Asset Transfer-Post";
+    begin
+        ReleaseTransferOrder(TransferHeader);
+        AssetTransferPost.SetSuppressConfirmation(true);
+        AssetTransferPost.SetSuppressMessage(true);
+        AssetTransferPost.Run(TransferHeader);
+        exit(TransferHeader);
+    end;
+
+    procedure CreateAndPostTransferOrder(AssetNo: Code[20]; FromCode: Code[20]; ToCode: Code[20]): Record "JML AP Asset Transfer Header"
+    var
+        TransferHeader: Record "JML AP Asset Transfer Header";
+        TransferLine: Record "JML AP Asset Transfer Line";
+    begin
+        TransferHeader := CreateTransferOrder(FromCode, ToCode);
+        CreateTransferLine(TransferLine, TransferHeader."No.", AssetNo);
+        TransferHeader := ReleaseAndPostTransferOrder(TransferHeader);
+        exit(TransferHeader);
+    end;
 }

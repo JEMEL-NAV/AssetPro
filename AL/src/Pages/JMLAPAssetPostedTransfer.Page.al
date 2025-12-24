@@ -198,6 +198,26 @@ page 70182357 "JML AP Asset Posted Transfer"
             }
         }
 
+        area(Processing)
+        {
+            action(Print)
+            {
+                ApplicationArea = All;
+                Caption = 'Print';
+                ToolTip = 'Print the posted asset transfer receipt.';
+                Image = Print;
+
+                trigger OnAction()
+                var
+                    PostedTransfer: Record "JML AP Posted Asset Transfer";
+                begin
+                    PostedTransfer := Rec;
+                    PostedTransfer.SetRecFilter();
+                    Report.Run(Report::"JML AP Posted Asset Transfer", true, false, PostedTransfer);
+                end;
+            }
+        }
+
         area(Promoted)
         {
             group(Category_Navigate)
