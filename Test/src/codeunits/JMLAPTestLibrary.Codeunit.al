@@ -20,12 +20,16 @@ codeunit 50126 "JML AP Test Library"
         NoSeriesLine: Record "No. Series Line";
         InTransitLoc: Record Location;
         InventoryPostingSetup: Record "Inventory Posting Setup";
+        JMLAPGeneral: Codeunit "JML AP General";
     begin
         // BC Test Framework provides automatic test isolation
         // Each test gets a clean database state and changes roll back automatically
 
         if IsInitialized then
             exit;
+
+        // Enable test mode - bypass license checks during testing
+        JMLAPGeneral.SetSkipLicenseCheckForTesting(true);
 
         // Ensure Asset Setup exists with number series
         EnsureSetupExists(AssetSetup);

@@ -1,15 +1,22 @@
 codeunit 70182300 "JML AP General"
 {
+    // SingleInstance ensures the SkipLicenseCheckForTesting flag persists across all calls in the session
+    SingleInstance = true;
 
     var
         UnlicensedQst: Label 'Current user does not have license for JML AssetPro extension by JEMEL. Do you want to add licenses now?';
         PublisherIdTxt: label 'jemel', Locked = true;
+        SkipLicenseCheckForTesting: Boolean;
 
 
     procedure IsAllowedToUse(Silent: Boolean): Boolean
     var
         EnvironmentInformation: Codeunit "Environment Information";
     begin
+        // Allow during test execution
+        if SkipLicenseCheckForTesting then
+            exit(true);
+
         if EnvironmentInformation.IsOnPrem() then
             exit(true);
 
@@ -23,6 +30,15 @@ codeunit 70182300 "JML AP General"
             if Confirm(UnlicensedQst) then
                 OpenExtensionMarketplace();
         exit(false);
+    end;
+
+    /// <summary>
+    /// Enable test mode to bypass license checks during automated testing
+    /// Only accessible from Test app via InternalsVisibleTo
+    /// </summary>
+    internal procedure SetSkipLicenseCheckForTesting(Skip: Boolean)
+    begin
+        SkipLicenseCheckForTesting := Skip;
     end;
 
     local procedure UserIsEntitled(): Boolean
