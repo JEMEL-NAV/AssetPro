@@ -1,0 +1,1100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="DataSource">
+      <ConnectionProperties>
+        <DataProvider>SQL</DataProvider>
+        <ConnectString />
+      </ConnectionProperties>
+      <rd:SecurityType>None</rd:SecurityType>
+    </DataSource>
+  </DataSources>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <!-- Copy Text (COPY watermark) -->
+          <Textbox Name="CopyCaption">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Fields!CopyCaption.Value</Value>
+                    <Style>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>DarkGray</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Right</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>CopyCaption</rd:DefaultName>
+            <Top>0.1in</Top>
+            <Left>5in</Left>
+            <Height>0.25in</Height>
+            <Width>2in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <!-- Document Title -->
+          <Textbox Name="Title">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ASSET TRANSFER ORDER</Value>
+                    <Style>
+                      <FontSize>18pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>Title</rd:DefaultName>
+            <Top>0.4in</Top>
+            <Left>0.5in</Left>
+            <Height>0.4in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <!-- Transfer Order No -->
+          <Textbox Name="TransferOrderNo">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Fields!TransferOrderNoCaption.Value &amp; ": " &amp; Fields!No_TransferHeader.Value</Value>
+                    <Style>
+                      <FontSize>11pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>TransferOrderNo</rd:DefaultName>
+            <Top>0.85in</Top>
+            <Left>0.5in</Left>
+            <Height>0.25in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <!-- Document Info (Date, Status) -->
+          <Textbox Name="DocumentInfo">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=Parameters!DocumentDateCaption.Value &amp; ": " &amp; Fields!DocumentDate_TransferHeader.Value &amp; "    " &amp; Parameters!PostingDateCaption.Value &amp; ": " &amp; Fields!PostingDate_TransferHeader.Value &amp; "    " &amp; Parameters!StatusCaption.Value &amp; ": " &amp; Fields!Status_TransferHeader.Value</Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>DocumentInfo</rd:DefaultName>
+            <Top>1.15in</Top>
+            <Left>0.5in</Left>
+            <Height>0.25in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <!-- From Holder Address Block -->
+          <Rectangle Name="FromHolderRect">
+            <ReportItems>
+              <Textbox Name="FromHolderLabel">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Parameters!FromHolderCaption.Value</Value>
+                        <Style>
+                          <FontSize>10pt</FontSize>
+                          <FontWeight>Bold</FontWeight>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>FromHolderLabel</rd:DefaultName>
+                <Top>0.05in</Top>
+                <Left>0.05in</Left>
+                <Height>0.2in</Height>
+                <Width>2.9in</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Textbox>
+              <Textbox Name="FromHolderAddress">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Fields!FromHolderAddr1.Value &amp; IIf(Len(Fields!FromHolderAddr2.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr2.Value, "") &amp; IIf(Len(Fields!FromHolderAddr3.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr3.Value, "") &amp; IIf(Len(Fields!FromHolderAddr4.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr4.Value, "") &amp; IIf(Len(Fields!FromHolderAddr5.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr5.Value, "") &amp; IIf(Len(Fields!FromHolderAddr6.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr6.Value, "") &amp; IIf(Len(Fields!FromHolderAddr7.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr7.Value, "") &amp; IIf(Len(Fields!FromHolderAddr8.Value)&gt;0, vbCrLf &amp; Fields!FromHolderAddr8.Value, "")</Value>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>FromHolderAddress</rd:DefaultName>
+                <Top>0.3in</Top>
+                <Left>0.05in</Left>
+                <Height>1.2in</Height>
+                <Width>2.9in</Width>
+                <ZIndex>0</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                </Style>
+              </Textbox>
+            </ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>1.5in</Top>
+            <Left>0.5in</Left>
+            <Height>1.6in</Height>
+            <Width>3in</Width>
+            <ZIndex>5</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </Border>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+            </Style>
+          </Rectangle>
+          <!-- To Holder Address Block -->
+          <Rectangle Name="ToHolderRect">
+            <ReportItems>
+              <Textbox Name="ToHolderLabel">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Parameters!ToHolderCaption.Value</Value>
+                        <Style>
+                          <FontSize>10pt</FontSize>
+                          <FontWeight>Bold</FontWeight>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>ToHolderLabel</rd:DefaultName>
+                <Top>0.05in</Top>
+                <Left>0.05in</Left>
+                <Height>0.2in</Height>
+                <Width>2.9in</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Textbox>
+              <Textbox Name="ToHolderAddress">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Fields!ToHolderAddr1.Value &amp; IIf(Len(Fields!ToHolderAddr2.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr2.Value, "") &amp; IIf(Len(Fields!ToHolderAddr3.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr3.Value, "") &amp; IIf(Len(Fields!ToHolderAddr4.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr4.Value, "") &amp; IIf(Len(Fields!ToHolderAddr5.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr5.Value, "") &amp; IIf(Len(Fields!ToHolderAddr6.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr6.Value, "") &amp; IIf(Len(Fields!ToHolderAddr7.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr7.Value, "") &amp; IIf(Len(Fields!ToHolderAddr8.Value)&gt;0, vbCrLf &amp; Fields!ToHolderAddr8.Value, "")</Value>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>ToHolderAddress</rd:DefaultName>
+                <Top>0.3in</Top>
+                <Left>0.05in</Left>
+                <Height>1.2in</Height>
+                <Width>2.9in</Width>
+                <ZIndex>0</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                  <PaddingLeft>2pt</PaddingLeft>
+                  <PaddingRight>2pt</PaddingRight>
+                </Style>
+              </Textbox>
+            </ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>1.5in</Top>
+            <Left>3.7in</Left>
+            <Height>1.6in</Height>
+            <Width>3in</Width>
+            <ZIndex>6</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </Border>
+              <BackgroundColor>WhiteSmoke</BackgroundColor>
+            </Style>
+          </Rectangle>
+          <!-- Line Items Table -->
+          <Tablix Name="LinesTable">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.3in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>3.2in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.3in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="LineNoHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Line</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LineNoHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AssetNoHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Asset No.</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AssetNoHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="DescriptionHeader">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Description</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>DescriptionHeader</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <BackgroundColor>#4472C4</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                            <Color>White</Color>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="LineNo">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LineNo_TransferLine.Value</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>LineNo</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.5pt</Width>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AssetNo">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!AssetNo_TransferLine.Value</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AssetNo</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.5pt</Width>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="AssetDescription">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!AssetDescription_TransferLine.Value</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>AssetDescription</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                              <Width>0.5pt</Width>
+                            </Border>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>DataSet_Result</DataSetName>
+            <Top>3.25in</Top>
+            <Left>0.5in</Left>
+            <Height>0.55in</Height>
+            <Width>5.5in</Width>
+            <ZIndex>7</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+            </Style>
+          </Tablix>
+          <!-- Additional Info (External Doc, Reason) -->
+          <Textbox Name="AdditionalInfo">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=IIf(Len(Fields!ExternalDocumentNo_TransferHeader.Value)&gt;0, Parameters!ExternalDocumentNoCaption.Value &amp; ": " &amp; Fields!ExternalDocumentNo_TransferHeader.Value &amp; "    ", "") &amp; IIf(Len(Fields!ReasonCode_TransferHeader.Value)&gt;0, Parameters!ReasonCodeCaption.Value &amp; ": " &amp; Fields!ReasonCode_TransferHeader.Value, "")</Value>
+                    <Style>
+                      <FontSize>9pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>AdditionalInfo</rd:DefaultName>
+            <Top>4in</Top>
+            <Left>0.5in</Left>
+            <Height>0.25in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>8</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <!-- Signature Blocks -->
+          <Rectangle Name="SignatureBlock">
+            <ReportItems>
+              <Textbox Name="SignatureShipped">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Parameters!SignatureShippedCaption.Value &amp; " ___________________________    " &amp; Parameters!SignatureDateCaption.Value &amp; " ___________"</Value>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>SignatureShipped</rd:DefaultName>
+                <Top>0.1in</Top>
+                <Left>0.1in</Left>
+                <Height>0.25in</Height>
+                <Width>6.3in</Width>
+                <ZIndex>2</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Textbox>
+              <Textbox Name="SignatureReceived">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Parameters!SignatureReceivedCaption.Value &amp; " ___________________________    " &amp; Parameters!SignatureDateCaption.Value &amp; " ___________"</Value>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>SignatureReceived</rd:DefaultName>
+                <Top>0.4in</Top>
+                <Left>0.1in</Left>
+                <Height>0.25in</Height>
+                <Width>6.3in</Width>
+                <ZIndex>1</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Textbox>
+              <Textbox Name="Condition">
+                <CanGrow>true</CanGrow>
+                <KeepTogether>true</KeepTogether>
+                <Paragraphs>
+                  <Paragraph>
+                    <TextRuns>
+                      <TextRun>
+                        <Value>=Parameters!ConditionCaption.Value &amp; " _____________________________________________"</Value>
+                        <Style>
+                          <FontSize>9pt</FontSize>
+                        </Style>
+                      </TextRun>
+                    </TextRuns>
+                    <Style />
+                  </Paragraph>
+                </Paragraphs>
+                <rd:DefaultName>Condition</rd:DefaultName>
+                <Top>0.7in</Top>
+                <Left>0.1in</Left>
+                <Height>0.25in</Height>
+                <Width>6.3in</Width>
+                <ZIndex>0</ZIndex>
+                <Style>
+                  <Border>
+                    <Style>None</Style>
+                  </Border>
+                </Style>
+              </Textbox>
+            </ReportItems>
+            <KeepTogether>true</KeepTogether>
+            <Top>4.5in</Top>
+            <Left>0.5in</Left>
+            <Height>1in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>9</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+                <Width>1pt</Width>
+              </Border>
+              <BackgroundColor>Ivory</BackgroundColor>
+            </Style>
+          </Rectangle>
+          <!-- Terms Footer -->
+          <Textbox Name="TermsFooter">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Terms: Assets must be inspected upon receipt and any damages reported within 24 hours.</Value>
+                    <Style>
+                      <FontSize>8pt</FontSize>
+                      <FontStyle>Italic</FontStyle>
+                      <Color>DimGray</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style />
+              </Paragraph>
+            </Paragraphs>
+            <rd:DefaultName>TermsFooter</rd:DefaultName>
+            <Top>5.7in</Top>
+            <Left>0.5in</Left>
+            <Height>0.25in</Height>
+            <Width>6.5in</Width>
+            <ZIndex>10</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+        </ReportItems>
+        <Height>6in</Height>
+        <Style />
+      </Body>
+      <Width>7.5in</Width>
+      <Page>
+        <PageHeader>
+          <Height>0.5in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="PageNumber">
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Globals!PageNumber &amp; " / " &amp; Globals!TotalPages</Value>
+                      <Style>
+                        <FontSize>9pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <rd:DefaultName>PageNumber</rd:DefaultName>
+              <Top>0.1in</Top>
+              <Left>5.5in</Left>
+              <Height>0.25in</Height>
+              <Width>1.5in</Width>
+              <ZIndex>0</ZIndex>
+              <Style>
+                <Border>
+                  <Style>None</Style>
+                </Border>
+              </Style>
+            </Textbox>
+          </ReportItems>
+          <Style></Style>
+        </PageHeader>
+        <PageHeight>11in</PageHeight>
+        <PageWidth>8.5in</PageWidth>
+        <LeftMargin>0.5in</LeftMargin>
+        <RightMargin>0.5in</RightMargin>
+        <TopMargin>0.5in</TopMargin>
+        <BottomMargin>0.5in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="DocumentDateCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>DocumentDateCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>DocumentDateCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="PostingDateCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>PostingDateCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>PostingDateCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="StatusCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>StatusCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>StatusCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="FromHolderCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>FromHolderCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>FromHolderCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ToHolderCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ToHolderCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ToHolderCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="TotalAssetsCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>TotalAssetsCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>TotalAssetsCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ExternalDocumentNoCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ExternalDocumentNoCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ExternalDocumentNoCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ReasonCodeCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ReasonCodeCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ReasonCodeCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SignatureShippedCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>SignatureShippedCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>SignatureShippedCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SignatureReceivedCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>SignatureReceivedCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>SignatureReceivedCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="SignatureDateCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>SignatureDateCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>SignatureDateCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="ConditionCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>ConditionCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>ConditionCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AssetNo_TransferLineCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>AssetNo_TransferLineCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AssetNo_TransferLineCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="AssetDescription_TransferLineCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>AssetDescription_TransferLineCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>AssetDescription_TransferLineCaption</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Description_TransferLineCaption">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>Description_TransferLineCaption</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Description_TransferLineCaption</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>1</NumberOfColumns>
+      <NumberOfRows>15</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>DocumentDateCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>PostingDateCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>StatusCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>3</RowIndex>
+          <ParameterName>FromHolderCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>4</RowIndex>
+          <ParameterName>ToHolderCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>5</RowIndex>
+          <ParameterName>TotalAssetsCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>6</RowIndex>
+          <ParameterName>ExternalDocumentNoCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>7</RowIndex>
+          <ParameterName>ReasonCodeCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>8</RowIndex>
+          <ParameterName>SignatureShippedCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>9</RowIndex>
+          <ParameterName>SignatureReceivedCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>10</RowIndex>
+          <ParameterName>SignatureDateCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>11</RowIndex>
+          <ParameterName>ConditionCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>12</RowIndex>
+          <ParameterName>AssetNo_TransferLineCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>13</RowIndex>
+          <ParameterName>AssetDescription_TransferLineCaption</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>14</RowIndex>
+          <ParameterName>Description_TransferLineCaption</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>0f5f9f7a-1f5a-4b7c-8e3c-2a5d6c7f8e9a</rd:ReportID>
+  <DataSets>
+    <DataSet Name="DataSet_Result">
+      <Fields>
+        <Field Name="No_TransferHeader">
+          <DataField>No_TransferHeader</DataField>
+        </Field>
+        <Field Name="TransferOrderNoCaption">
+          <DataField>TransferOrderNoCaption</DataField>
+        </Field>
+        <Field Name="CopyCaption">
+          <DataField>CopyCaption</DataField>
+        </Field>
+        <Field Name="FromHolderAddr1">
+          <DataField>FromHolderAddr1</DataField>
+        </Field>
+        <Field Name="FromHolderAddr2">
+          <DataField>FromHolderAddr2</DataField>
+        </Field>
+        <Field Name="FromHolderAddr3">
+          <DataField>FromHolderAddr3</DataField>
+        </Field>
+        <Field Name="FromHolderAddr4">
+          <DataField>FromHolderAddr4</DataField>
+        </Field>
+        <Field Name="FromHolderAddr5">
+          <DataField>FromHolderAddr5</DataField>
+        </Field>
+        <Field Name="FromHolderAddr6">
+          <DataField>FromHolderAddr6</DataField>
+        </Field>
+        <Field Name="FromHolderAddr7">
+          <DataField>FromHolderAddr7</DataField>
+        </Field>
+        <Field Name="FromHolderAddr8">
+          <DataField>FromHolderAddr8</DataField>
+        </Field>
+        <Field Name="ToHolderAddr1">
+          <DataField>ToHolderAddr1</DataField>
+        </Field>
+        <Field Name="ToHolderAddr2">
+          <DataField>ToHolderAddr2</DataField>
+        </Field>
+        <Field Name="ToHolderAddr3">
+          <DataField>ToHolderAddr3</DataField>
+        </Field>
+        <Field Name="ToHolderAddr4">
+          <DataField>ToHolderAddr4</DataField>
+        </Field>
+        <Field Name="ToHolderAddr5">
+          <DataField>ToHolderAddr5</DataField>
+        </Field>
+        <Field Name="ToHolderAddr6">
+          <DataField>ToHolderAddr6</DataField>
+        </Field>
+        <Field Name="ToHolderAddr7">
+          <DataField>ToHolderAddr7</DataField>
+        </Field>
+        <Field Name="ToHolderAddr8">
+          <DataField>ToHolderAddr8</DataField>
+        </Field>
+        <Field Name="DocumentDate_TransferHeader">
+          <DataField>DocumentDate_TransferHeader</DataField>
+        </Field>
+        <Field Name="PostingDate_TransferHeader">
+          <DataField>PostingDate_TransferHeader</DataField>
+        </Field>
+        <Field Name="Status_TransferHeader">
+          <DataField>Status_TransferHeader</DataField>
+        </Field>
+        <Field Name="ExternalDocumentNo_TransferHeader">
+          <DataField>ExternalDocumentNo_TransferHeader</DataField>
+        </Field>
+        <Field Name="ReasonCode_TransferHeader">
+          <DataField>ReasonCode_TransferHeader</DataField>
+        </Field>
+        <Field Name="PageCaption">
+          <DataField>PageCaption</DataField>
+        </Field>
+        <Field Name="OutputNo">
+          <DataField>OutputNo</DataField>
+        </Field>
+        <Field Name="LineNo_TransferLine">
+          <DataField>LineNo_TransferLine</DataField>
+        </Field>
+        <Field Name="AssetNo_TransferLine">
+          <DataField>AssetNo_TransferLine</DataField>
+        </Field>
+        <Field Name="AssetDescription_TransferLine">
+          <DataField>AssetDescription_TransferLine</DataField>
+        </Field>
+        <Field Name="Description_TransferLine">
+          <DataField>Description_TransferLine</DataField>
+        </Field>
+        <Field Name="CurrentHolderType_TransferLine">
+          <DataField>CurrentHolderType_TransferLine</DataField>
+        </Field>
+        <Field Name="CurrentHolderCode_TransferLine">
+          <DataField>CurrentHolderCode_TransferLine</DataField>
+        </Field>
+        <Field Name="CurrentHolderName_TransferLine">
+          <DataField>CurrentHolderName_TransferLine</DataField>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>DataSource</DataSourceName>
+        <CommandText />
+      </Query>
+    </DataSet>
+  </DataSets>
+</Report>

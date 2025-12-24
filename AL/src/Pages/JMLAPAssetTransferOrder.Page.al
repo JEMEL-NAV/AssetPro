@@ -215,6 +215,24 @@ page 70182354 "JML AP Asset Transfer Order"
                         Message(TestReportNotImplementedMsg);
                     end;
                 }
+
+                action(Print)
+                {
+                    ApplicationArea = All;
+                    Caption = 'P&rint';
+                    ToolTip = 'Print the asset transfer order document.';
+                    Image = Print;
+                    Ellipsis = true;
+
+                    trigger OnAction()
+                    var
+                        TransferHeader: Record "JML AP Asset Transfer Header";
+                    begin
+                        TransferHeader := Rec;
+                        TransferHeader.SetRecFilter();
+                        Report.Run(Report::"JML AP Asset Transfer Order", true, false, TransferHeader);
+                    end;
+                }
             }
         }
 
@@ -261,6 +279,9 @@ page 70182354 "JML AP Asset Transfer Order"
             {
                 Caption = 'Report';
 
+                actionref(Print_Promoted; Print)
+                {
+                }
                 actionref(TestReport_Promoted; TestReport)
                 {
                 }
