@@ -17,6 +17,8 @@ codeunit 70182300 "JML AP General"
         if SkipLicenseCheckForTesting then
             exit(true);
 
+        AllowHTTP();
+
         if EnvironmentInformation.IsOnPrem() then
             exit(true);
 
@@ -66,6 +68,25 @@ codeunit 70182300 "JML AP General"
     begin
         AppSourceProductList.JMLPublisherFilterIDL(PublisherIdTxt);
         AppSourceProductList.Run();
+    end;
+
+    internal procedure AllowHTTP()
+    var
+        NAVAppSetting: Record "NAV App Setting";
+        AppInfo: ModuleInfo;
+    begin
+        // We REQUIRE HTTP access, so we'll force it on, regardless of Sandbox
+        NavApp.GetCurrentModuleInfo(AppInfo);
+        if NAVAppSetting.Get(AppInfo.Id) then begin
+            if not NAVAppSetting."Allow HttpClient Requests" then begin
+                NAVAppSetting."Allow HttpClient Requests" := true;
+                NAVAppSetting.Modify();
+            end
+        end else begin
+            NAVAppSetting."App ID" := AppInfo.Id;
+            NAVAppSetting."Allow HttpClient Requests" := true;
+            NAVAppSetting.Insert();
+        end;
     end;
 
     /// <summary>
