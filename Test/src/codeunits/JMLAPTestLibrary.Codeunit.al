@@ -640,11 +640,16 @@ codeunit 50126 "JML AP Test Library"
     var
         Industry: Record "JML AP Asset Industry";
     begin
+        if Industry.Get(IndustryCode) then begin
+            Industry.Name := CopyStr(IndustryName, 1, MaxStrLen(Industry.Name));
+            Industry.Modify(true);
+            exit(Industry);
+        end;
+
         Industry.Init();
         Industry.Code := IndustryCode;
         Industry.Name := CopyStr(IndustryName, 1, MaxStrLen(Industry.Name));
-        if not Industry.Insert(true) then
-            Industry.Modify(true);
+        Industry.Insert(true);
         exit(Industry);
     end;
 
@@ -652,12 +657,17 @@ codeunit 50126 "JML AP Test Library"
     var
         ClassLevel: Record "JML AP Classification Lvl";
     begin
+        if ClassLevel.Get(IndustryCode, LevelNo) then begin
+            ClassLevel."Level Name" := CopyStr(LevelName, 1, MaxStrLen(ClassLevel."Level Name"));
+            ClassLevel.Modify(true);
+            exit(ClassLevel);
+        end;
+
         ClassLevel.Init();
         ClassLevel."Industry Code" := IndustryCode;
         ClassLevel."Level Number" := LevelNo;
         ClassLevel."Level Name" := CopyStr(LevelName, 1, MaxStrLen(ClassLevel."Level Name"));
-        if not ClassLevel.Insert(true) then
-            ClassLevel.Modify(true);
+        ClassLevel.Insert(true);
         exit(ClassLevel);
     end;
 
@@ -665,6 +675,14 @@ codeunit 50126 "JML AP Test Library"
     var
         ClassValue: Record "JML AP Classification Val";
     begin
+        if ClassValue.Get(IndustryCode, LevelNo, ValueCode) then begin
+            ClassValue.Description := CopyStr(ValueDesc, 1, MaxStrLen(ClassValue.Description));
+            ClassValue."Parent Value Code" := ParentCode;
+            ClassValue."Parent Level Number" := ParentLevelNo;
+            ClassValue.Modify(true);
+            exit(ClassValue);
+        end;
+
         ClassValue.Init();
         ClassValue."Industry Code" := IndustryCode;
         ClassValue."Level Number" := LevelNo;
@@ -672,8 +690,7 @@ codeunit 50126 "JML AP Test Library"
         ClassValue.Description := CopyStr(ValueDesc, 1, MaxStrLen(ClassValue.Description));
         ClassValue."Parent Value Code" := ParentCode;
         ClassValue."Parent Level Number" := ParentLevelNo;
-        if not ClassValue.Insert(true) then
-            ClassValue.Modify(true);
+        ClassValue.Insert(true);
         exit(ClassValue);
     end;
 
